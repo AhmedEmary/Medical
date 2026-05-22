@@ -26,10 +26,16 @@ from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
+# passporteye is optional. We catch any exception, not just ImportError,
+# because the library transitively imports scikit-image / numpy and can fail
+# with non-ImportError errors on mismatched dep versions. We must never let
+# this take down the whole module — the AI fallback should still work.
 try:
     from passporteye import read_mrz
-except ImportError:  # pragma: no cover
+except Exception:  # noqa: BLE001 - intentionally swallow all import errors
     read_mrz = None
+    logging.getLogger(__name__).info(
+        "passporteye is not available; MRZ extraction will be skipped.")
 
 
 # Keys every extraction returns. The wizard binds to these names.

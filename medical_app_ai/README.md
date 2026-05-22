@@ -10,7 +10,7 @@ Consultation tab:
 
 | Button | What it does |
 |--------|--------------|
-| **Draft SOAP** | Drafts History / Exam / Assessment / Plan from the encounter data. |
+| **Draft Report** | Drafts the six free-text sections of the printed medical report — Clinical Summary, Therapies Administered, Medications on Discharge, Medical Recommendation, Condition at Discharge, Conclusion. |
 | **Suggest Diagnoses** | Recommends ICD-10 codes from the catalog. |
 | **Summarize Patient** | Produces a short clinical briefing of the patient. |
 | **Safety Check** | Reviews the plan against the patient's allergies and medications. |
