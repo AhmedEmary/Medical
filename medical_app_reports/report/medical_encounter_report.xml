@@ -219,8 +219,7 @@
                         <ul>
                             <li t-foreach="o.prescription_line_ids" t-as="rx">
                                 <strong t-out="rx.product_name or ''"/>
-                                <t t-if="rx.dose">: <span t-out="rx.dose"/></t>
-                                <t t-if="rx._frequency_label()">,
+                                <t t-if="rx._frequency_label()">:
                                     <span t-out="rx._frequency_label()"/>
                                 </t>
                                 <t t-if="rx._route_label()">

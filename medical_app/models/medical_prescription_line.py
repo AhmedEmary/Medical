@@ -41,10 +41,11 @@ class MedicalPrescriptionLine(models.Model):
         related='encounter_id.patient_id', store=True, index=True,
     )
 
-    product_name = fields.Char(string='Drug', required=True)
+    product_name = fields.Char(
+        string='Drug', required=True,
+        help="Drug name including strength, e.g. 'Klacid XL 500 mg'.")
     generic_name = fields.Char(string='Generic Name')
 
-    dose = fields.Char(string='Dose', help="e.g., 500 mg, 10 ml")
     frequency = fields.Selection([
         ('once_daily', 'Once daily'),
         ('twice_daily', 'Twice daily (BID)'),
@@ -98,7 +99,7 @@ class MedicalPrescriptionLine(models.Model):
     # ============================================================
     # Computes
     # ============================================================
-    @api.depends('product_name', 'generic_name', 'dose', 'frequency',
+    @api.depends('product_name', 'generic_name', 'frequency',
                  'duration_days', 'patient_id',
                  'patient_id.allergy_ids', 'patient_id.allergy_ids.allergen',
                  'patient_id.allergy_ids.severity',
@@ -144,9 +145,6 @@ class MedicalPrescriptionLine(models.Model):
                     ) % med.product_name))
 
             # --- Required-field checks ---
-            if not line.dose:
-                issues.append(('warning', _(
-                    "Missing dose. Specify strength (e.g. 500 mg).")))
             if not line.frequency or line.frequency == 'other' \
                     and not line.frequency_other:
                 issues.append(('warning', _(

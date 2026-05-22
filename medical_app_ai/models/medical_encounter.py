@@ -72,3 +72,15 @@ class MedicalEncounter(models.Model):
             'result_text': text,
         })
         return wizard._action_open()
+
+    def action_scan_documents(self):
+        """Open the Scan Encounter Documents wizard for this encounter."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Scan Encounter Documents'),
+            'res_model': 'medical.encounter.scan.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_encounter_id': self.id},
+        }

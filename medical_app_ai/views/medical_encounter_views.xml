@@ -7,16 +7,22 @@
         <field name="model">medical.encounter</field>
         <field name="inherit_id" ref="medical_app.view_medical_encounter_form"/>
         <field name="arch" type="xml">
+
+            <!-- Scan Documents button on the encounter header -->
+            <xpath expr="//header/button[@name='action_start']" position="before">
+                <button name="action_scan_documents" type="object"
+                        string="Scan Documents" icon="fa-camera"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_doctor"
+                        help="Upload photos of handwritten encounter notes
+                              and/or the prescription paper; the AI extracts
+                              the data and pre-fills the encounter for you
+                              to review."/>
+            </xpath>
+
             <xpath expr="//page[@name='consultation']/group[1]"
                    position="before">
                 <div class="o_row mb-3" groups="medical_app.group_medical_doctor">
-                    <button name="action_ai_draft_report" type="object"
-                            string="Draft Report" icon="fa-magic"
-                            class="btn-secondary"
-                            help="Draft the six free-text sections of the
-                                  medical report (clinical summary, therapies,
-                                  discharge meds, recommendation, condition,
-                                  conclusion) from this encounter's data"/>
                     <button name="action_ai_suggest_diagnoses" type="object"
                             string="Suggest Diagnoses" icon="fa-magic"
                             class="btn-secondary"
@@ -30,6 +36,70 @@
                             class="btn-secondary"
                             help="Check the plan against allergies and medications"/>
                 </div>
+            </xpath>
+
+            <!--
+                Dedicated tab where the doctor enters terse seed notes per
+                report section and runs the AI to expand them into the
+                verbose, formal style of the printed medical report.
+
+                The fields are the same database columns the PDF renders
+                from (and that already appear on the Consultation / Report
+                tabs), so edits sync everywhere.
+            -->
+            <xpath expr="//notebook/page[@name='consultation']" position="after">
+                <page string="Report Draft (AI)" name="report_draft_ai"
+                      groups="medical_app.group_medical_doctor">
+                    <div class="alert alert-info" role="alert">
+                        <strong>AI report drafting.</strong>
+                        Write short notes for each section below — even a
+                        few words is enough. Then click
+                        <strong>Draft Report</strong> and the AI will
+                        expand your notes into the verbose, formal style
+                        of the printed medical report. You review and
+                        edit the draft in the wizard before it lands on
+                        the encounter.
+                    </div>
+
+                    <div class="o_row mb-3">
+                        <button name="action_ai_draft_report" type="object"
+                                string="Draft Report" icon="fa-magic"
+                                class="btn-primary"
+                                help="Take your seed notes below and expand
+                                      them with AI into a full discharge
+                                      report draft."/>
+                    </div>
+
+                    <separator string="Clinical Summary"/>
+                    <field name="history_present_illness"
+                           nolabel="1"
+                           placeholder="e.g. Sore throat, fever, ear pain since yesterday. No respiratory distress on exam."/>
+
+                    <separator string="Therapies Administered"/>
+                    <field name="therapies_administered"
+                           nolabel="1"
+                           placeholder="e.g. IV paracetamol, IV ceftriaxone 1g, IV dexamethasone, normal saline."/>
+
+                    <separator string="Medications Prescribed upon Discharge"/>
+                    <field name="discharge_medication_notes"
+                           nolabel="1"
+                           placeholder="e.g. 5-day course of Klacid XL, Doliprane, ear drops."/>
+
+                    <separator string="Medical Recommendation"/>
+                    <field name="plan"
+                           nolabel="1"
+                           placeholder="e.g. Rest, hydration, avoid cold drinks, return if symptoms worsen."/>
+
+                    <separator string="Condition at Discharge"/>
+                    <field name="discharge_condition"
+                           nolabel="1"
+                           placeholder="e.g. Stable, fit to fly, symptoms improving."/>
+
+                    <separator string="Conclusion"/>
+                    <field name="discharge_conclusion"
+                           nolabel="1"
+                           placeholder="e.g. Fit to travel."/>
+                </page>
             </xpath>
         </field>
     </record>

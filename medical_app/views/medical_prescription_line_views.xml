@@ -13,7 +13,6 @@
                 <field name="sequence" widget="handle"/>
                 <field name="product_name"/>
                 <field name="generic_name" optional="show"/>
-                <field name="dose"/>
                 <field name="frequency"/>
                 <field name="frequency_other"
                        invisible="frequency != 'other'"
@@ -63,7 +62,6 @@
                             <field name="generic_name"/>
                         </group>
                         <group>
-                            <field name="dose"/>
                             <field name="frequency"/>
                             <field name="frequency_other"
                                    invisible="frequency != 'other'"/>

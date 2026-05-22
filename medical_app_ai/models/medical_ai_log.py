@@ -21,6 +21,7 @@ class MedicalAILog(models.Model):
         ('history_summary', 'Patient Summary'),
         ('safety_check', 'Safety Check'),
         ('id_ocr', 'ID Document OCR'),
+        ('encounter_ocr', 'Encounter Document OCR'),
         # Kept so old log rows from before the SOAP feature was removed
         # still display a label instead of a blank cell.
         ('soap_draft', 'SOAP Note Draft (legacy)'),

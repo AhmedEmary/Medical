@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from odoo import _, fields, models
-from odoo.tools import plaintext2html
 
 
 class MedicalAISuggestion(models.TransientModel):
@@ -24,19 +23,20 @@ class MedicalAISuggestion(models.TransientModel):
     log_id = fields.Many2one('medical.ai.log', string='AI Log', readonly=True)
 
     # Report draft — the six free-text sections that the PDF report prints.
-    # All editable so the doctor can correct the AI before applying.
-    report_history_present_illness = fields.Text(
-        string='Clinical Summary')
-    report_therapies_administered = fields.Text(
-        string='Therapies Administered')
-    report_discharge_medication_notes = fields.Text(
-        string='Medications Prescribed upon Discharge')
-    report_plan = fields.Text(
-        string='Medical Recommendation')
-    report_discharge_condition = fields.Text(
-        string='Condition at Discharge')
-    report_discharge_conclusion = fields.Text(
-        string='Conclusion')
+    # Html (not Text) so the AI's <p>/<ul>/<strong> formatting renders and
+    # the doctor can edit it with the rich-text widget before applying.
+    report_history_present_illness = fields.Html(
+        string='Clinical Summary', sanitize=True)
+    report_therapies_administered = fields.Html(
+        string='Therapies Administered', sanitize=True)
+    report_discharge_medication_notes = fields.Html(
+        string='Medications Prescribed upon Discharge', sanitize=True)
+    report_plan = fields.Html(
+        string='Medical Recommendation', sanitize=True)
+    report_discharge_condition = fields.Html(
+        string='Condition at Discharge', sanitize=True)
+    report_discharge_conclusion = fields.Html(
+        string='Conclusion', sanitize=True)
 
     # Diagnosis suggestion.
     suggested_diagnosis_ids = fields.Many2many(
@@ -67,21 +67,20 @@ class MedicalAISuggestion(models.TransientModel):
             self.log_id.sudo().applied = True
 
     def action_apply_report(self):
-        """Write the (doctor-reviewed) report draft onto the encounter."""
+        """Write the (doctor-reviewed) report draft onto the encounter.
+
+        Fields are already HTML (sanitized by Odoo on write), so we copy
+        them straight to the encounter without any conversion.
+        """
         self.ensure_one()
         self.encounter_id.write({
-            'history_present_illness':
-                plaintext2html(self.report_history_present_illness or ''),
-            'therapies_administered':
-                plaintext2html(self.report_therapies_administered or ''),
+            'history_present_illness': self.report_history_present_illness or False,
+            'therapies_administered': self.report_therapies_administered or False,
             'discharge_medication_notes':
-                plaintext2html(self.report_discharge_medication_notes or ''),
-            'plan':
-                plaintext2html(self.report_plan or ''),
-            'discharge_condition':
-                plaintext2html(self.report_discharge_condition or ''),
-            'discharge_conclusion':
-                plaintext2html(self.report_discharge_conclusion or ''),
+                self.report_discharge_medication_notes or False,
+            'plan': self.report_plan or False,
+            'discharge_condition': self.report_discharge_condition or False,
+            'discharge_conclusion': self.report_discharge_conclusion or False,
         })
         self._mark_applied()
         return {'type': 'ir.actions.act_window_close'}

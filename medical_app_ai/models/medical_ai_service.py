@@ -256,18 +256,29 @@ class MedicalAIService(models.AbstractModel):
 
     @api.model
     def _call_vision(self, feature, system_prompt, user_prompt, image_b64,
-                     mime_type='image/jpeg', encounter=None, patient=None,
+                     mime_type='image/jpeg', extra_images=None,
+                     encounter=None, patient=None,
                      max_tokens=MAX_TOKENS):
         """Run a vision request (image + text) through the configured provider.
 
         ``image_b64`` is a base64-encoded image (the format Odoo stores
-        ``Image`` / ``Binary`` fields in). Returns ``(text, log)`` like
-        :meth:`_call`.
+        ``Image`` / ``Binary`` fields in). ``extra_images`` is an optional
+        list of ``{'data': <b64>, 'mime_type': <str>}`` dicts for multi-page
+        documents — they are sent together with the primary image in a
+        single request. Returns ``(text, log)`` like :meth:`_call`.
         """
         provider = self._param_provider()
         model = self._param_model(provider)
         if encounter and not patient:
             patient = encounter.patient_id
+
+        images = [{'data': image_b64, 'mime_type': mime_type}]
+        for extra in extra_images or []:
+            if extra and extra.get('data'):
+                images.append({
+                    'data': extra['data'],
+                    'mime_type': extra.get('mime_type') or 'image/jpeg',
+                })
 
         log = self.env['medical.ai.log'].sudo().create({
             'feature': feature,
@@ -283,8 +294,7 @@ class MedicalAIService(models.AbstractModel):
         try:
             handler = getattr(self, '_call_vision_%s' % provider)
             text, input_tokens, output_tokens = handler(
-                model, system_prompt, user_prompt,
-                image_b64, mime_type, max_tokens)
+                model, system_prompt, user_prompt, images, max_tokens)
         except UserError as exc:
             log.write({'error_message': str(exc)})
             raise
@@ -306,13 +316,25 @@ class MedicalAIService(models.AbstractModel):
 
     @api.model
     def _call_vision_anthropic(self, model, system_prompt, user_prompt,
-                               image_b64, mime_type, max_tokens):
+                               images, max_tokens):
         if anthropic is None:
             raise UserError(_(
                 "The 'anthropic' Python package is not installed on the "
                 "server.\n\nInstall it with:  pip install -U anthropic"))
         client = anthropic.Anthropic(
             api_key=self._get_api_key('anthropic'), timeout=API_TIMEOUT)
+        content = [
+            {
+                'type': 'image',
+                'source': {
+                    'type': 'base64',
+                    'media_type': img['mime_type'],
+                    'data': img['data'],
+                },
+            }
+            for img in images
+        ]
+        content.append({'type': 'text', 'text': user_prompt})
         response = client.messages.create(
             model=model,
             max_tokens=max_tokens,
@@ -321,20 +343,7 @@ class MedicalAIService(models.AbstractModel):
                 'text': system_prompt,
                 'cache_control': {'type': 'ephemeral'},
             }],
-            messages=[{
-                'role': 'user',
-                'content': [
-                    {
-                        'type': 'image',
-                        'source': {
-                            'type': 'base64',
-                            'media_type': mime_type,
-                            'data': image_b64,
-                        },
-                    },
-                    {'type': 'text', 'text': user_prompt},
-                ],
-            }],
+            messages=[{'role': 'user', 'content': content}],
         )
         text = ''.join(
             block.text for block in response.content
@@ -346,17 +355,22 @@ class MedicalAIService(models.AbstractModel):
 
     @api.model
     def _call_vision_google(self, model, system_prompt, user_prompt,
-                            image_b64, mime_type, max_tokens):
+                            images, max_tokens):
         if google_genai is None:
             raise UserError(_(
                 "The 'google-genai' Python package is not installed on the "
                 "server.\n\nInstall it with:  pip install -U google-genai"))
         client = google_genai.Client(api_key=self._get_api_key('google'))
-        image_part = google_types.Part.from_bytes(
-            data=base64.b64decode(image_b64), mime_type=mime_type)
+        contents = [
+            google_types.Part.from_bytes(
+                data=base64.b64decode(img['data']),
+                mime_type=img['mime_type'])
+            for img in images
+        ]
+        contents.append(user_prompt)
         response = client.models.generate_content(
             model=model,
-            contents=[image_part, user_prompt],
+            contents=contents,
             config=google_types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 max_output_tokens=max_tokens,
@@ -371,23 +385,28 @@ class MedicalAIService(models.AbstractModel):
 
     @api.model
     def _call_vision_openai(self, model, system_prompt, user_prompt,
-                            image_b64, mime_type, max_tokens):
+                            images, max_tokens):
         if openai is None:
             raise UserError(_(
                 "The 'openai' Python package is not installed on the "
                 "server.\n\nInstall it with:  pip install -U openai"))
         client = openai.OpenAI(
             api_key=self._get_api_key('openai'), timeout=API_TIMEOUT)
-        data_url = 'data:%s;base64,%s' % (mime_type, image_b64)
+        user_content = [{'type': 'text', 'text': user_prompt}]
+        for img in images:
+            user_content.append({
+                'type': 'image_url',
+                'image_url': {
+                    'url': 'data:%s;base64,%s' % (
+                        img['mime_type'], img['data']),
+                },
+            })
         response = client.chat.completions.create(
             model=model,
             max_completion_tokens=max_tokens,
             messages=[
                 {'role': 'system', 'content': system_prompt},
-                {'role': 'user', 'content': [
-                    {'type': 'text', 'text': user_prompt},
-                    {'type': 'image_url', 'image_url': {'url': data_url}},
-                ]},
+                {'role': 'user', 'content': user_content},
             ],
         )
         usage = response.usage
@@ -557,7 +576,17 @@ class MedicalAIService(models.AbstractModel):
         """Return ``(dict, log)`` — drafted free-text sections for the PDF
         medical report.
 
-        Fills the six fields the printed report renders:
+        The doctor's terse notes (whatever they typed into each of the six
+        report fields on the encounter) are passed in as **seed material**;
+        the AI expands them into the verbose, formal style of a hotel-medical
+        discharge report — full paragraphs, bullet lists where appropriate,
+        bolded key clinical terms.
+
+        Output is HTML (using only ``<p>``, ``<ul>``, ``<li>``, ``<strong>``,
+        ``<br/>``) so the wizard can render and edit it in the rich-text
+        editor and write it straight to the encounter's Html fields.
+
+        Fields filled:
 
         * ``history_present_illness`` — "Clinical Summary"
         * ``therapies_administered`` — "Therapies Administered"
@@ -565,42 +594,97 @@ class MedicalAIService(models.AbstractModel):
         * ``plan`` — "Medical Recommendation"
         * ``discharge_condition`` — "Condition at Discharge"
         * ``discharge_conclusion`` — "Conclusion"
-
-        Sections the model cannot support from the data return an empty
-        string — the doctor fills them in by hand.
         """
         system = SYSTEM_BASE + """
 
-TASK: Draft the free-text sections of a medical encounter report from the
-data below. The report is a formal discharge document for the patient and
-referring doctors — write in a professional clinical register, in full
-sentences, third person, past tense for what was done and present tense
-for ongoing instructions.
+TASK: Draft the six free-text sections of a formal hotel-medical discharge
+report. The doctor has typed minimal seed notes into each section on the
+encounter (see "DOCTOR NOTES" in the input). Your job is to:
 
-Respond with ONLY a JSON object (no other text) with exactly these keys,
-each a plain-text string (no markdown, no headings, no bullet glyphs):
-- "history_present_illness": Clinical Summary. 2-4 sentences describing the
-  chief complaint, onset, relevant exam/vital findings, and how the picture
-  evolved during the visit.
-- "therapies_administered": What was given to the patient during the visit
-  (IV fluids, medications, procedures). One short paragraph or short
-  sentences. If nothing was administered, return "".
-- "discharge_medication_notes": A short narrative of medications prescribed
-  on discharge. Refer to the prescription items in the data; do not list
-  doses the structured prescription will already render. If no prescription
-  data is present, return "".
-- "plan": Medical Recommendation. Follow-up advice, lifestyle guidance,
-  warning signs that should prompt return, referrals. 2-4 sentences.
-- "discharge_condition": One or two sentences on the patient's clinical
-  status at discharge (stable / improved / fit-to-fly etc.) supported by
-  the documented vitals and assessment.
-- "discharge_conclusion": One closing sentence summarising the encounter.
+1. Expand each seed note into the verbose, professional register expected
+   in a hotel-medical discharge document for the patient, the referring
+   doctor, and potentially an airline / insurer.
+2. Stay strictly within what the seed notes and the structured encounter
+   data actually support. NEVER invent symptoms, findings, medications,
+   diagnoses or measurements that aren't in the data.
+3. If a seed note is blank, derive the section from the structured data
+   (vitals, diagnoses, prescriptions, allergies, history) if possible;
+   otherwise return "" for that section.
 
-Where the data is missing for a section, return "" for that section rather
-than inventing content. Do not include section headings, the patient's name,
-or doctor signature — those are rendered by the template."""
-        user = "Draft the report sections for this encounter.\n\n" \
+STYLE RULES (match the reference report closely):
+- Third person, formal clinical register. Past tense for what was done,
+  present tense for ongoing instructions.
+- Use HTML and ONLY these tags: <p>, <ul>, <li>, <strong>, <br/>.
+- Bold key clinical terms with <strong> (e.g. <strong>acute pharyngitis</strong>).
+- Multiple short paragraphs for narrative sections, one fact per paragraph.
+- Use bulleted <ul><li>…</li></ul> lists for itemised therapies,
+  recommendations, and discharge medications.
+- Do NOT include section headings, the patient's name, the doctor's name,
+  the date, or the signature — those are rendered by the template.
+
+SECTION-BY-SECTION FORMAT (mirror the reference):
+
+* "history_present_illness" (Clinical Summary): 3-5 short paragraphs.
+  - Para 1: open with the date and a one-sentence presentation of the
+    chief complaint and key symptoms (bold the symptoms).
+  - Para 2: explicitly state what dangerous findings were absent
+    ("There was no evidence of airway compromise, …").
+  - Para 3: the clinical evaluation performed and the conclusion
+    (bold the working diagnosis).
+  - Para 4: the immediate management initiated.
+  - Para 5: the follow-up arrangement and the warning signs that
+    should prompt return.
+
+* "therapies_administered": one short intro line ("During the visit, the
+  patient received:") followed by a <ul> listing each therapy as a
+  separate <li>. Each item is a full sentence with the route and reason
+  ("Intravenous Ceftriaxone 1 g was administered following a negative
+  sensitivity test."). Return "" if nothing was administered.
+
+* "discharge_medication_notes": one opening paragraph in the formal
+  "Following a comprehensive clinical assessment, … the patient was
+  assessed as <strong>clinically stable</strong>. Accordingly,
+  <strong>appropriate medical treatment was prescribed</strong>, as
+  outlined below, based on the clinical evaluation." Then a paragraph
+  "The prescribed treatment plan includes:" followed by a <ul> of
+  <li><strong>Drug</strong>: dose, frequency.</li> items. Close with a
+  single-paragraph line about duration if known. Return "" if there are
+  no discharge medications.
+
+* "plan" (Medical Recommendation): a <ul> of 4-7 <li> items, each a
+  full formal sentence ("The patient has been strongly advised to …",
+  "Strict adherence to the prescribed treatment regimen is essential …",
+  "Immediate medical re-evaluation is advised in case of …"). Cover:
+  rest/avoidance, adherence, hydration, irritants to avoid, warning
+  signs, follow-up. Skip items not supported by the data.
+
+* "discharge_condition": 2-3 short paragraphs.
+  - Para 1: clinical status anchored on the documented vitals/assessment
+    (bold "stable", "improved", "fit to fly" where applicable).
+  - Para 2: explicit fit-to-fly framing if the patient was assessed for
+    travel, otherwise omit; reference the absence of red flags.
+  - Para 3: travel/post-discharge instructions.
+
+* "discharge_conclusion": exactly one closing sentence summarising the
+  patient's overall fitness.
+
+Respond with ONLY a JSON object (no other text, no markdown code fences)
+with exactly these six keys, each containing an HTML string as described
+above (or "" if no data supports it):
+{
+  "history_present_illness": "...",
+  "therapies_administered": "...",
+  "discharge_medication_notes": "...",
+  "plan": "...",
+  "discharge_condition": "...",
+  "discharge_conclusion": "..."
+}"""
+        user = (
+            "Draft the report sections for this encounter.\n\n"
             + self._encounter_context(encounter)
+            + "\n\n"
+            + self._doctor_notes_block(encounter)
+        )
         text, log = self._call(
             'report_draft', system, user, encounter=encounter)
         data = self._parse_json(text)
@@ -614,6 +698,39 @@ or doctor signature — those are rendered by the template."""
             'discharge_conclusion': data.get('discharge_conclusion') or '',
         }
         return result, log
+
+    @api.model
+    def _doctor_notes_block(self, encounter):
+        """Pass the doctor's terse per-section notes to the AI as seed text."""
+        sections = [
+            ('Clinical Summary', 'history_present_illness'),
+            ('Therapies Administered', 'therapies_administered'),
+            ('Discharge Medications', 'discharge_medication_notes'),
+            ('Medical Recommendation', 'plan'),
+            ('Condition at Discharge', 'discharge_condition'),
+            ('Conclusion', 'discharge_conclusion'),
+        ]
+        lines = ["DOCTOR NOTES (seed text per section — expand these)"]
+        for label, field in sections:
+            value = html2plaintext(encounter[field] or '').strip()
+            lines.append("- %s: %s" % (label, value or '(blank)'))
+        # Structured prescription items, so the discharge_medication_notes
+        # narrative can name and dose the drugs accurately.
+        if encounter.prescription_line_ids:
+            lines.append("")
+            lines.append("DISCHARGE PRESCRIPTION ITEMS")
+            for rx in encounter.prescription_line_ids:
+                parts = [rx.product_name or '']
+                if rx._frequency_label():
+                    parts.append(rx._frequency_label())
+                if rx._route_label():
+                    parts.append("(%s)" % rx._route_label())
+                if rx.duration_days:
+                    parts.append("for %s days" % rx.duration_days)
+                if rx.instructions:
+                    parts.append("- %s" % rx.instructions)
+                lines.append("- " + " ".join(p for p in parts if p).strip())
+        return "\n".join(lines)
 
     @api.model
     def suggest_diagnoses(self, encounter):

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_encounter_scan_wizard_form" model="ir.ui.view">
+        <field name="name">medical.encounter.scan.wizard.form</field>
+        <field name="model">medical.encounter.scan.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Scan Encounter Documents">
+                <field name="state" invisible="1"/>
+                <field name="encounter_id" invisible="1"/>
+                <field name="patient_id" invisible="1"/>
+
+                <!-- Step 1: upload one or more images -->
+                <group invisible="state != 'upload'">
+                    <div class="alert alert-info" role="alert" colspan="2">
+                        <strong>Scan encounter documents.</strong>
+                        Upload one or more images — typically the
+                        handwritten encounter sheet AND the prescription
+                        paper. The AI reads them together and pre-fills
+                        the encounter fields, vital signs and prescription
+                        lines. You review and correct everything before it
+                        lands on the encounter.
+                    </div>
+                    <field name="attachment_ids"
+                           widget="many2many_binary"
+                           nolabel="1" colspan="2"/>
+                </group>
+
+                <!-- Step 2: review extracted data -->
+                <group invisible="state != 'review'">
+                    <div class="alert alert-warning" role="alert" colspan="2">
+                        <strong>Review before applying.</strong>
+                        Handwriting OCR is not perfect — verify each field,
+                        especially drug names, doses inside drug names, and
+                        vital-sign numbers. Nothing is written to the
+                        encounter until you click Apply.
+                    </div>
+
+                    <separator string="Presenting"/>
+                    <field name="chief_complaint"
+                           placeholder="Chief complaint..."/>
+                    <field name="diagnosis_text"
+                           placeholder="Diagnosis as written..."/>
+
+                    <separator string="History of Present Illness"/>
+                    <field name="history_present_illness" nolabel="1"/>
+
+                    <separator string="Physical Examination"/>
+                    <field name="physical_exam" nolabel="1"/>
+
+                    <separator string="Therapies Administered (during visit)"/>
+                    <field name="therapies_administered" nolabel="1"/>
+
+                    <separator string="Assessment"/>
+                    <field name="assessment" nolabel="1"/>
+
+                    <separator string="Plan / Instructions"/>
+                    <field name="plan" nolabel="1"/>
+
+                    <separator string="Vital Signs"/>
+                    <group>
+                        <group>
+                            <label for="bp_systolic" string="Blood Pressure"/>
+                            <div class="o_row">
+                                <field name="bp_systolic" nolabel="1"
+                                       class="oe_inline"/> /
+                                <field name="bp_diastolic" nolabel="1"
+                                       class="oe_inline"/>
+                            </div>
+                            <field name="heart_rate"/>
+                            <field name="respiratory_rate"/>
+                            <field name="temperature"/>
+                        </group>
+                        <group>
+                            <field name="spo2"/>
+                            <field name="glucose"/>
+                            <field name="weight"/>
+                            <field name="height"/>
+                        </group>
+                    </group>
+
+                    <separator string="Prescription"/>
+                    <field name="prescription_line_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="product_name"/>
+                            <field name="generic_name" optional="hide"/>
+                            <field name="frequency"/>
+                            <field name="frequency_other"
+                                   invisible="frequency != 'other'"
+                                   optional="hide"/>
+                            <field name="route"/>
+                            <field name="duration_days" string="Days"
+                                   optional="show"/>
+                            <field name="quantity" optional="hide"/>
+                            <field name="instructions" optional="show"/>
+                        </list>
+                    </field>
+
+                    <separator string="Raw AI Output"/>
+                    <field name="raw_text" nolabel="1" readonly="1"
+                           widget="text"/>
+                </group>
+
+                <footer>
+                    <button name="action_scan" type="object"
+                            string="Scan" class="btn-primary"
+                            invisible="state != 'upload'"/>
+                    <button name="action_apply" type="object"
+                            string="Apply to Encounter" class="btn-primary"
+                            invisible="state != 'review'"/>
+                    <button name="action_back_to_upload" type="object"
+                            string="Add / Replace Images" class="btn-secondary"
+                            invisible="state != 'review'"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

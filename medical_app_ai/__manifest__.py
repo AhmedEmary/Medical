@@ -45,11 +45,15 @@ provider, which always works as long as one of the SDKs above is set up.
     'license': 'LGPL-3',
     'depends': [
         'medical_app',
+        # The AI Report Draft tab and the report-drafting prompt reference
+        # the discharge / therapies fields defined in medical_app_reports.
+        'medical_app_reports',
     ],
     'data': [
         'security/ir.model.access.csv',
         'wizard/medical_ai_suggestion_views.xml',
         'wizard/medical_id_scan_views.xml',
+        'wizard/medical_encounter_scan_views.xml',
         'views/medical_ai_config_views.xml',
         'views/medical_ai_log_views.xml',
         'views/medical_encounter_views.xml',

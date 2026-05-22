@@ -17,22 +17,34 @@
                 </div>
 
                 <!-- Report draft: the six free-text sections that go on
-                     the printed medical report. Editable so the doctor
-                     corrects the AI before applying. -->
-                <group invisible="mode != 'report'">
+                     the printed medical report. Rendered in the same order
+                     and with the same headings as the PDF, so the doctor
+                     sees what each section will look like before applying. -->
+                <div invisible="mode != 'report'">
+                    <separator string="Clinical Summary"/>
                     <field name="report_history_present_illness"
-                           placeholder="Clinical summary of the encounter..."/>
+                           nolabel="1"/>
+
+                    <separator string="Therapies Administered"/>
                     <field name="report_therapies_administered"
-                           placeholder="Therapies administered during the visit..."/>
+                           nolabel="1"/>
+
+                    <separator string="Medications Prescribed upon Discharge"/>
                     <field name="report_discharge_medication_notes"
-                           placeholder="Medications prescribed upon discharge..."/>
+                           nolabel="1"/>
+
+                    <separator string="Medical Recommendation"/>
                     <field name="report_plan"
-                           placeholder="Medical recommendation / follow-up..."/>
+                           nolabel="1"/>
+
+                    <separator string="Condition at Discharge"/>
                     <field name="report_discharge_condition"
-                           placeholder="Patient's condition at discharge..."/>
+                           nolabel="1"/>
+
+                    <separator string="Conclusion"/>
                     <field name="report_discharge_conclusion"
-                           placeholder="Closing statement..."/>
-                </group>
+                           nolabel="1"/>
+                </div>
 
                 <!-- Diagnosis suggestions -->
                 <group invisible="mode != 'diagnosis'">
