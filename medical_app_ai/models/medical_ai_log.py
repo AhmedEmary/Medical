@@ -16,11 +16,14 @@ class MedicalAILog(models.Model):
     _order = 'create_date desc'
 
     feature = fields.Selection([
-        ('soap_draft', 'SOAP Note Draft'),
+        ('report_draft', 'Report Draft'),
         ('diagnosis_suggest', 'Diagnosis Suggestion'),
         ('history_summary', 'Patient Summary'),
         ('safety_check', 'Safety Check'),
         ('id_ocr', 'ID Document OCR'),
+        # Kept so old log rows from before the SOAP feature was removed
+        # still display a label instead of a blank cell.
+        ('soap_draft', 'SOAP Note Draft (legacy)'),
     ], string='Feature', required=True, index=True, readonly=True)
     provider = fields.Selection(
         PROVIDER_SELECTION, string='Provider', index=True, readonly=True)

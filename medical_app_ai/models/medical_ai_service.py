@@ -553,28 +553,65 @@ class MedicalAIService(models.AbstractModel):
     # Feature methods
     # ============================================================
     @api.model
-    def draft_soap_note(self, encounter):
-        """Return ``(dict, log)`` — drafted SOAP sections as plain text."""
+    def draft_report(self, encounter):
+        """Return ``(dict, log)`` — drafted free-text sections for the PDF
+        medical report.
+
+        Fills the six fields the printed report renders:
+
+        * ``history_present_illness`` — "Clinical Summary"
+        * ``therapies_administered`` — "Therapies Administered"
+        * ``discharge_medication_notes`` — "Medications Prescribed upon Discharge"
+        * ``plan`` — "Medical Recommendation"
+        * ``discharge_condition`` — "Condition at Discharge"
+        * ``discharge_conclusion`` — "Conclusion"
+
+        Sections the model cannot support from the data return an empty
+        string — the doctor fills them in by hand.
+        """
         system = SYSTEM_BASE + """
 
-TASK: Draft a SOAP-style clinical note from the encounter data below.
+TASK: Draft the free-text sections of a medical encounter report from the
+data below. The report is a formal discharge document for the patient and
+referring doctors — write in a professional clinical register, in full
+sentences, third person, past tense for what was done and present tense
+for ongoing instructions.
+
 Respond with ONLY a JSON object (no other text) with exactly these keys,
-each a plain-text string:
-- "history": History of Present Illness (Subjective)
-- "exam": Physical Examination (Objective) — only findings supported by data
-- "assessment": Assessment — the likely clinical picture and reasoning
-- "plan": Plan — suggested investigations, treatment and follow-up
-Keep each section short. Where data is missing, write a brief placeholder
-for the clinician to complete rather than inventing content."""
-        user = "Draft a SOAP note for this encounter.\n\n" \
+each a plain-text string (no markdown, no headings, no bullet glyphs):
+- "history_present_illness": Clinical Summary. 2-4 sentences describing the
+  chief complaint, onset, relevant exam/vital findings, and how the picture
+  evolved during the visit.
+- "therapies_administered": What was given to the patient during the visit
+  (IV fluids, medications, procedures). One short paragraph or short
+  sentences. If nothing was administered, return "".
+- "discharge_medication_notes": A short narrative of medications prescribed
+  on discharge. Refer to the prescription items in the data; do not list
+  doses the structured prescription will already render. If no prescription
+  data is present, return "".
+- "plan": Medical Recommendation. Follow-up advice, lifestyle guidance,
+  warning signs that should prompt return, referrals. 2-4 sentences.
+- "discharge_condition": One or two sentences on the patient's clinical
+  status at discharge (stable / improved / fit-to-fly etc.) supported by
+  the documented vitals and assessment.
+- "discharge_conclusion": One closing sentence summarising the encounter.
+
+Where the data is missing for a section, return "" for that section rather
+than inventing content. Do not include section headings, the patient's name,
+or doctor signature — those are rendered by the template."""
+        user = "Draft the report sections for this encounter.\n\n" \
             + self._encounter_context(encounter)
-        text, log = self._call('soap_draft', system, user, encounter=encounter)
+        text, log = self._call(
+            'report_draft', system, user, encounter=encounter)
         data = self._parse_json(text)
         result = {
-            'history': data.get('history') or '',
-            'exam': data.get('exam') or '',
-            'assessment': data.get('assessment') or '',
+            'history_present_illness': data.get('history_present_illness') or '',
+            'therapies_administered': data.get('therapies_administered') or '',
+            'discharge_medication_notes':
+                data.get('discharge_medication_notes') or '',
             'plan': data.get('plan') or '',
+            'discharge_condition': data.get('discharge_condition') or '',
+            'discharge_conclusion': data.get('discharge_conclusion') or '',
         }
         return result, log
 

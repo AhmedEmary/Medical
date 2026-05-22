@@ -10,10 +10,13 @@
             <xpath expr="//page[@name='consultation']/group[1]"
                    position="before">
                 <div class="o_row mb-3" groups="medical_app.group_medical_doctor">
-                    <button name="action_ai_draft_soap" type="object"
-                            string="Draft SOAP" icon="fa-magic"
+                    <button name="action_ai_draft_report" type="object"
+                            string="Draft Report" icon="fa-magic"
                             class="btn-secondary"
-                            help="Draft the SOAP note from this encounter's data"/>
+                            help="Draft the six free-text sections of the
+                                  medical report (clinical summary, therapies,
+                                  discharge meds, recommendation, condition,
+                                  conclusion) from this encounter's data"/>
                     <button name="action_ai_suggest_diagnoses" type="object"
                             string="Suggest Diagnoses" icon="fa-magic"
                             class="btn-secondary"

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_id_scan_wizard_form" model="ir.ui.view">
+        <field name="name">medical.id.scan.wizard.form</field>
+        <field name="model">medical.id.scan.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Scan ID Document">
+                <field name="state" invisible="1"/>
+                <field name="patient_id" invisible="1"/>
+                <field name="partner_id" invisible="1"/>
+
+                <!-- Step 1: upload -->
+                <group invisible="state != 'upload'">
+                    <div class="alert alert-info" role="alert" colspan="2">
+                        <strong>Scan an ID document.</strong>
+                        Upload a clear photo or scan of the passport (with the
+                        bottom MRZ lines visible) or national ID card. The
+                        extracted data is shown for review before anything is
+                        saved.
+                        <span invisible="partner_id or patient_id">
+                            A new contact and patient record will be created
+                            from the scanned data.
+                        </span>
+                    </div>
+                    <group>
+                        <field name="doc_type"/>
+                        <field name="extraction_mode"/>
+                    </group>
+                    <group>
+                        <field name="image" widget="image"
+                               filename="image_filename"
+                               options="{'size': [400, 280]}"/>
+                        <field name="image_filename" invisible="1"/>
+                    </group>
+                </group>
+
+                <!-- Step 2: review -->
+                <group invisible="state != 'review'">
+                    <div class="alert alert-warning" role="alert" colspan="2">
+                        <strong>Review before applying.</strong>
+                        OCR can mis-read characters. Check every field — especially
+                        the document number and date of birth — and correct anything
+                        that looks wrong. Nothing is written until you click Apply.
+                        <span invisible="not source">
+                            (Source:
+                            <field name="source" readonly="1" nolabel="1"/>)
+                        </span>
+                    </div>
+                    <group string="Identity">
+                        <field name="full_name"/>
+                        <field name="given_names"/>
+                        <field name="surname"/>
+                        <field name="sex"/>
+                        <field name="date_of_birth"/>
+                        <field name="place_of_birth"/>
+                    </group>
+                    <group string="Document">
+                        <field name="doc_type"/>
+                        <field name="document_number"/>
+                        <field name="nationality"/>
+                        <field name="country_id"/>
+                        <field name="issue_date"/>
+                        <field name="expiry_date"/>
+                    </group>
+                    <group string="Raw OCR" col="1">
+                        <field name="raw_text" nolabel="1"
+                               widget="text" readonly="1"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <!-- Step 1 buttons -->
+                    <button name="action_scan" type="object"
+                            string="Scan" class="btn-primary"
+                            invisible="state != 'upload'"/>
+
+                    <!-- Step 2 buttons -->
+                    <button name="action_apply" type="object"
+                            string="Apply" class="btn-primary"
+                            invisible="state != 'review'"/>
+                    <button name="action_back_to_upload" type="object"
+                            string="Try Another Image" class="btn-secondary"
+                            invisible="state != 'review'"/>
+
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Standalone launcher (creates a fresh contact from the scan) -->
+    <record id="action_medical_id_scan_wizard" model="ir.actions.act_window">
+        <field name="name">Scan ID Document</field>
+        <field name="res_model">medical.id.scan.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

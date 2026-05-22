@@ -16,12 +16,22 @@
                     responsible for the clinical record.
                 </div>
 
-                <!-- SOAP draft: editable text the doctor can correct -->
-                <group invisible="mode != 'soap'">
-                    <field name="soap_history"/>
-                    <field name="soap_exam"/>
-                    <field name="soap_assessment"/>
-                    <field name="soap_plan"/>
+                <!-- Report draft: the six free-text sections that go on
+                     the printed medical report. Editable so the doctor
+                     corrects the AI before applying. -->
+                <group invisible="mode != 'report'">
+                    <field name="report_history_present_illness"
+                           placeholder="Clinical summary of the encounter..."/>
+                    <field name="report_therapies_administered"
+                           placeholder="Therapies administered during the visit..."/>
+                    <field name="report_discharge_medication_notes"
+                           placeholder="Medications prescribed upon discharge..."/>
+                    <field name="report_plan"
+                           placeholder="Medical recommendation / follow-up..."/>
+                    <field name="report_discharge_condition"
+                           placeholder="Patient's condition at discharge..."/>
+                    <field name="report_discharge_conclusion"
+                           placeholder="Closing statement..."/>
                 </group>
 
                 <!-- Diagnosis suggestions -->
@@ -31,14 +41,14 @@
                 </group>
 
                 <!-- Free-text output: rationale / summary / safety findings -->
-                <group invisible="mode == 'soap'">
+                <group invisible="mode == 'report'">
                     <field name="result_text" nolabel="1" readonly="1"/>
                 </group>
 
                 <footer>
-                    <button name="action_apply_soap" type="object"
+                    <button name="action_apply_report" type="object"
                             string="Apply to Encounter" class="btn-primary"
-                            invisible="mode != 'soap'"/>
+                            invisible="mode != 'report'"/>
                     <button name="action_apply_diagnoses" type="object"
                             string="Add Diagnoses to Encounter"
                             class="btn-primary"

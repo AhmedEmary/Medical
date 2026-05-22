@@ -14,7 +14,7 @@ class MedicalAISuggestion(models.TransientModel):
     _description = 'AI Suggestion Review'
 
     mode = fields.Selection([
-        ('soap', 'SOAP Draft'),
+        ('report', 'Report Draft'),
         ('diagnosis', 'Diagnosis Suggestion'),
         ('summary', 'Patient Summary'),
         ('safety', 'Safety Check'),
@@ -23,11 +23,20 @@ class MedicalAISuggestion(models.TransientModel):
         'medical.encounter', string='Encounter', required=True, readonly=True)
     log_id = fields.Many2one('medical.ai.log', string='AI Log', readonly=True)
 
-    # SOAP draft — editable plain text the doctor can correct before applying.
-    soap_history = fields.Text(string='History of Present Illness (S)')
-    soap_exam = fields.Text(string='Physical Examination (O)')
-    soap_assessment = fields.Text(string='Assessment (A)')
-    soap_plan = fields.Text(string='Plan (P)')
+    # Report draft — the six free-text sections that the PDF report prints.
+    # All editable so the doctor can correct the AI before applying.
+    report_history_present_illness = fields.Text(
+        string='Clinical Summary')
+    report_therapies_administered = fields.Text(
+        string='Therapies Administered')
+    report_discharge_medication_notes = fields.Text(
+        string='Medications Prescribed upon Discharge')
+    report_plan = fields.Text(
+        string='Medical Recommendation')
+    report_discharge_condition = fields.Text(
+        string='Condition at Discharge')
+    report_discharge_conclusion = fields.Text(
+        string='Conclusion')
 
     # Diagnosis suggestion.
     suggested_diagnosis_ids = fields.Many2many(
@@ -39,7 +48,7 @@ class MedicalAISuggestion(models.TransientModel):
     def _action_open(self):
         self.ensure_one()
         titles = {
-            'soap': _('AI SOAP Draft'),
+            'report': _('AI Report Draft'),
             'diagnosis': _('AI Diagnosis Suggestions'),
             'summary': _('AI Patient Summary'),
             'safety': _('AI Safety Check'),
@@ -57,14 +66,22 @@ class MedicalAISuggestion(models.TransientModel):
         if self.log_id:
             self.log_id.sudo().applied = True
 
-    def action_apply_soap(self):
-        """Write the (doctor-reviewed) SOAP draft onto the encounter."""
+    def action_apply_report(self):
+        """Write the (doctor-reviewed) report draft onto the encounter."""
         self.ensure_one()
         self.encounter_id.write({
-            'history_present_illness': plaintext2html(self.soap_history or ''),
-            'physical_exam': plaintext2html(self.soap_exam or ''),
-            'assessment': plaintext2html(self.soap_assessment or ''),
-            'plan': plaintext2html(self.soap_plan or ''),
+            'history_present_illness':
+                plaintext2html(self.report_history_present_illness or ''),
+            'therapies_administered':
+                plaintext2html(self.report_therapies_administered or ''),
+            'discharge_medication_notes':
+                plaintext2html(self.report_discharge_medication_notes or ''),
+            'plan':
+                plaintext2html(self.report_plan or ''),
+            'discharge_condition':
+                plaintext2html(self.report_discharge_condition or ''),
+            'discharge_conclusion':
+                plaintext2html(self.report_discharge_conclusion or ''),
         })
         self._mark_applied()
         return {'type': 'ir.actions.act_window_close'}

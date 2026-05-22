@@ -10,17 +10,25 @@ class MedicalEncounter(models.Model):
     """
     _inherit = 'medical.encounter'
 
-    def action_ai_draft_soap(self):
+    def action_ai_draft_report(self):
+        """Draft the six free-text sections of the medical report.
+
+        Opens the suggestion wizard pre-filled with the AI output; nothing
+        is written to the encounter until the doctor clicks Apply.
+        """
         self.ensure_one()
-        data, log = self.env['medical.ai.service'].draft_soap_note(self)
+        data, log = self.env['medical.ai.service'].draft_report(self)
         wizard = self.env['medical.ai.suggestion'].create({
-            'mode': 'soap',
+            'mode': 'report',
             'encounter_id': self.id,
             'log_id': log.id,
-            'soap_history': data['history'],
-            'soap_exam': data['exam'],
-            'soap_assessment': data['assessment'],
-            'soap_plan': data['plan'],
+            'report_history_present_illness': data['history_present_illness'],
+            'report_therapies_administered': data['therapies_administered'],
+            'report_discharge_medication_notes':
+                data['discharge_medication_notes'],
+            'report_plan': data['plan'],
+            'report_discharge_condition': data['discharge_condition'],
+            'report_discharge_conclusion': data['discharge_conclusion'],
         })
         return wizard._action_open()
 
