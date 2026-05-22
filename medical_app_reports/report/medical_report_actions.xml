@@ -2,29 +2,6 @@
 <odoo>
 
     <!--
-        Paperformat sized to leave room for the custom hospital header
-        (logo + title + gold/black rules) and the custom footer (tax /
-        registry on the left, page counter on the right). Margins are in
-        millimetres; ``header_spacing`` reserves space at the top of every
-        page for the .header div.
-    -->
-    <record id="paperformat_medical_report" model="report.paperformat">
-        <field name="name">Medical Report A4</field>
-        <field name="default" eval="False"/>
-        <field name="format">A4</field>
-        <field name="page_height">0</field>
-        <field name="page_width">0</field>
-        <field name="orientation">Portrait</field>
-        <field name="margin_top">42</field>
-        <field name="margin_bottom">22</field>
-        <field name="margin_left">12</field>
-        <field name="margin_right">12</field>
-        <field name="header_line" eval="False"/>
-        <field name="header_spacing">32</field>
-        <field name="dpi">90</field>
-    </record>
-
-    <!--
         Report action.
 
         - ``binding_model_id`` + ``binding_type='report'`` add this report to
@@ -34,8 +11,6 @@
           ``medical_encounter_report.xml``.
         - ``print_report_name`` builds the downloaded file name from the
           encounter reference, e.g. ``Medical Report - ENC/2026/0001.pdf``.
-        - ``paperformat_id`` pins the layout to the medical paperformat so
-          the custom header / footer always have enough room.
     -->
     <record id="action_report_medical_encounter" model="ir.actions.report">
         <field name="name">Medical Report</field>
@@ -48,7 +23,6 @@
         </field>
         <field name="binding_model_id" ref="medical_app.model_medical_encounter"/>
         <field name="binding_type">report</field>
-        <field name="paperformat_id" ref="paperformat_medical_report"/>
     </record>
 
 </odoo>
