@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_ai_suggestion_form" model="ir.ui.view">
+        <field name="name">medical.ai.suggestion.form</field>
+        <field name="model">medical.ai.suggestion</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="mode" invisible="1"/>
+                <field name="encounter_id" invisible="1"/>
+                <field name="log_id" invisible="1"/>
+
+                <div class="alert alert-info" role="alert">
+                    <strong>AI-generated draft.</strong>
+                    Review and edit it before applying — you remain
+                    responsible for the clinical record.
+                </div>
+
+                <!-- SOAP draft: editable text the doctor can correct -->
+                <group invisible="mode != 'soap'">
+                    <field name="soap_history"/>
+                    <field name="soap_exam"/>
+                    <field name="soap_assessment"/>
+                    <field name="soap_plan"/>
+                </group>
+
+                <!-- Diagnosis suggestions -->
+                <group invisible="mode != 'diagnosis'">
+                    <field name="suggested_diagnosis_ids"
+                           widget="many2many_tags" nolabel="1"/>
+                </group>
+
+                <!-- Free-text output: rationale / summary / safety findings -->
+                <group invisible="mode == 'soap'">
+                    <field name="result_text" nolabel="1" readonly="1"/>
+                </group>
+
+                <footer>
+                    <button name="action_apply_soap" type="object"
+                            string="Apply to Encounter" class="btn-primary"
+                            invisible="mode != 'soap'"/>
+                    <button name="action_apply_diagnoses" type="object"
+                            string="Add Diagnoses to Encounter"
+                            class="btn-primary"
+                            invisible="mode != 'diagnosis'"/>
+                    <button string="Close" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

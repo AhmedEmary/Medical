@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Application category -->
+        <record id="module_category_medical" model="ir.module.category">
+            <field name="name">Medical</field>
+            <field name="description">Patient and clinical management</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Privilege (groups selector in user form) -->
+        <record id="privilege_medical" model="res.groups.privilege">
+            <field name="name">Medical</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="module_category_medical"/>
+        </record>
+
+        <!-- Groups (hierarchical) -->
+        <record id="group_medical_receptionist" model="res.groups">
+            <field name="name">Receptionist</field>
+            <field name="privilege_id" ref="privilege_medical"/>
+            <field name="comment">Register patients, schedule, handle non-clinical fields and invoicing. No access to clinical content.</field>
+        </record>
+
+        <record id="group_medical_nurse" model="res.groups">
+            <field name="name">Nurse</field>
+            <field name="privilege_id" ref="privilege_medical"/>
+            <field name="implied_ids" eval="[(4, ref('group_medical_receptionist'))]"/>
+            <field name="comment">Record vitals, view clinical data. Cannot finalize reports or prescriptions.</field>
+        </record>
+
+        <record id="group_medical_doctor" model="res.groups">
+            <field name="name">Doctor</field>
+            <field name="privilege_id" ref="privilege_medical"/>
+            <field name="implied_ids" eval="[(4, ref('group_medical_nurse'))]"/>
+            <field name="comment">Full clinical access. Can write and sign reports and prescriptions.</field>
+        </record>
+
+        <record id="group_medical_manager" model="res.groups">
+            <field name="name">Medical Administrator</field>
+            <field name="privilege_id" ref="privilege_medical"/>
+            <field name="implied_ids" eval="[(4, ref('group_medical_doctor'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_admin'))]"/>
+            <field name="comment">Configuration, master data, user management. Full access to all medical records.</field>
+        </record>
+
+        <!-- Record rules -->
+        <!-- By default doctors see their own patients' encounters; managers see all. -->
+        <record id="rule_encounter_doctor_own" model="ir.rule">
+            <field name="name">Encounter: Doctor sees own encounters</field>
+            <field name="model_id" ref="model_medical_encounter"/>
+            <field name="groups" eval="[(4, ref('group_medical_doctor'))]"/>
+            <field name="domain_force">['|', ('doctor_id', '=', user.id), ('doctor_id', '=', False)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_encounter_manager_all" model="ir.rule">
+            <field name="name">Encounter: Manager sees all</field>
+            <field name="model_id" ref="model_medical_encounter"/>
+            <field name="groups" eval="[(4, ref('group_medical_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+        <record id="rule_encounter_nurse_read" model="ir.rule">
+            <field name="name">Encounter: Nurse read-only on clinical</field>
+            <field name="model_id" ref="model_medical_encounter"/>
+            <field name="groups" eval="[(4, ref('group_medical_nurse'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- Patient: all medical staff see all patients (clinic context).
+             Override per deployment if multi-doctor isolation is required. -->
+        <record id="rule_patient_medical_staff" model="ir.rule">
+            <field name="name">Patient: visible to medical staff</field>
+            <field name="model_id" ref="model_medical_patient"/>
+            <field name="groups" eval="[(4, ref('group_medical_receptionist'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+        </record>
+
+    </data>
+</odoo>

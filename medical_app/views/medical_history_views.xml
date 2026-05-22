@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_history_form" model="ir.ui.view">
+        <field name="name">medical.history.form</field>
+        <field name="model">medical.history</field>
+        <field name="arch" type="xml">
+            <form string="Medical History Entry">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="history_type"/>
+                            <field name="condition"/>
+                            <field name="diagnosis_id"/>
+                        </group>
+                        <group>
+                            <field name="date_recorded"/>
+                            <field name="status"/>
+                            <field name="recorded_by"/>
+                        </group>
+                    </group>
+                    <group string="Surgical Details"
+                           invisible="history_type != 'surgical'">
+                        <field name="surgeon_name"/>
+                        <field name="hospital"/>
+                        <field name="complications"/>
+                    </group>
+                    <group string="Family History"
+                           invisible="history_type != 'family'">
+                        <field name="family_relation"/>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

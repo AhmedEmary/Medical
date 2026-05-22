@@ -1,0 +1,527 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Medical encounter report.
+
+        Uses Odoo's standard external layout for the page header / footer
+        so the company logo and contact block come from the company's
+        document layout settings. The body is heavily styled inline
+        (wkhtmltopdf renders inline styles reliably) around a single
+        medical-blue accent colour for a clean clinical look.
+    -->
+
+    <template id="report_medical_encounter">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="medical_app_reports.report_medical_encounter_document"
+                   t-lang="o.patient_id.partner_id.lang or 'en_US'"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_medical_encounter_document">
+        <t t-call="web.external_layout">
+            <t t-set="patient" t-value="o.patient_id"/>
+            <t t-set="primary" t-value="'#1f5e8a'"/>
+            <t t-set="primary_soft" t-value="'#e8f1f8'"/>
+            <t t-set="border_soft" t-value="'#e2e8f0'"/>
+            <t t-set="muted" t-value="'#64748b'"/>
+            <t t-set="card_bg" t-value="'#f8fafc'"/>
+            <t t-set="pal" t-value="o._urgency_palette()"/>
+
+            <div class="page" style="color:#1e293b; font-size:11pt;">
+
+                <!-- ============= Title strip ============= -->
+                <div t-attf-style="margin-bottom:26px; padding-bottom:14px;
+                                   border-bottom:3px solid {{primary}};
+                                   overflow:hidden;">
+                    <div style="float:right; text-align:right; padding-top:10px;">
+                        <div t-attf-style="color:{{muted}}; font-size:9pt;
+                                           text-transform:uppercase;
+                                           letter-spacing:1px;">Issued</div>
+                        <div t-attf-style="color:{{primary}}; font-size:11pt;
+                                           font-weight:600; margin-top:2px;">
+                            <span t-if="o.report_date"
+                                  t-field="o.report_date"
+                                  t-options='{"format": "dd MMM yyyy"}'/>
+                        </div>
+                    </div>
+                    <div>
+                        <div t-attf-style="color:{{primary}}; font-size:24pt;
+                                           font-weight:700; line-height:1;
+                                           letter-spacing:-0.5px;">
+                            Medical Report
+                        </div>
+                        <div t-if="o.reference"
+                             t-attf-style="color:{{muted}}; font-size:10pt;
+                                           margin-top:6px;">
+                            Reference
+                            <span t-attf-style="color:{{primary}}; font-weight:600;"
+                                  t-out="o.reference"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============= Personal Information ============= -->
+                <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                  margin:26px 0 12px 0; padding-bottom:6px;
+                                  border-bottom:1px solid {{border_soft}};
+                                  text-transform:uppercase; letter-spacing:1.4px;">
+                    Personal Information
+                </h3>
+                <div t-attf-style="background:{{card_bg}}; border:1px solid {{border_soft}};
+                                   border-radius:6px; padding:14px 20px;">
+                    <table t-attf-style="width:100%; margin-top:6px;
+                                         border:1px solid {{border_soft}};
+                                         border-collapse:collapse;">
+                        <tr>
+                            <td t-attf-style="padding:8px 16px; width:32%;
+                                              font-size:9pt; color:{{muted}};
+                                              text-transform:uppercase; letter-spacing:0.5px;
+                                              border:1px solid {{border_soft}};">
+                                Name
+                            </td>
+                            <td t-attf-style="padding:8px 16px; font-size:11pt;
+                                              font-weight:600;
+                                              border:1px solid {{border_soft}};">
+                                <span t-out="patient.name"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td t-attf-style="padding:8px 16px; font-size:9pt;
+                                              color:{{muted}}; text-transform:uppercase;
+                                              letter-spacing:0.5px;
+                                              border:1px solid {{border_soft}};">Gender</td>
+                            <td t-attf-style="padding:8px 16px;
+                                              border:1px solid {{border_soft}};">
+                                <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '')"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td t-attf-style="padding:8px 16px; font-size:9pt;
+                                              color:{{muted}}; text-transform:uppercase;
+                                              letter-spacing:0.5px;
+                                              border:1px solid {{border_soft}};">Age</td>
+                            <td t-attf-style="padding:8px 16px;
+                                              border:1px solid {{border_soft}};">
+                                <t t-if="patient.age">
+                                    <span t-out="patient.age"/> years
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td t-attf-style="padding:8px 16px; font-size:9pt;
+                                              color:{{muted}}; text-transform:uppercase;
+                                              letter-spacing:0.5px;
+                                              border:1px solid {{border_soft}};">Date</td>
+                            <td t-attf-style="padding:8px 16px;
+                                              border:1px solid {{border_soft}};">
+                                <span t-if="o.encounter_date"
+                                      t-field="o.encounter_date"
+                                      t-options='{"format": "dd MMM yyyy"}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td t-attf-style="padding:8px 16px; font-size:9pt;
+                                              color:{{muted}}; text-transform:uppercase;
+                                              letter-spacing:0.5px;
+                                              border:1px solid {{border_soft}};">MRN</td>
+                            <td t-attf-style="padding:8px 16px; font-weight:600;
+                                              border:1px solid {{border_soft}};">
+                                <span t-out="patient.mrn"/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ============= Clinical Summary ============= -->
+                <t t-if="o.history_present_illness">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Clinical Summary
+                    </h3>
+                    <div style="line-height:1.65; text-align:justify;">
+                        <t t-out="o.history_present_illness"/>
+                    </div>
+                </t>
+
+                <!-- ============= Urgency Level ============= -->
+                <t t-if="o.urgency_level">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Urgency Level
+                    </h3>
+                    <div>
+                        <span t-attf-style="display:inline-block; padding:7px 16px;
+                                            border-radius:24px;
+                                            background-color:{{pal['bg']}};
+                                            color:{{pal['fg']}}; font-weight:600;
+                                            font-size:10.5pt;">
+                            <span t-attf-style="display:inline-block; width:10px;
+                                                height:10px; border-radius:50%;
+                                                background:{{pal['dot']}};
+                                                vertical-align:middle;
+                                                margin-right:8px;"/>
+                            <span style="vertical-align:middle;"
+                                  t-out="o._urgency_label()"/>
+                        </span>
+                    </div>
+                </t>
+
+                <!-- ============= Clinical Notes &amp; Course ============= -->
+                <t t-set="show_history"
+                   t-value="patient.medical_history_ids or patient.active_medication_ids"/>
+                <t t-if="show_history or o.therapies_administered">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Clinical Notes &amp; Course
+                    </h3>
+                </t>
+
+                <t t-if="show_history">
+                    <h4 t-attf-style="color:{{primary}}; font-size:11pt; font-weight:600;
+                                      margin:14px 0 8px 0;">
+                        Patient History
+                    </h4>
+                    <ul style="padding-left:20px; line-height:1.7; margin:0 0 12px 0;">
+                        <li t-foreach="patient.medical_history_ids" t-as="h"
+                            style="margin-bottom:3px;">
+                            <span t-out="h.condition"/>
+                            <t t-if="h.status">
+                                <span t-attf-style="color:{{muted}};">
+                                    (<span t-out="dict(h._fields['status'].selection).get(h.status, '')"/>)
+                                </span>
+                            </t>
+                        </li>
+                        <li t-foreach="patient.active_medication_ids" t-as="m"
+                            style="margin-bottom:3px;">
+                            The patient is currently on
+                            <strong t-out="m.product_name"/>
+                            <t t-if="m.dose">, <span t-out="m.dose"/></t>
+                            <t t-if="m.indication">
+                                for <span t-out="m.indication"/>
+                            </t>.
+                        </li>
+                    </ul>
+                </t>
+
+                <t t-if="o.therapies_administered">
+                    <h4 t-attf-style="color:{{primary}}; font-size:11pt; font-weight:600;
+                                      margin:14px 0 8px 0;">
+                        Therapies Administered
+                    </h4>
+                    <div style="line-height:1.65;">
+                        <t t-out="o.therapies_administered"/>
+                    </div>
+                </t>
+
+                <!-- ============= Vital Signs ============= -->
+                <t t-if="o.vitals_ids">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Vital Signs
+                    </h3>
+                    <table t-attf-style="width:100%; border-collapse:collapse;
+                                         font-size:10pt; border:1px solid {{border_soft}};
+                                         border-radius:6px; overflow:hidden;">
+                        <thead>
+                            <tr>
+                                <th t-foreach="['Time','Date','BP','Temperature','Pulse','RBS','RR']"
+                                    t-as="col"
+                                    t-attf-style="background-color:{{primary}};
+                                                  color:#ffffff; padding:10px 8px;
+                                                  font-weight:600; text-align:center;
+                                                  text-transform:uppercase;
+                                                  letter-spacing:0.6px; font-size:9pt;
+                                                  border:0;">
+                                    <span t-out="col"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.vitals_ids.sorted('measurement_time')" t-as="v"
+                                t-attf-style="background-color:{{ '#ffffff' if v_index % 2 == 0 else '#f6f9fc' }};">
+                                <td t-attf-style="padding:9px 8px; text-align:center; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <span t-if="v.measurement_time"
+                                          t-field="v.measurement_time"
+                                          t-options='{"format": "hh:mm a"}'/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; text-align:center; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <span t-if="v.measurement_time"
+                                          t-field="v.measurement_time"
+                                          t-options='{"format": "dd MMM yyyy"}'/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; text-align:center; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <span t-out="v.bp_display or ''"/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; text-align:center; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <t t-if="v.temperature"><span t-out="v.temperature"/></t>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; text-align:center; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <t t-if="v.heart_rate"><span t-out="v.heart_rate"/></t>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; text-align:center; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <t t-if="v.glucose"><span t-out="v.glucose"/></t>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; text-align:center; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <t t-if="v.respiratory_rate"><span t-out="v.respiratory_rate"/></t>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <!-- ============= Diagnosis ============= -->
+                <t t-if="o.diagnosis_ids">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Diagnosis
+                    </h3>
+                    <div t-attf-style="border:2px solid {{primary}}; border-radius:8px;
+                                       background:{{primary_soft}}; padding:18px 24px;
+                                       text-align:center;">
+                        <div t-attf-style="color:{{muted}}; font-size:9pt;
+                                           text-transform:uppercase;
+                                           letter-spacing:1.2px;">Primary diagnosis</div>
+                        <div t-attf-style="color:{{primary}}; font-size:15pt;
+                                           font-weight:700; margin-top:6px;">
+                            <span t-out="' and '.join(o.diagnosis_ids.mapped('name'))"/>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ============= Prescription (structured) ============= -->
+                <t t-if="o.prescription_line_ids">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Prescription
+                    </h3>
+
+                    <table t-attf-style="width:100%; border-collapse:collapse;
+                                         font-size:10pt;
+                                         border:1px solid {{border_soft}};
+                                         border-radius:6px; overflow:hidden;">
+                        <thead>
+                            <tr>
+                                <th t-foreach="['#','Drug','Dose','Frequency','Route','Days','Quantity','Instructions']"
+                                    t-as="col"
+                                    t-attf-style="background-color:{{primary}};
+                                                  color:#ffffff; padding:10px 8px;
+                                                  font-weight:600; text-align:left;
+                                                  text-transform:uppercase;
+                                                  letter-spacing:0.6px; font-size:9pt;
+                                                  border:0;">
+                                    <span t-out="col"/>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="o.prescription_line_ids" t-as="rx"
+                                t-attf-style="background-color:{{ '#ffffff' if rx_index % 2 == 0 else '#f6f9fc' }};">
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};
+                                                  text-align:center; width:32px;
+                                                  color:{{muted}}; font-weight:600;">
+                                    <span t-out="rx_index + 1"/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <strong t-out="rx.product_name or ''"/>
+                                    <t t-if="rx.generic_name">
+                                        <br/>
+                                        <span t-attf-style="color:{{muted}};
+                                                            font-size:9pt; font-style:italic;"
+                                              t-out="rx.generic_name"/>
+                                    </t>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <span t-out="rx.dose or ''"/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <span t-out="rx._frequency_label()"/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <span t-out="rx._route_label()"/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};
+                                                  text-align:center;">
+                                    <t t-if="rx.duration_days">
+                                        <span t-out="rx.duration_days"/>
+                                    </t>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};">
+                                    <span t-out="rx.quantity or ''"/>
+                                </td>
+                                <td t-attf-style="padding:9px 8px; border:0;
+                                                  border-top:1px solid {{border_soft}};
+                                                  font-size:9.5pt;">
+                                    <span t-out="rx.instructions or ''"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Refills line, if any -->
+                    <t t-set="refill_lines"
+                       t-value="o.prescription_line_ids.filtered(lambda l: l.refills)"/>
+                    <t t-if="refill_lines">
+                        <div t-attf-style="margin-top:8px; font-size:9.5pt;
+                                           color:{{muted}};">
+                            Refills:
+                            <t t-foreach="refill_lines" t-as="r">
+                                <span t-out="r.product_name"/>
+                                ×<span t-out="r.refills"/><t t-if="not r_last">, </t>
+                            </t>
+                        </div>
+                    </t>
+
+                    <!-- Safety warnings call-out -->
+                    <t t-if="o.prescription_warning_count">
+                        <t t-set="alert"
+                           t-value="{'danger': ('#c62828','#fdecea','Critical safety issue'),
+                                     'warning': ('#8a6d3b','#fff8e1','Prescription warning'),
+                                     'info': ('#1565c0','#e3f2fd','Prescription notice')
+                                    }.get(o.prescription_warning_severity)"/>
+                        <div t-if="alert"
+                             t-attf-style="margin-top:14px; padding:14px 18px;
+                                           border-left:5px solid {{alert[0]}};
+                                           background:{{alert[1]}};
+                                           border-radius:0 6px 6px 0;">
+                            <div t-attf-style="color:{{alert[0]}}; font-weight:700;
+                                               font-size:10.5pt; margin-bottom:6px;
+                                               text-transform:uppercase;
+                                               letter-spacing:0.6px;">
+                                ⚠ <span t-out="alert[2]"/>
+                            </div>
+                            <ul style="margin:0; padding-left:20px; line-height:1.6;
+                                       font-size:10pt;">
+                                <t t-foreach="o.prescription_line_ids.filtered('has_warning')"
+                                   t-as="wline">
+                                    <t t-foreach="(wline.warning_message or '').splitlines()"
+                                       t-as="msg">
+                                        <li t-if="msg.strip()">
+                                            <strong t-out="wline.product_name or '—'"/>:
+                                            <span t-out="msg.lstrip('• ').strip()"/>
+                                        </li>
+                                    </t>
+                                </t>
+                            </ul>
+                        </div>
+                    </t>
+                </t>
+
+                <!-- ============= Medications Prescribed upon Discharge (notes) ============= -->
+                <t t-if="o.discharge_medication_notes">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Additional Prescription Notes
+                    </h3>
+                    <div style="line-height:1.65;">
+                        <t t-out="o.discharge_medication_notes"/>
+                    </div>
+                </t>
+
+                <!-- ============= Medical Recommendation ============= -->
+                <t t-if="o.plan">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Medical Recommendation
+                    </h3>
+                    <div style="line-height:1.65; text-align:justify;">
+                        <t t-out="o.plan"/>
+                    </div>
+                </t>
+
+                <!-- ============= Condition at Discharge ============= -->
+                <t t-if="o.discharge_condition">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Condition at Discharge
+                    </h3>
+                    <div style="line-height:1.65; text-align:justify;">
+                        <t t-out="o.discharge_condition"/>
+                    </div>
+                </t>
+
+                <!-- ============= Conclusion ============= -->
+                <t t-if="o.discharge_conclusion">
+                    <h3 t-attf-style="color:{{primary}}; font-size:12pt; font-weight:600;
+                                      margin:26px 0 12px 0; padding-bottom:6px;
+                                      border-bottom:1px solid {{border_soft}};
+                                      text-transform:uppercase; letter-spacing:1.4px;">
+                        Conclusion
+                    </h3>
+                    <div style="line-height:1.65; text-align:justify;">
+                        <t t-out="o.discharge_conclusion"/>
+                    </div>
+                </t>
+
+                <!-- ============= Signature ============= -->
+                <t t-if="o.doctor_id">
+                    <div t-attf-style="margin-top:34px; padding:16px 20px;
+                                       background:{{card_bg}};
+                                       border-left:4px solid {{primary}};
+                                       border-radius:0 6px 6px 0;">
+                        <div t-attf-style="color:{{muted}}; font-size:9pt;
+                                           text-transform:uppercase;
+                                           letter-spacing:1.2px;">
+                            Prepared and reviewed by
+                        </div>
+                        <div t-attf-style="color:{{primary}}; font-size:14pt;
+                                           font-weight:700; margin-top:4px;">
+                            Dr. <span t-out="o.doctor_id.name"/>
+                        </div>
+                        <div style="color:#475569; font-size:10pt; margin-top:2px;">
+                            <span t-out="o.doctor_id.partner_id.function or 'Medical Officer'"/>
+                        </div>
+                        <div t-attf-style="color:{{muted}}; font-size:9pt; margin-top:8px;">
+                            Date:
+                            <strong style="color:#1e293b;">
+                                <span t-if="o.report_date"
+                                      t-field="o.report_date"
+                                      t-options='{"format": "dd MMMM yyyy"}'/>
+                            </strong>
+                        </div>
+                        <div style="color:#c62828; font-size:8.5pt; font-style:italic;
+                                    margin-top:12px;">
+                            This report is generated electronically and does not require a stamp.
+                        </div>
+                    </div>
+                </t>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

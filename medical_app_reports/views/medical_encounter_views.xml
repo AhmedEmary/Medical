@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Encounter form additions:
+        * Header buttons next to "Reopen": Print Report + Send by Email.
+        * A "Report" notebook page for the report-specific fields
+          (urgency, therapies, discharge sections, report date),
+          separate from the clinical entry on the Consultation page.
+    -->
+    <record id="view_medical_encounter_form_inherit_reports"
+            model="ir.ui.view">
+        <field name="name">medical.encounter.form.reports</field>
+        <field name="model">medical.encounter</field>
+        <field name="inherit_id" ref="medical_app.view_medical_encounter_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/button[@name='action_reopen']" position="before">
+                <button name="action_print_report" type="object"
+                        string="Print Report"
+                        invisible="state in ('draft', 'cancelled')"/>
+                <button name="action_send_by_email" type="object"
+                        string="Send by Email" class="oe_highlight"
+                        invisible="state in ('draft', 'cancelled')"/>
+            </xpath>
+
+            <xpath expr="//notebook/page[@name='consultation']" position="after">
+                <page string="Report" name="report">
+                    <group>
+                        <group>
+                            <field name="urgency_level"/>
+                        </group>
+                        <group>
+                            <field name="report_date"/>
+                        </group>
+                    </group>
+
+                    <separator string="Therapies Administered"/>
+                    <field name="therapies_administered"
+                           class="o_medical_note"
+                           placeholder="Treatments given during the visit (IV fluids, injections, etc.)..."/>
+
+                    <separator string="Medications Prescribed upon Discharge"/>
+                    <field name="discharge_medication_notes"
+                           class="o_medical_note"
+                           placeholder="Discharge prescription block (drug, dose, frequency, duration)..."/>
+
+                    <separator string="Condition at Discharge"/>
+                    <field name="discharge_condition"
+                           class="o_medical_note"
+                           placeholder="Clinical status at discharge, fit-to-fly statement..."/>
+
+                    <separator string="Conclusion"/>
+                    <field name="discharge_conclusion"
+                           class="o_medical_note"
+                           placeholder="Closing statement of the medical report..."/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

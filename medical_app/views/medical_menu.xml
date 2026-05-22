@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Root menu -->
+    <menuitem id="menu_medical_root"
+              name="Medical"
+              sequence="50"
+              web_icon="medical_app,static/description/icon.png"
+              groups="group_medical_receptionist"/>
+
+    <!-- Operations -->
+    <menuitem id="menu_medical_operations"
+              name="Operations"
+              parent="menu_medical_root"
+              sequence="10"/>
+
+    <menuitem id="menu_medical_patient"
+              name="Patients"
+              parent="menu_medical_operations"
+              action="action_medical_patient"
+              sequence="10"/>
+
+    <menuitem id="menu_medical_encounter"
+              name="Encounters"
+              parent="menu_medical_operations"
+              action="action_medical_encounter"
+              sequence="20"
+              groups="group_medical_nurse"/>
+
+    <menuitem id="menu_medical_vitals"
+              name="Vitals"
+              parent="menu_medical_operations"
+              action="action_medical_vitals"
+              sequence="30"
+              groups="group_medical_nurse"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_medical_config"
+              name="Configuration"
+              parent="menu_medical_root"
+              sequence="90"
+              groups="group_medical_manager"/>
+
+    <menuitem id="menu_medical_diagnosis"
+              name="Diagnoses (ICD-10)"
+              parent="menu_medical_config"
+              action="action_medical_diagnosis"
+              sequence="10"/>
+
+    <menuitem id="menu_medical_diagnosis_category"
+              name="Diagnosis Categories"
+              parent="menu_medical_config"
+              action="action_medical_diagnosis_category"
+              sequence="20"/>
+
+</odoo>

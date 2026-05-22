@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_vitals_form" model="ir.ui.view">
+        <field name="name">medical.vitals.form</field>
+        <field name="model">medical.vitals</field>
+        <field name="arch" type="xml">
+            <form string="Vital Signs">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="encounter_id"
+                                   readonly="context.get('default_encounter_id')"/>
+                            <field name="patient_id" readonly="1"/>
+                            <field name="measurement_time"/>
+                            <field name="measured_by"/>
+                        </group>
+                        <group string="Blood Pressure">
+                            <label for="bp_systolic" string="BP (Sys / Dia)"/>
+                            <div class="o_row">
+                                <field name="bp_systolic" placeholder="120"/>
+                                <span> / </span>
+                                <field name="bp_diastolic" placeholder="80"/>
+                                <span>mmHg</span>
+                            </div>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Cardiopulmonary">
+                            <field name="heart_rate"/>
+                            <field name="respiratory_rate"/>
+                            <field name="spo2"/>
+                        </group>
+                        <group string="Other">
+                            <field name="temperature"/>
+                            <field name="glucose"/>
+                            <field name="pain_score"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Anthropometrics">
+                            <field name="weight"/>
+                            <field name="height"/>
+                            <field name="bmi" readonly="1"/>
+                            <field name="bmi_category" readonly="1"/>
+                        </group>
+                        <group string="Notes">
+                            <field name="notes" nolabel="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_medical_vitals_list" model="ir.ui.view">
+        <field name="name">medical.vitals.list</field>
+        <field name="model">medical.vitals</field>
+        <field name="arch" type="xml">
+            <list string="Vitals">
+                <field name="measurement_time"/>
+                <field name="patient_id"/>
+                <field name="bp_display" string="BP"/>
+                <field name="heart_rate" string="HR"/>
+                <field name="temperature" string="Temp"/>
+                <field name="spo2" string="SpO₂"/>
+                <field name="weight"/>
+                <field name="bmi"/>
+                <field name="measured_by"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_medical_vitals" model="ir.actions.act_window">
+        <field name="name">Vitals</field>
+        <field name="res_model">medical.vitals</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

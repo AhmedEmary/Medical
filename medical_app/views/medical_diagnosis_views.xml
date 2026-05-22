@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- ============================================================ -->
+    <!-- Diagnosis Category                                           -->
+    <!-- ============================================================ -->
+    <record id="view_medical_diagnosis_category_list" model="ir.ui.view">
+        <field name="name">medical.diagnosis.category.list</field>
+        <field name="model">medical.diagnosis.category</field>
+        <field name="arch" type="xml">
+            <list string="Diagnosis Categories" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="diagnosis_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_medical_diagnosis_category_form" model="ir.ui.view">
+        <field name="name">medical.diagnosis.category.form</field>
+        <field name="model">medical.diagnosis.category</field>
+        <field name="arch" type="xml">
+            <form string="Diagnosis Category">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_diagnoses" type="object"
+                                class="oe_stat_button" icon="fa-stethoscope">
+                            <field name="diagnosis_count" widget="statinfo"
+                                   string="Diagnoses"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <field name="diagnosis_ids" context="{'default_category_id': id}">
+                        <list editable="bottom">
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_medical_diagnosis_category" model="ir.actions.act_window">
+        <field name="name">Diagnosis Categories</field>
+        <field name="res_model">medical.diagnosis.category</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a diagnosis category</p>
+            <p>Categories group ICD-10 diagnoses by chapter for consistent filtering and reporting.</p>
+        </field>
+    </record>
+
+    <!-- ============================================================ -->
+    <!-- Diagnosis                                                    -->
+    <!-- ============================================================ -->
+    <record id="view_medical_diagnosis_list" model="ir.ui.view">
+        <field name="name">medical.diagnosis.list</field>
+        <field name="model">medical.diagnosis</field>
+        <field name="arch" type="xml">
+            <list string="ICD-10 Diagnoses" editable="bottom">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <field name="chapter" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_medical_diagnosis_form" model="ir.ui.view">
+        <field name="name">medical.diagnosis.form</field>
+        <field name="model">medical.diagnosis</field>
+        <field name="arch" type="xml">
+            <form string="Diagnosis">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="name"/>
+                        </group>
+                        <group>
+                            <field name="category_id"/>
+                            <field name="chapter"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_medical_diagnosis_search" model="ir.ui.view">
+        <field name="name">medical.diagnosis.search</field>
+        <field name="model">medical.diagnosis</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="category_id"/>
+                <filter string="Archived" name="archived" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Category" name="g_cat"
+                            context="{'group_by': 'category_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_medical_diagnosis" model="ir.actions.act_window">
+        <field name="name">Diagnoses (ICD-10)</field>
+        <field name="res_model">medical.diagnosis</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_medical_diagnosis_search"/>
+    </record>
+
+</odoo>

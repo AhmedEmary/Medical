@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- List -->
+    <record id="view_medical_encounter_list" model="ir.ui.view">
+        <field name="name">medical.encounter.list</field>
+        <field name="model">medical.encounter</field>
+        <field name="arch" type="xml">
+            <list string="Encounters" sample="1"
+                  decoration-info="state == 'in_progress'"
+                  decoration-success="state == 'completed'"
+                  decoration-muted="state == 'cancelled'"
+                  decoration-danger="prescription_warning_severity == 'danger'">
+                <field name="reference"/>
+                <field name="encounter_date"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="encounter_type"/>
+                <field name="chief_complaint" optional="show"/>
+                <field name="prescription_count" string="Rx" optional="show"/>
+                <field name="prescription_warning_severity" widget="badge"
+                       optional="show"
+                       decoration-danger="prescription_warning_severity == 'danger'"
+                       decoration-warning="prescription_warning_severity == 'warning'"
+                       decoration-info="prescription_warning_severity == 'info'"
+                       decoration-success="prescription_warning_severity == 'ok'"
+                       string="Rx Safety"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'in_progress'"
+                       decoration-success="state == 'completed'"
+                       decoration-warning="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="view_medical_encounter_search" model="ir.ui.view">
+        <field name="name">medical.encounter.search</field>
+        <field name="model">medical.encounter</field>
+        <field name="arch" type="xml">
+            <search string="Encounters">
+                <field name="reference"/>
+                <field name="patient_id"/>
+                <field name="doctor_id"/>
+                <field name="chief_complaint"/>
+                <separator/>
+                <filter string="My Encounters" name="my_encounters"
+                        domain="[('doctor_id', '=', uid)]"/>
+                <filter string="Today" name="today"
+                        domain="[('encounter_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
+                <separator/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="In Progress" name="in_progress"
+                        domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Completed" name="completed"
+                        domain="[('state', '=', 'completed')]"/>
+                <group name="group_by">
+                    <filter string="Patient" name="g_patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter string="Doctor" name="g_doctor"
+                            context="{'group_by': 'doctor_id'}"/>
+                    <filter string="State" name="g_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Date" name="g_date"
+                            context="{'group_by': 'encounter_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_medical_encounter_form" model="ir.ui.view">
+        <field name="name">medical.encounter.form</field>
+        <field name="model">medical.encounter</field>
+        <field name="arch" type="xml">
+            <form string="Encounter" class="o_medical_encounter_form">
+                <header>
+                    <button name="action_start" type="object"
+                            string="Start Consultation" class="oe_highlight"
+                            icon="fa-play"
+                            invisible="state != 'draft'"/>
+                    <button name="action_complete" type="object"
+                            string="Complete Encounter" class="oe_highlight"
+                            icon="fa-check"
+                            invisible="state not in ('draft', 'in_progress')"
+                            groups="medical_app.group_medical_doctor"/>
+                    <button name="action_reopen" type="object"
+                            string="Reopen"
+                            invisible="state != 'completed'"
+                            groups="medical_app.group_medical_doctor"/>
+                    <button name="action_cancel" type="object"
+                            string="Cancel"
+                            invisible="state in ('cancelled', 'invoiced')"
+                            confirm="Are you sure you want to cancel this encounter?"/>
+                    <button name="action_draft" type="object"
+                            string="Set to Draft"
+                            invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,in_progress,completed,invoiced"/>
+                </header>
+                <sheet>
+                    <!-- Ribbon for cancelled / invoiced -->
+                    <widget name="web_ribbon" title="Cancelled" bg_color="bg-danger"
+                            invisible="state != 'cancelled'"/>
+                    <widget name="web_ribbon" title="Completed" bg_color="bg-success"
+                            invisible="state != 'completed'"/>
+
+                    <!-- Critical patient alerts -->
+                    <div class="alert alert-danger d-flex align-items-center"
+                         role="alert"
+                         invisible="not patient_has_critical_allergy">
+                        <i class="fa fa-exclamation-triangle fa-2x me-3" title="Warning" role="img" aria-label="Warning"/>
+                        <div>
+                            <strong>Critical Allergy on file.</strong>
+                            This patient has a severe or anaphylactic allergy.
+                            Review the "Patient Context" tab before prescribing.
+                        </div>
+                    </div>
+
+                    <!-- Aggregated prescription safety banner -->
+                    <div class="alert alert-danger" role="alert"
+                         invisible="prescription_warning_severity != 'danger'">
+                        <strong>
+                            <i class="fa fa-ban me-1" title="Critical" role="img" aria-label="Critical"/>
+                            Critical prescription issue
+                            (<field name="prescription_warning_count"
+                                    nolabel="1" readonly="1"/> item(s)):
+                        </strong>
+                        <field name="prescription_warning_html"
+                               nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="prescription_warning_severity != 'warning'">
+                        <strong>
+                            <i class="fa fa-exclamation-triangle me-1" title="Warning" role="img" aria-label="Warning"/>
+                            Prescription warning
+                            (<field name="prescription_warning_count"
+                                    nolabel="1" readonly="1"/> item(s)):
+                        </strong>
+                        <field name="prescription_warning_html"
+                               nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="prescription_warning_severity != 'info'">
+                        <strong>
+                            <i class="fa fa-info-circle me-1" title="Notice" role="img" aria-label="Notice"/>
+                            Prescription notice:
+                        </strong>
+                        <field name="prescription_warning_html"
+                               nolabel="1" readonly="1"/>
+                    </div>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_prescription" type="object"
+                                class="oe_stat_button" icon="fa-medkit">
+                            <field name="prescription_count" widget="statinfo"
+                                   string="Prescription"/>
+                        </button>
+                        <button name="action_add_vitals" type="object"
+                                class="oe_stat_button" icon="fa-heartbeat">
+                            <field name="vitals_count" widget="statinfo"
+                                   string="Vitals"/>
+                        </button>
+                        <button name="action_view_attachments" type="object"
+                                class="oe_stat_button" icon="fa-paperclip">
+                            <field name="attachment_count" widget="statinfo"
+                                   string="Documents"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="reference" class="oe_edit_only"/>
+                        <h1>
+                            <field name="reference" readonly="1"/>
+                        </h1>
+                        <h3 class="text-muted" invisible="not patient_id">
+                            <field name="patient_id" readonly="1"
+                                   options="{'no_open': True}"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="patient_id"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create_edit': False}"/>
+                            <label for="patient_age" string="Age / Gender"
+                                   invisible="not patient_id"/>
+                            <div invisible="not patient_id">
+                                <field name="patient_age" class="oe_inline"/>
+                                <span> y · </span>
+                                <field name="patient_gender" class="oe_inline"/>
+                            </div>
+                            <field name="patient_blood_type" string="Blood Type"
+                                   readonly="1" invisible="not patient_id"/>
+                        </group>
+                        <group>
+                            <field name="doctor_id"/>
+                            <field name="encounter_date"/>
+                            <field name="encounter_type"/>
+                            <field name="patient_has_critical_allergy" invisible="1"/>
+                            <field name="prescription_warning_severity" invisible="1"/>
+                            <field name="prescription_warning_count" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Consultation" name="consultation">
+                            <group>
+                                <field name="chief_complaint"
+                                       placeholder="Patient's main reason for visit..."/>
+                            </group>
+
+                            <separator string="History of Present Illness (S)"/>
+                            <field name="history_present_illness" class="o_medical_note"
+                                   placeholder="Onset, duration, character, aggravating/relieving factors..."/>
+
+                            <separator string="Review of Systems (S)"/>
+                            <field name="review_of_systems" class="o_medical_note"
+                                   placeholder="System-by-system review..."/>
+
+                            <separator string="Physical Examination (O)"/>
+                            <field name="physical_exam" class="o_medical_note"
+                                   placeholder="Examination findings by system..."/>
+
+                            <separator string="Assessment (A)"/>
+                            <group>
+                                <field name="diagnosis_ids" widget="many2many_tags"
+                                       options="{'no_create_edit': False}"/>
+                            </group>
+                            <field name="assessment" class="o_medical_note"
+                                   placeholder="Clinical reasoning, differential diagnosis..."/>
+
+                            <separator string="Plan (P)"/>
+                            <field name="plan" class="o_medical_note"
+                                   placeholder="Treatment plan, follow-up, referrals..."/>
+
+                            <separator string="Additional Notes"/>
+                            <field name="clinical_notes" class="o_medical_note"
+                                   placeholder="Any other relevant notes..."/>
+                        </page>
+
+                        <page string="Prescription" name="prescription">
+                            <field name="prescription_line_ids">
+                                <list editable="bottom"
+                                      decoration-danger="warning_severity == 'danger'"
+                                      decoration-warning="warning_severity == 'warning'"
+                                      decoration-info="warning_severity == 'info'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_name"/>
+                                    <field name="generic_name" optional="hide"/>
+                                    <field name="dose"/>
+                                    <field name="frequency"/>
+                                    <field name="frequency_other"
+                                           invisible="frequency != 'other'"
+                                           optional="hide"/>
+                                    <field name="route"/>
+                                    <field name="duration_days" string="Days"/>
+                                    <field name="quantity" optional="show"/>
+                                    <field name="refills" optional="hide"/>
+                                    <field name="instructions" optional="hide"/>
+                                    <field name="warning_severity" widget="badge"
+                                           string="Safety"
+                                           decoration-danger="warning_severity == 'danger'"
+                                           decoration-warning="warning_severity == 'warning'"
+                                           decoration-info="warning_severity == 'info'"
+                                           decoration-success="warning_severity == 'ok'"/>
+                                    <field name="has_warning" column_invisible="1"/>
+                                    <field name="warning_message" column_invisible="1"/>
+                                </list>
+                            </field>
+                            <separator string="Notes on the prescription"
+                                       invisible="not prescription_line_ids"/>
+                            <div invisible="not prescription_line_ids"
+                                 class="text-muted small">
+                                <i class="fa fa-info-circle me-1" title="Notice" role="img" aria-label="Notice"/>
+                                Safety badges are computed automatically from the
+                                patient's allergies, active medications and
+                                missing required fields. Resolve all critical
+                                items before completing the encounter.
+                            </div>
+                        </page>
+
+                        <page string="Vitals" name="vitals">
+                            <button name="action_add_vitals" type="object"
+                                    string="Record Vitals" class="btn-primary mb-2"
+                                    icon="fa-plus"/>
+                            <field name="vitals_ids" readonly="1">
+                                <list>
+                                    <field name="measurement_time"/>
+                                    <field name="bp_display" string="BP"/>
+                                    <field name="heart_rate" string="HR"/>
+                                    <field name="respiratory_rate" string="RR"/>
+                                    <field name="temperature" string="Temp"/>
+                                    <field name="spo2" string="SpO₂"/>
+                                    <field name="weight" optional="show"/>
+                                    <field name="height" optional="show"/>
+                                    <field name="bmi" optional="show"/>
+                                    <field name="measured_by" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Patient Context" name="patient_context">
+                            <group string="Known Allergies">
+                                <field name="patient_allergy_ids" nolabel="1" readonly="1">
+                                    <list>
+                                        <field name="allergen"/>
+                                        <field name="reaction"/>
+                                        <field name="severity" widget="badge"
+                                               decoration-danger="severity in ('severe', 'anaphylaxis')"
+                                               decoration-warning="severity == 'moderate'"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Active Medications">
+                                <field name="patient_active_medication_ids"
+                                       nolabel="1" readonly="1">
+                                    <list>
+                                        <field name="product_name"/>
+                                        <field name="dose"/>
+                                        <field name="frequency"/>
+                                        <field name="route"/>
+                                        <field name="med_type"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+
+                        <page string="Audit" name="audit"
+                              groups="medical_app.group_medical_manager">
+                            <group>
+                                <field name="completed_date" readonly="1"/>
+                                <field name="completed_by" readonly="1"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Calendar -->
+    <record id="view_medical_encounter_calendar" model="ir.ui.view">
+        <field name="name">medical.encounter.calendar</field>
+        <field name="model">medical.encounter</field>
+        <field name="arch" type="xml">
+            <calendar string="Encounters" date_start="encounter_date"
+                      color="doctor_id" mode="week">
+                <field name="patient_id"/>
+                <field name="doctor_id" filters="1"/>
+                <field name="encounter_type"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_medical_encounter" model="ir.actions.act_window">
+        <field name="name">Encounters</field>
+        <field name="res_model">medical.encounter</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="search_view_id" ref="view_medical_encounter_search"/>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create the first encounter</p>
+            <p>An encounter records a single clinical visit. Vitals, the clinical report, prescriptions, and the invoice all attach to it.</p>
+        </field>
+    </record>
+
+</odoo>

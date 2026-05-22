@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ========================================================= -->
+        <!-- Diagnosis categories (ICD-10 chapters)                    -->
+        <!-- ========================================================= -->
+        <record id="cat_i" model="medical.diagnosis.category">
+            <field name="name">Certain infectious and parasitic diseases</field>
+            <field name="code">I</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="cat_ii" model="medical.diagnosis.category">
+            <field name="name">Neoplasms</field>
+            <field name="code">II</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="cat_iv" model="medical.diagnosis.category">
+            <field name="name">Endocrine, nutritional and metabolic diseases</field>
+            <field name="code">IV</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="cat_v" model="medical.diagnosis.category">
+            <field name="name">Mental and behavioural disorders</field>
+            <field name="code">V</field>
+            <field name="sequence">50</field>
+        </record>
+        <record id="cat_vi" model="medical.diagnosis.category">
+            <field name="name">Diseases of the nervous system</field>
+            <field name="code">VI</field>
+            <field name="sequence">60</field>
+        </record>
+        <record id="cat_ix" model="medical.diagnosis.category">
+            <field name="name">Diseases of the circulatory system</field>
+            <field name="code">IX</field>
+            <field name="sequence">90</field>
+        </record>
+        <record id="cat_x" model="medical.diagnosis.category">
+            <field name="name">Diseases of the respiratory system</field>
+            <field name="code">X</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="cat_xi" model="medical.diagnosis.category">
+            <field name="name">Diseases of the digestive system</field>
+            <field name="code">XI</field>
+            <field name="sequence">110</field>
+        </record>
+        <record id="cat_xii" model="medical.diagnosis.category">
+            <field name="name">Diseases of the skin and subcutaneous tissue</field>
+            <field name="code">XII</field>
+            <field name="sequence">120</field>
+        </record>
+        <record id="cat_xiii" model="medical.diagnosis.category">
+            <field name="name">Diseases of the musculoskeletal system</field>
+            <field name="code">XIII</field>
+            <field name="sequence">130</field>
+        </record>
+        <record id="cat_xiv" model="medical.diagnosis.category">
+            <field name="name">Diseases of the genitourinary system</field>
+            <field name="code">XIV</field>
+            <field name="sequence">140</field>
+        </record>
+        <record id="cat_xviii" model="medical.diagnosis.category">
+            <field name="name">Symptoms, signs and abnormal clinical findings</field>
+            <field name="code">XVIII</field>
+            <field name="sequence">180</field>
+        </record>
+        <record id="cat_xix" model="medical.diagnosis.category">
+            <field name="name">Injury, poisoning and external causes</field>
+            <field name="code">XIX</field>
+            <field name="sequence">190</field>
+        </record>
+        <record id="cat_xxi" model="medical.diagnosis.category">
+            <field name="name">Factors influencing health status</field>
+            <field name="code">XXI</field>
+            <field name="sequence">210</field>
+        </record>
+
+        <!-- ========================================================= -->
+        <!-- ICD-10 diagnoses                                          -->
+        <!-- A curated starter set; a full catalog can be imported via -->
+        <!-- CSV in production.                                        -->
+        <!-- ========================================================= -->
+
+        <!-- I - Infectious and parasitic diseases -->
+        <record id="icd_a09" model="medical.diagnosis">
+            <field name="code">A09</field>
+            <field name="name">Infectious gastroenteritis and colitis, unspecified</field>
+            <field name="category_id" ref="cat_i"/>
+        </record>
+        <record id="icd_b34_9" model="medical.diagnosis">
+            <field name="code">B34.9</field>
+            <field name="name">Viral infection, unspecified</field>
+            <field name="category_id" ref="cat_i"/>
+        </record>
+
+        <!-- II - Neoplasms -->
+        <record id="icd_c50_9" model="medical.diagnosis">
+            <field name="code">C50.9</field>
+            <field name="name">Malignant neoplasm of breast, unspecified</field>
+            <field name="category_id" ref="cat_ii"/>
+        </record>
+        <record id="icd_d17_9" model="medical.diagnosis">
+            <field name="code">D17.9</field>
+            <field name="name">Benign lipomatous neoplasm, unspecified</field>
+            <field name="category_id" ref="cat_ii"/>
+        </record>
+
+        <!-- IV - Endocrine, nutritional and metabolic -->
+        <record id="icd_e10" model="medical.diagnosis">
+            <field name="code">E10</field>
+            <field name="name">Type 1 diabetes mellitus</field>
+            <field name="category_id" ref="cat_iv"/>
+        </record>
+        <record id="icd_e11" model="medical.diagnosis">
+            <field name="code">E11</field>
+            <field name="name">Type 2 diabetes mellitus</field>
+            <field name="category_id" ref="cat_iv"/>
+        </record>
+        <record id="icd_e03_9" model="medical.diagnosis">
+            <field name="code">E03.9</field>
+            <field name="name">Hypothyroidism, unspecified</field>
+            <field name="category_id" ref="cat_iv"/>
+        </record>
+        <record id="icd_e05_9" model="medical.diagnosis">
+            <field name="code">E05.9</field>
+            <field name="name">Thyrotoxicosis (hyperthyroidism), unspecified</field>
+            <field name="category_id" ref="cat_iv"/>
+        </record>
+        <record id="icd_e66_9" model="medical.diagnosis">
+            <field name="code">E66.9</field>
+            <field name="name">Obesity, unspecified</field>
+            <field name="category_id" ref="cat_iv"/>
+        </record>
+        <record id="icd_e78_5" model="medical.diagnosis">
+            <field name="code">E78.5</field>
+            <field name="name">Hyperlipidemia, unspecified</field>
+            <field name="category_id" ref="cat_iv"/>
+        </record>
+        <record id="icd_e86_0" model="medical.diagnosis">
+            <field name="code">E86.0</field>
+            <field name="name">Dehydration</field>
+            <field name="category_id" ref="cat_iv"/>
+        </record>
+
+        <!-- V - Mental and behavioural disorders -->
+        <record id="icd_f32_9" model="medical.diagnosis">
+            <field name="code">F32.9</field>
+            <field name="name">Major depressive disorder, single episode, unspecified</field>
+            <field name="category_id" ref="cat_v"/>
+        </record>
+        <record id="icd_f41_1" model="medical.diagnosis">
+            <field name="code">F41.1</field>
+            <field name="name">Generalized anxiety disorder</field>
+            <field name="category_id" ref="cat_v"/>
+        </record>
+        <record id="icd_f41_9" model="medical.diagnosis">
+            <field name="code">F41.9</field>
+            <field name="name">Anxiety disorder, unspecified</field>
+            <field name="category_id" ref="cat_v"/>
+        </record>
+        <record id="icd_f51_0" model="medical.diagnosis">
+            <field name="code">F51.0</field>
+            <field name="name">Insomnia not due to a substance or known physiological condition</field>
+            <field name="category_id" ref="cat_v"/>
+        </record>
+
+        <!-- VI - Nervous system -->
+        <record id="icd_g43_9" model="medical.diagnosis">
+            <field name="code">G43.9</field>
+            <field name="name">Migraine, unspecified</field>
+            <field name="category_id" ref="cat_vi"/>
+        </record>
+        <record id="icd_g40_9" model="medical.diagnosis">
+            <field name="code">G40.9</field>
+            <field name="name">Epilepsy, unspecified</field>
+            <field name="category_id" ref="cat_vi"/>
+        </record>
+        <record id="icd_g47_33" model="medical.diagnosis">
+            <field name="code">G47.33</field>
+            <field name="name">Obstructive sleep apnea</field>
+            <field name="category_id" ref="cat_vi"/>
+        </record>
+
+        <!-- IX - Circulatory system -->
+        <record id="icd_i10" model="medical.diagnosis">
+            <field name="code">I10</field>
+            <field name="name">Essential (primary) hypertension</field>
+            <field name="category_id" ref="cat_ix"/>
+        </record>
+        <record id="icd_i25_10" model="medical.diagnosis">
+            <field name="code">I25.10</field>
+            <field name="name">Atherosclerotic heart disease of native coronary artery</field>
+            <field name="category_id" ref="cat_ix"/>
+        </record>
+        <record id="icd_i48_91" model="medical.diagnosis">
+            <field name="code">I48.91</field>
+            <field name="name">Atrial fibrillation, unspecified</field>
+            <field name="category_id" ref="cat_ix"/>
+        </record>
+        <record id="icd_i50_9" model="medical.diagnosis">
+            <field name="code">I50.9</field>
+            <field name="name">Heart failure, unspecified</field>
+            <field name="category_id" ref="cat_ix"/>
+        </record>
+        <record id="icd_i63_9" model="medical.diagnosis">
+            <field name="code">I63.9</field>
+            <field name="name">Cerebral infarction, unspecified</field>
+            <field name="category_id" ref="cat_ix"/>
+        </record>
+
+        <!-- X - Respiratory system -->
+        <record id="icd_j00" model="medical.diagnosis">
+            <field name="code">J00</field>
+            <field name="name">Acute nasopharyngitis (common cold)</field>
+            <field name="category_id" ref="cat_x"/>
+        </record>
+        <record id="icd_j02_9" model="medical.diagnosis">
+            <field name="code">J02.9</field>
+            <field name="name">Acute pharyngitis, unspecified</field>
+            <field name="category_id" ref="cat_x"/>
+        </record>
+        <record id="icd_j06_9" model="medical.diagnosis">
+            <field name="code">J06.9</field>
+            <field name="name">Acute upper respiratory infection, unspecified</field>
+            <field name="category_id" ref="cat_x"/>
+        </record>
+        <record id="icd_j20_9" model="medical.diagnosis">
+            <field name="code">J20.9</field>
+            <field name="name">Acute bronchitis, unspecified</field>
+            <field name="category_id" ref="cat_x"/>
+        </record>
+        <record id="icd_j18_9" model="medical.diagnosis">
+            <field name="code">J18.9</field>
+            <field name="name">Pneumonia, unspecified organism</field>
+            <field name="category_id" ref="cat_x"/>
+        </record>
+        <record id="icd_j45_909" model="medical.diagnosis">
+            <field name="code">J45.909</field>
+            <field name="name">Unspecified asthma, uncomplicated</field>
+            <field name="category_id" ref="cat_x"/>
+        </record>
+        <record id="icd_j44_9" model="medical.diagnosis">
+            <field name="code">J44.9</field>
+            <field name="name">Chronic obstructive pulmonary disease, unspecified</field>
+            <field name="category_id" ref="cat_x"/>
+        </record>
+
+        <!-- XI - Digestive system -->
+        <record id="icd_k21_9" model="medical.diagnosis">
+            <field name="code">K21.9</field>
+            <field name="name">Gastro-esophageal reflux disease without esophagitis</field>
+            <field name="category_id" ref="cat_xi"/>
+        </record>
+        <record id="icd_k29_7" model="medical.diagnosis">
+            <field name="code">K29.7</field>
+            <field name="name">Gastritis, unspecified</field>
+            <field name="category_id" ref="cat_xi"/>
+        </record>
+        <record id="icd_k52_9" model="medical.diagnosis">
+            <field name="code">K52.9</field>
+            <field name="name">Noninfective gastroenteritis and colitis, unspecified</field>
+            <field name="category_id" ref="cat_xi"/>
+        </record>
+        <record id="icd_k59_00" model="medical.diagnosis">
+            <field name="code">K59.00</field>
+            <field name="name">Constipation, unspecified</field>
+            <field name="category_id" ref="cat_xi"/>
+        </record>
+        <record id="icd_k80_20" model="medical.diagnosis">
+            <field name="code">K80.20</field>
+            <field name="name">Calculus of gallbladder without cholecystitis</field>
+            <field name="category_id" ref="cat_xi"/>
+        </record>
+
+        <!-- XII - Skin and subcutaneous tissue -->
+        <record id="icd_l20_9" model="medical.diagnosis">
+            <field name="code">L20.9</field>
+            <field name="name">Atopic dermatitis, unspecified</field>
+            <field name="category_id" ref="cat_xii"/>
+        </record>
+        <record id="icd_l30_9" model="medical.diagnosis">
+            <field name="code">L30.9</field>
+            <field name="name">Dermatitis, unspecified</field>
+            <field name="category_id" ref="cat_xii"/>
+        </record>
+        <record id="icd_l70_0" model="medical.diagnosis">
+            <field name="code">L70.0</field>
+            <field name="name">Acne vulgaris</field>
+            <field name="category_id" ref="cat_xii"/>
+        </record>
+
+        <!-- XIII - Musculoskeletal system -->
+        <record id="icd_m54_5" model="medical.diagnosis">
+            <field name="code">M54.5</field>
+            <field name="name">Low back pain</field>
+            <field name="category_id" ref="cat_xiii"/>
+        </record>
+        <record id="icd_m54_2" model="medical.diagnosis">
+            <field name="code">M54.2</field>
+            <field name="name">Cervicalgia</field>
+            <field name="category_id" ref="cat_xiii"/>
+        </record>
+        <record id="icd_m25_50" model="medical.diagnosis">
+            <field name="code">M25.50</field>
+            <field name="name">Pain in unspecified joint</field>
+            <field name="category_id" ref="cat_xiii"/>
+        </record>
+        <record id="icd_m17_9" model="medical.diagnosis">
+            <field name="code">M17.9</field>
+            <field name="name">Osteoarthritis of knee, unspecified</field>
+            <field name="category_id" ref="cat_xiii"/>
+        </record>
+        <record id="icd_m79_1" model="medical.diagnosis">
+            <field name="code">M79.1</field>
+            <field name="name">Myalgia</field>
+            <field name="category_id" ref="cat_xiii"/>
+        </record>
+
+        <!-- XIV - Genitourinary system -->
+        <record id="icd_n39_0" model="medical.diagnosis">
+            <field name="code">N39.0</field>
+            <field name="name">Urinary tract infection, site not specified</field>
+            <field name="category_id" ref="cat_xiv"/>
+        </record>
+        <record id="icd_n18_9" model="medical.diagnosis">
+            <field name="code">N18.9</field>
+            <field name="name">Chronic kidney disease, unspecified</field>
+            <field name="category_id" ref="cat_xiv"/>
+        </record>
+
+        <!-- XVIII - Symptoms, signs and abnormal findings -->
+        <record id="icd_r05_9" model="medical.diagnosis">
+            <field name="code">R05.9</field>
+            <field name="name">Cough, unspecified</field>
+            <field name="category_id" ref="cat_xviii"/>
+        </record>
+        <record id="icd_r10_4" model="medical.diagnosis">
+            <field name="code">R10.4</field>
+            <field name="name">Other and unspecified abdominal pain</field>
+            <field name="category_id" ref="cat_xviii"/>
+        </record>
+        <record id="icd_r11_0" model="medical.diagnosis">
+            <field name="code">R11.0</field>
+            <field name="name">Nausea</field>
+            <field name="category_id" ref="cat_xviii"/>
+        </record>
+        <record id="icd_r42" model="medical.diagnosis">
+            <field name="code">R42</field>
+            <field name="name">Dizziness and giddiness</field>
+            <field name="category_id" ref="cat_xviii"/>
+        </record>
+        <record id="icd_r50_9" model="medical.diagnosis">
+            <field name="code">R50.9</field>
+            <field name="name">Fever, unspecified</field>
+            <field name="category_id" ref="cat_xviii"/>
+        </record>
+        <record id="icd_r51" model="medical.diagnosis">
+            <field name="code">R51</field>
+            <field name="name">Headache</field>
+            <field name="category_id" ref="cat_xviii"/>
+        </record>
+        <record id="icd_r53_83" model="medical.diagnosis">
+            <field name="code">R53.83</field>
+            <field name="name">Other fatigue</field>
+            <field name="category_id" ref="cat_xviii"/>
+        </record>
+
+        <!-- XIX - Injury and poisoning -->
+        <record id="icd_s93_4" model="medical.diagnosis">
+            <field name="code">S93.4</field>
+            <field name="name">Sprain of ankle</field>
+            <field name="category_id" ref="cat_xix"/>
+        </record>
+        <record id="icd_t78_40" model="medical.diagnosis">
+            <field name="code">T78.40</field>
+            <field name="name">Allergy, unspecified</field>
+            <field name="category_id" ref="cat_xix"/>
+        </record>
+
+        <!-- XXI - Factors influencing health status -->
+        <record id="icd_z00_0" model="medical.diagnosis">
+            <field name="code">Z00.0</field>
+            <field name="name">General adult medical examination</field>
+            <field name="category_id" ref="cat_xxi"/>
+        </record>
+        <record id="icd_z23" model="medical.diagnosis">
+            <field name="code">Z23</field>
+            <field name="name">Encounter for immunization</field>
+            <field name="category_id" ref="cat_xxi"/>
+        </record>
+
+    </data>
+</odoo>

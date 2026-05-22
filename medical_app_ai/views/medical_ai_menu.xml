@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <menuitem id="menu_medical_ai_config"
+              name="AI Configuration"
+              parent="medical_app.menu_medical_config"
+              action="action_medical_ai_config"
+              groups="medical_app.group_medical_manager"
+              sequence="30"/>
+
+    <menuitem id="menu_medical_ai_log"
+              name="AI Activity Log"
+              parent="medical_app.menu_medical_config"
+              action="action_medical_ai_log"
+              groups="medical_app.group_medical_doctor"
+              sequence="40"/>
+
+</odoo>

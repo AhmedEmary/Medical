@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Editable list embedded on the encounter form -->
+    <record id="view_medical_prescription_line_list" model="ir.ui.view">
+        <field name="name">medical.prescription.line.list</field>
+        <field name="model">medical.prescription.line</field>
+        <field name="arch" type="xml">
+            <list string="Prescription" editable="bottom"
+                  decoration-danger="warning_severity == 'danger'"
+                  decoration-warning="warning_severity == 'warning'"
+                  decoration-info="warning_severity == 'info'">
+                <field name="sequence" widget="handle"/>
+                <field name="product_name"/>
+                <field name="generic_name" optional="show"/>
+                <field name="dose"/>
+                <field name="frequency"/>
+                <field name="frequency_other"
+                       invisible="frequency != 'other'"
+                       optional="hide"/>
+                <field name="route"/>
+                <field name="duration_days" string="Days"/>
+                <field name="quantity" optional="show"/>
+                <field name="refills" optional="hide"/>
+                <field name="instructions" optional="hide"/>
+                <field name="warning_severity" widget="badge"
+                       decoration-danger="warning_severity == 'danger'"
+                       decoration-warning="warning_severity == 'warning'"
+                       decoration-info="warning_severity == 'info'"
+                       decoration-success="warning_severity == 'ok'"
+                       string="Safety"/>
+                <field name="has_warning" column_invisible="1"/>
+                <field name="warning_message" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_medical_prescription_line_form" model="ir.ui.view">
+        <field name="name">medical.prescription.line.form</field>
+        <field name="model">medical.prescription.line</field>
+        <field name="arch" type="xml">
+            <form string="Prescription Line">
+                <sheet>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="warning_severity != 'danger'">
+                        <strong>⚠ Critical safety issue:</strong>
+                        <field name="warning_message" nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="warning_severity != 'warning'">
+                        <strong>⚠ Prescription warning:</strong>
+                        <field name="warning_message" nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="warning_severity != 'info'">
+                        <field name="warning_message" nolabel="1" readonly="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="encounter_id"/>
+                            <field name="patient_id" readonly="1"/>
+                            <field name="product_name"/>
+                            <field name="generic_name"/>
+                        </group>
+                        <group>
+                            <field name="dose"/>
+                            <field name="frequency"/>
+                            <field name="frequency_other"
+                                   invisible="frequency != 'other'"/>
+                            <field name="route"/>
+                            <field name="duration_days"/>
+                            <field name="quantity"/>
+                            <field name="refills"/>
+                        </group>
+                    </group>
+                    <group string="Instructions">
+                        <field name="instructions" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

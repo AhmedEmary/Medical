@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- List view -->
+    <record id="view_medical_patient_list" model="ir.ui.view">
+        <field name="name">medical.patient.list</field>
+        <field name="model">medical.patient</field>
+        <field name="arch" type="xml">
+            <list string="Patients" decoration-danger="has_critical_allergy" sample="1">
+                <field name="mrn"/>
+                <field name="name"/>
+                <field name="age_display" string="Age"/>
+                <field name="gender"/>
+                <field name="blood_type"/>
+                <field name="patient_category"/>
+                <field name="phone" optional="show"/>
+                <field name="last_encounter_date" optional="show"/>
+                <field name="encounter_count" optional="hide"/>
+                <field name="has_critical_allergy" invisible="1"/>
+                <field name="active" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="view_medical_patient_search" model="ir.ui.view">
+        <field name="name">medical.patient.search</field>
+        <field name="model">medical.patient</field>
+        <field name="arch" type="xml">
+            <search string="Patients">
+                <field name="mrn"/>
+                <field name="name"/>
+                <field name="national_id"/>
+                <field name="phone"/>
+                <field name="room_number"/>
+                <separator/>
+                <filter string="Hotel Guests" name="hotel_guests"
+                        domain="[('patient_category', '=', 'hotel_guest')]"/>
+                <filter string="Employees" name="employees"
+                        domain="[('patient_category', 'in', ('employee', 'non_hotel_employee'))]"/>
+                <filter string="External" name="external"
+                        domain="[('patient_category', '=', 'external')]"/>
+                <separator/>
+                <filter string="Critical Allergies" name="critical_allergy"
+                        domain="[('has_critical_allergy', '=', True)]"/>
+                <filter string="Archived" name="inactive"
+                        domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Category" name="g_category"
+                            context="{'group_by': 'patient_category'}"/>
+                    <filter string="Gender" name="g_gender"
+                            context="{'group_by': 'gender'}"/>
+                    <filter string="Blood Type" name="g_blood"
+                            context="{'group_by': 'blood_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_medical_patient_form" model="ir.ui.view">
+        <field name="name">medical.patient.form</field>
+        <field name="model">medical.patient</field>
+        <field name="arch" type="xml">
+            <form string="Patient">
+                <header>
+                    <button name="action_new_encounter" type="object"
+                            string="New Encounter" class="oe_highlight"
+                            groups="medical_app.group_medical_nurse"/>
+                </header>
+                <sheet>
+                    <!-- Critical allergy alert banner -->
+                    <div class="alert alert-danger" role="alert"
+                         invisible="not has_critical_allergy">
+                        <strong>⚠ Critical Allergy:</strong>
+                        This patient has a severe or anaphylactic allergy.
+                        Review the Allergies tab before prescribing.
+                    </div>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_encounters" type="object"
+                                class="oe_stat_button" icon="fa-stethoscope">
+                            <field name="encounter_count" widget="statinfo"
+                                   string="Encounters"/>
+                        </button>
+                    </div>
+
+                    <field name="image_1920" widget="image"
+                           class="oe_avatar" options="{'preview_image': 'image_128'}"/>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="Patient name..."/></h1>
+                        <h3>
+                            <field name="mrn" readonly="1"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group string="Personal">
+                            <field name="partner_id"
+                                   context="{'default_is_patient': True}"
+                                   options="{'no_create_edit': False}"/>
+                            <field name="date_of_birth"/>
+                            <field name="age_display" string="Age"/>
+                            <field name="gender"/>
+                            <field name="blood_type"/>
+                            <field name="national_id"/>
+                        </group>
+                        <group string="Contact">
+                            <field name="phone"/>
+                            <field name="mobile"/>
+                            <field name="email" widget="email"/>
+                            <field name="street"/>
+                            <field name="city"/>
+                            <field name="country_id"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Category">
+                            <field name="patient_category"/>
+                            <field name="room_number"
+                                   invisible="patient_category != 'hotel_guest'"/>
+                            <field name="check_in_date"
+                                   invisible="patient_category != 'hotel_guest'"/>
+                            <field name="check_out_date"
+                                   invisible="patient_category != 'hotel_guest'"/>
+                        </group>
+                        <group string="Emergency Contact">
+                            <field name="emergency_contact_name"/>
+                            <field name="emergency_contact_relation"/>
+                            <field name="emergency_contact_phone"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Medical History" name="medical_history">
+                            <field name="medical_history_ids"
+                                   context="{'default_history_type': 'medical'}">
+                                <list editable="bottom">
+                                    <field name="history_type" column_invisible="1"/>
+                                    <field name="date_recorded"/>
+                                    <field name="condition"/>
+                                    <field name="diagnosis_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="status" widget="badge"
+                                           decoration-success="status == 'resolved'"
+                                           decoration-warning="status == 'active'"
+                                           decoration-danger="status == 'chronic'"/>
+                                    <field name="notes" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Surgical History" name="surgical_history">
+                            <field name="surgical_history_ids"
+                                   context="{'default_history_type': 'surgical'}">
+                                <list editable="bottom">
+                                    <field name="history_type" column_invisible="1"/>
+                                    <field name="date_recorded" string="Surgery Date"/>
+                                    <field name="condition" string="Procedure"/>
+                                    <field name="surgeon_name"/>
+                                    <field name="hospital"/>
+                                    <field name="complications" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Allergies" name="allergies">
+                            <field name="allergy_ids">
+                                <list editable="bottom"
+                                      decoration-danger="severity in ('severe', 'anaphylaxis')"
+                                      decoration-warning="severity == 'moderate'">
+                                    <field name="allergen"/>
+                                    <field name="allergen_type"/>
+                                    <field name="reaction"/>
+                                    <field name="severity" widget="badge"
+                                           decoration-danger="severity in ('severe', 'anaphylaxis')"
+                                           decoration-warning="severity == 'moderate'"
+                                           decoration-info="severity == 'mild'"/>
+                                    <field name="onset_date" optional="hide"/>
+                                    <field name="verified" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Medications &amp; Supplements" name="medications">
+                            <field name="medication_ids">
+                                <list editable="bottom"
+                                      decoration-muted="not active_treatment">
+                                    <field name="med_type"/>
+                                    <field name="product_name"/>
+                                    <field name="dose"/>
+                                    <field name="frequency"/>
+                                    <field name="route" optional="show"/>
+                                    <field name="start_date" optional="show"/>
+                                    <field name="end_date" optional="hide"/>
+                                    <field name="indication" optional="hide"/>
+                                    <field name="active_treatment" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Insurance" name="insurance">
+                            <group>
+                                <field name="insurance_provider_id"/>
+                                <field name="insurance_policy_number"/>
+                                <field name="insurance_coverage_type"/>
+                                <field name="insurance_valid_until"/>
+                            </group>
+                        </page>
+
+                        <page string="Documents" name="documents">
+                            <p class="text-muted">
+                                Upload lab results, imaging, referrals, consent forms,
+                                and any other patient documents using the attachment
+                                area in the chatter below.
+                            </p>
+                        </page>
+
+                        <page string="Notes" name="notes"
+                              groups="medical_app.group_medical_doctor">
+                            <field name="notes" placeholder="Private clinical notes..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban view -->
+    <record id="view_medical_patient_kanban" model="ir.ui.view">
+        <field name="name">medical.patient.kanban</field>
+        <field name="model">medical.patient</field>
+        <field name="arch" type="xml">
+            <kanban sample="1" class="o_kanban_small_column">
+                <field name="id"/>
+                <field name="mrn"/>
+                <field name="name"/>
+                <field name="age_display"/>
+                <field name="gender"/>
+                <field name="patient_category"/>
+                <field name="image_128"/>
+                <field name="has_critical_allergy"/>
+                <field name="encounter_count"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex">
+                            <field name="image_128" widget="image"
+                                   class="o_image_40_cover me-2"
+                                   options="{'img_class': 'o_image_40_cover'}"/>
+                            <div class="flex-grow-1">
+                                <strong><field name="name"/></strong>
+                                <div class="text-muted small">
+                                    <field name="mrn"/>
+                                </div>
+                                <div class="small">
+                                    <field name="age_display"/> ·
+                                    <field name="gender"/> ·
+                                    <field name="patient_category"/>
+                                </div>
+                                <div t-if="record.has_critical_allergy.raw_value"
+                                     class="badge text-bg-danger mt-1">⚠ Critical allergy</div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_medical_patient" model="ir.actions.act_window">
+        <field name="name">Patients</field>
+        <field name="res_model">medical.patient</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_medical_patient_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register a new patient</p>
+            <p>Patients hold the long-term clinical record. Each visit creates a new encounter linked to the patient.</p>
+        </field>
+    </record>
+
+</odoo>

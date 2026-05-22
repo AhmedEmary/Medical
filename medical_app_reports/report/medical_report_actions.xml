@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Report action.
+
+        - ``binding_model_id`` + ``binding_type='report'`` add this report to
+          the *Print* dropdown on the encounter form, the standard Odoo place
+          for a model-bound report.
+        - ``report_name`` references the QWeb template defined in
+          ``medical_encounter_report.xml``.
+        - ``print_report_name`` builds the downloaded file name from the
+          encounter reference, e.g. ``Medical Report - ENC/2026/0001.pdf``.
+    -->
+    <record id="action_report_medical_encounter" model="ir.actions.report">
+        <field name="name">Medical Report</field>
+        <field name="model">medical.encounter</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medical_app_reports.report_medical_encounter</field>
+        <field name="report_file">medical_app_reports.report_medical_encounter</field>
+        <field name="print_report_name">
+            "Medical Report - %s" % (object.reference or object.id)
+        </field>
+        <field name="binding_model_id" ref="medical_app.model_medical_encounter"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

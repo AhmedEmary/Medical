@@ -1,0 +1,61 @@
+// Axio Medical - UI styling
+// Subtle clinical look; alerts must remain very visible.
+
+.o_form_view .alert-danger {
+    border-left: 4px solid #a83232;
+    background-color: #fff5f5;
+    color: #6a1f1f;
+    font-size: 14px;
+}
+
+// Highlight allergy badges in patient lists
+.o_list_view .badge.text-bg-danger {
+    background-color: #a83232 !important;
+}
+
+// Encounter SOAP note fields.
+// An empty Html field collapses to a thin line (it is built to fill its
+// parent's height, which fails when several are stacked). Give the note
+// editors a visible, clickable minimum height and a clinical-note frame.
+.o_form_view .o_field_html.o_medical_note {
+    border: 1px solid #d8e0e8;
+    border-radius: 4px;
+    margin-bottom: 8px;
+
+    .note-editable {
+        min-height: 90px;
+        padding: 6px 10px;
+    }
+}
+
+// Encounter form — softer card surface and rounded stat buttons.
+.o_form_view.o_medical_encounter_form {
+    .oe_title h1 {
+        color: #1f5e8a;
+        letter-spacing: -0.4px;
+    }
+    .oe_title h3 {
+        margin-top: 4px;
+        font-weight: 400;
+    }
+    .oe_button_box .oe_stat_button {
+        border-radius: 6px;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: #eef4fa;
+        }
+    }
+    .alert {
+        border-radius: 6px;
+        margin-bottom: 12px;
+
+        ul {
+            margin-bottom: 0;
+        }
+    }
+    .o_notebook_headers .nav-link.active {
+        border-bottom: 3px solid #1f5e8a;
+        font-weight: 600;
+    }
+}

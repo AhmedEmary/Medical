@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Demo patient 1: hotel guest with critical allergy -->
+        <record id="partner_patient_demo_1" model="res.partner">
+            <field name="name">Mario Rossi</field>
+            <field name="is_patient">True</field>
+            <field name="phone">+39 333 1234567</field>
+            <field name="email">mario.rossi@example.com</field>
+            <field name="street">Via Roma 12</field>
+            <field name="city">Milano</field>
+        </record>
+
+        <record id="patient_demo_1" model="medical.patient">
+            <field name="partner_id" ref="partner_patient_demo_1"/>
+            <field name="date_of_birth">1978-03-14</field>
+            <field name="gender">male</field>
+            <field name="blood_type">a+</field>
+            <field name="patient_category">hotel_guest</field>
+            <field name="room_number">204</field>
+            <field name="emergency_contact_name">Lucia Rossi</field>
+            <field name="emergency_contact_relation">Wife</field>
+            <field name="emergency_contact_phone">+39 333 7654321</field>
+        </record>
+
+        <record id="allergy_demo_1" model="medical.allergy">
+            <field name="patient_id" ref="patient_demo_1"/>
+            <field name="allergen">Penicillin</field>
+            <field name="allergen_type">drug</field>
+            <field name="reaction">Anaphylaxis with airway compromise</field>
+            <field name="severity">anaphylaxis</field>
+            <field name="verified" eval="True"/>
+        </record>
+
+        <record id="history_demo_1" model="medical.history">
+            <field name="patient_id" ref="patient_demo_1"/>
+            <field name="history_type">medical</field>
+            <field name="condition">Essential hypertension</field>
+            <field name="diagnosis_id" ref="icd_i10"/>
+            <field name="status">chronic</field>
+            <field name="date_recorded">2020-06-10</field>
+        </record>
+
+        <record id="medication_demo_1" model="medical.medication">
+            <field name="patient_id" ref="patient_demo_1"/>
+            <field name="med_type">prescribed</field>
+            <field name="product_name">Amlodipine</field>
+            <field name="generic_name">amlodipine</field>
+            <field name="dose">5 mg</field>
+            <field name="frequency">once_daily</field>
+            <field name="route">oral</field>
+            <field name="indication">Hypertension</field>
+            <field name="active_treatment" eval="True"/>
+        </record>
+
+        <!-- Demo patient 2: external patient -->
+        <record id="partner_patient_demo_2" model="res.partner">
+            <field name="name">Anna Bianchi</field>
+            <field name="is_patient">True</field>
+            <field name="phone">+39 320 9876543</field>
+        </record>
+
+        <record id="patient_demo_2" model="medical.patient">
+            <field name="partner_id" ref="partner_patient_demo_2"/>
+            <field name="date_of_birth">1995-11-22</field>
+            <field name="gender">female</field>
+            <field name="blood_type">o+</field>
+            <field name="patient_category">external</field>
+        </record>
+
+    </data>
+</odoo>

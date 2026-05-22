@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_medication_form" model="ir.ui.view">
+        <field name="name">medical.medication.form</field>
+        <field name="model">medical.medication</field>
+        <field name="arch" type="xml">
+            <form string="Medication / Supplement">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="med_type"/>
+                            <field name="product_name"/>
+                            <field name="generic_name"/>
+                            <field name="indication"/>
+                        </group>
+                        <group>
+                            <field name="dose"/>
+                            <field name="frequency"/>
+                            <field name="frequency_other"
+                                   invisible="frequency != 'other'"/>
+                            <field name="route"/>
+                            <field name="start_date"/>
+                            <field name="end_date"/>
+                            <field name="active_treatment"/>
+                            <field name="prescribed_by"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>
