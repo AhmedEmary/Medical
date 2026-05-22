@@ -23,9 +23,11 @@ class MedicalPatient(models.Model):
         tracking=True,
     )
     partner_id = fields.Many2one(
-        'res.partner', string='Contact', required=True,
+        'res.partner', string='Contact',
         ondelete='restrict', tracking=True,
-        help="Linked contact in Odoo (used for invoicing and communication).",
+        help="Linked contact in Odoo (used for invoicing and communication). "
+             "Auto-created on save if not set, so the ID-scan wizard can "
+             "fill it in afterwards.",
     )
     display_name = fields.Char(compute='_compute_display_name', store=True)
     active = fields.Boolean(default=True, tracking=True)
@@ -219,13 +221,26 @@ class MedicalPatient(models.Model):
     # ============================================================
     @api.model_create_multi
     def create(self, vals_list):
+        Partner = self.env['res.partner']
         for vals in vals_list:
             if vals.get('mrn', _('New')) == _('New'):
                 vals['mrn'] = self.env['ir.sequence'].next_by_code(
                     'medical.patient') or _('New')
-            # Mark partner as patient
-            if vals.get('partner_id'):
-                self.env['res.partner'].browse(vals['partner_id']).is_patient = True
+            # Auto-create a contact if none was provided so the form can be
+            # saved before the ID-scan wizard fills in the patient's name.
+            # We also ensure ``name`` is set in vals — it's a stored related
+            # field on partner_id.name, and writing an empty value through
+            # the inverse violates res.partner's name constraint.
+            if not vals.get('partner_id'):
+                placeholder = vals.get('name') or _('New Patient')
+                partner = Partner.create({
+                    'name': placeholder,
+                    'is_patient': True,
+                })
+                vals['partner_id'] = partner.id
+                vals['name'] = placeholder
+            else:
+                Partner.browse(vals['partner_id']).is_patient = True
         return super().create(vals_list)
 
     # ============================================================

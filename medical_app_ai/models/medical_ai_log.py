@@ -20,6 +20,7 @@ class MedicalAILog(models.Model):
         ('diagnosis_suggest', 'Diagnosis Suggestion'),
         ('history_summary', 'Patient Summary'),
         ('safety_check', 'Safety Check'),
+        ('id_ocr', 'ID Document OCR'),
     ], string='Feature', required=True, index=True, readonly=True)
     provider = fields.Selection(
         PROVIDER_SELECTION, string='Provider', index=True, readonly=True)

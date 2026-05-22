@@ -5,3 +5,5 @@ from . import medical_ai_service
 from . import medical_ai_log
 from . import medical_ai_config
 from . import medical_encounter
+from . import medical_id_ocr
+from . import medical_patient

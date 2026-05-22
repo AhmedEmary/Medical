@@ -15,4 +15,11 @@
               groups="medical_app.group_medical_doctor"
               sequence="40"/>
 
+    <menuitem id="menu_medical_id_scan"
+              name="Scan ID Document"
+              parent="medical_app.menu_medical_operations"
+              action="action_medical_id_scan_wizard"
+              groups="medical_app.group_medical_receptionist"
+              sequence="50"/>
+
 </odoo>

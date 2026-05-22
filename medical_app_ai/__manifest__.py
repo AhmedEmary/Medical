@@ -27,6 +27,18 @@ Install the SDK for the provider you use:
 - Anthropic:  pip install -U anthropic
 - Google:     pip install -U google-genai
 - OpenAI:     pip install -U openai
+
+ID document OCR
+---------------
+A 'Scan ID Document' button on patient and contact forms reads a passport
+or national ID image and pre-fills the identity fields. For offline MRZ
+parsing of passports install:
+
+  pip install passporteye
+  apt-get install tesseract-ocr     # passporteye needs Tesseract
+
+Without passporteye the wizard falls back to the configured AI vision
+provider, which always works as long as one of the SDKs above is set up.
 """,
     'author': 'Axio Parts',
     'website': 'https://axiob2b.com',
@@ -37,9 +49,11 @@ Install the SDK for the provider you use:
     'data': [
         'security/ir.model.access.csv',
         'wizard/medical_ai_suggestion_views.xml',
+        'wizard/medical_id_scan_views.xml',
         'views/medical_ai_config_views.xml',
         'views/medical_ai_log_views.xml',
         'views/medical_encounter_views.xml',
+        'views/medical_id_scan_buttons.xml',
         'views/medical_ai_menu.xml',
     ],
     'application': False,

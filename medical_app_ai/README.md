@@ -47,6 +47,36 @@ The API key can also come from an environment variable on the server:
 To add another provider: add an entry to `PROVIDERS` and a matching
 `_call_<provider>` handler in `medical_ai_service.py` — nothing else changes.
 
+## ID document OCR
+
+A **Scan ID Document** button is available on:
+
+- the patient form (header)
+- the contact (`res.partner`) form (button box)
+- **Medical → Operations → Scan ID Document** (standalone, creates a new contact)
+
+The wizard accepts an image of a passport or national ID card and runs OCR in
+two stages:
+
+1. **MRZ parser** (offline, deterministic). Requires `passporteye` and
+   `tesseract-ocr` on the server:
+   ```
+   pip install passporteye
+   apt-get install tesseract-ocr
+   ```
+   Reads the machine-readable zone at the bottom of passports / ID-1 cards.
+
+2. **AI vision fallback** through the configured provider. Used when MRZ is
+   missing/unreadable, or when "AI vision only" is selected. Works on any
+   document the vision model can read (residence permits, driver licenses,
+   handwritten cards).
+
+The extracted fields are shown for **review** — the operator edits anything
+that looks wrong and clicks **Apply**. Patient fields (`date_of_birth`,
+`gender`, `national_id`) and contact fields (`name`, `country_id`) are updated.
+The uploaded image is also attached to the record. Every AI call lands in the
+AI Activity Log under the `id_ocr` feature.
+
 ## Design notes
 
 - `medical.ai.service` — audited, provider-agnostic wrapper. `_call`

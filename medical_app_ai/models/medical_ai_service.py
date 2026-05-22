@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import base64
 import json
 import logging
 import os
@@ -251,6 +252,149 @@ class MedicalAIService(models.AbstractModel):
             (response.text or '').strip(),
             getattr(usage, 'prompt_token_count', 0) if usage else 0,
             getattr(usage, 'candidates_token_count', 0) if usage else 0,
+        )
+
+    @api.model
+    def _call_vision(self, feature, system_prompt, user_prompt, image_b64,
+                     mime_type='image/jpeg', encounter=None, patient=None,
+                     max_tokens=MAX_TOKENS):
+        """Run a vision request (image + text) through the configured provider.
+
+        ``image_b64`` is a base64-encoded image (the format Odoo stores
+        ``Image`` / ``Binary`` fields in). Returns ``(text, log)`` like
+        :meth:`_call`.
+        """
+        provider = self._param_provider()
+        model = self._param_model(provider)
+        if encounter and not patient:
+            patient = encounter.patient_id
+
+        log = self.env['medical.ai.log'].sudo().create({
+            'feature': feature,
+            'provider': provider,
+            'model': model,
+            'encounter_id': encounter.id if encounter else False,
+            'patient_id': patient.id if patient else False,
+            'user_id': self.env.user.id,
+            'request_summary': user_prompt[:10000],
+            'state': 'error',
+        })
+
+        try:
+            handler = getattr(self, '_call_vision_%s' % provider)
+            text, input_tokens, output_tokens = handler(
+                model, system_prompt, user_prompt,
+                image_b64, mime_type, max_tokens)
+        except UserError as exc:
+            log.write({'error_message': str(exc)})
+            raise
+        except Exception as exc:  # noqa: BLE001
+            log.write({'error_message': str(exc)})
+            _logger.warning(
+                "Medical AI vision call (%s/%s) failed: %s",
+                provider, feature, exc)
+            raise UserError(_(
+                "The AI vision request failed:\n\n%s", exc)) from exc
+
+        log.write({
+            'state': 'success',
+            'response': text,
+            'input_tokens': input_tokens or 0,
+            'output_tokens': output_tokens or 0,
+        })
+        return text, log
+
+    @api.model
+    def _call_vision_anthropic(self, model, system_prompt, user_prompt,
+                               image_b64, mime_type, max_tokens):
+        if anthropic is None:
+            raise UserError(_(
+                "The 'anthropic' Python package is not installed on the "
+                "server.\n\nInstall it with:  pip install -U anthropic"))
+        client = anthropic.Anthropic(
+            api_key=self._get_api_key('anthropic'), timeout=API_TIMEOUT)
+        response = client.messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            system=[{
+                'type': 'text',
+                'text': system_prompt,
+                'cache_control': {'type': 'ephemeral'},
+            }],
+            messages=[{
+                'role': 'user',
+                'content': [
+                    {
+                        'type': 'image',
+                        'source': {
+                            'type': 'base64',
+                            'media_type': mime_type,
+                            'data': image_b64,
+                        },
+                    },
+                    {'type': 'text', 'text': user_prompt},
+                ],
+            }],
+        )
+        text = ''.join(
+            block.text for block in response.content
+            if block.type == 'text'
+        ).strip()
+        return (text,
+                response.usage.input_tokens,
+                response.usage.output_tokens)
+
+    @api.model
+    def _call_vision_google(self, model, system_prompt, user_prompt,
+                            image_b64, mime_type, max_tokens):
+        if google_genai is None:
+            raise UserError(_(
+                "The 'google-genai' Python package is not installed on the "
+                "server.\n\nInstall it with:  pip install -U google-genai"))
+        client = google_genai.Client(api_key=self._get_api_key('google'))
+        image_part = google_types.Part.from_bytes(
+            data=base64.b64decode(image_b64), mime_type=mime_type)
+        response = client.models.generate_content(
+            model=model,
+            contents=[image_part, user_prompt],
+            config=google_types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                max_output_tokens=max_tokens,
+            ),
+        )
+        usage = response.usage_metadata
+        return (
+            (response.text or '').strip(),
+            getattr(usage, 'prompt_token_count', 0) if usage else 0,
+            getattr(usage, 'candidates_token_count', 0) if usage else 0,
+        )
+
+    @api.model
+    def _call_vision_openai(self, model, system_prompt, user_prompt,
+                            image_b64, mime_type, max_tokens):
+        if openai is None:
+            raise UserError(_(
+                "The 'openai' Python package is not installed on the "
+                "server.\n\nInstall it with:  pip install -U openai"))
+        client = openai.OpenAI(
+            api_key=self._get_api_key('openai'), timeout=API_TIMEOUT)
+        data_url = 'data:%s;base64,%s' % (mime_type, image_b64)
+        response = client.chat.completions.create(
+            model=model,
+            max_completion_tokens=max_tokens,
+            messages=[
+                {'role': 'system', 'content': system_prompt},
+                {'role': 'user', 'content': [
+                    {'type': 'text', 'text': user_prompt},
+                    {'type': 'image_url', 'image_url': {'url': data_url}},
+                ]},
+            ],
+        )
+        usage = response.usage
+        return (
+            (response.choices[0].message.content or '').strip(),
+            getattr(usage, 'prompt_tokens', 0) if usage else 0,
+            getattr(usage, 'completion_tokens', 0) if usage else 0,
         )
 
     @api.model
