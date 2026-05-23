@@ -129,8 +129,6 @@
                                     <th style="width:14%;">Frequency</th>
                                     <th style="width:10%;">Route</th>
                                     <th style="width:10%;">Duration</th>
-                                    <th style="width:12%;">Quantity</th>
-                                    <th style="width:6%;">Refills</th>
                                     <th>Instructions</th>
                                 </tr>
                             </thead>
@@ -155,10 +153,6 @@
                                         <t t-if="rx.duration_days">
                                             <span t-out="rx.duration_days"/> day(s)
                                         </t>
-                                    </td>
-                                    <td><span t-out="rx.quantity or ''"/></td>
-                                    <td style="text-align:center;">
-                                        <span t-out="rx.refills or 0"/>
                                     </td>
                                     <td><span t-out="rx.instructions or ''"/></td>
                                 </tr>
