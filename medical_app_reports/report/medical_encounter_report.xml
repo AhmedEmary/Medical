@@ -31,223 +31,248 @@
 
             <div class="page">
 
+                <!-- Horizontal separator under the company header -->
+                <hr style="border:0; border-top:2px solid #1f5e8a;
+                           margin:0 0 16px 0;"/>
+
                 <!-- ============= Personal Information ============= -->
-                <h3 style="color:#1f5e8a; text-decoration:underline;">
-                    <strong>Personal Information:</strong>
-                </h3>
-                <table class="table table-borderless" style="margin-bottom:16px;">
-                    <tr>
-                        <td style="width:35%;"><strong>Name:</strong></td>
-                        <td><span t-out="patient.name"/></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Gender:</strong></td>
-                        <td>
-                            <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '')"/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Age:</strong></td>
-                        <td>
-                            <t t-if="patient.age">
-                                <span t-out="patient.age"/> years old
-                            </t>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Date:</strong></td>
-                        <td>
-                            <span t-if="o.encounter_date"
-                                  t-field="o.encounter_date"
-                                  t-options='{"format": "dd.MM.yyyy"}'/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Medical Record Number (MRN)</strong></td>
-                        <td><span t-out="patient.mrn"/></td>
-                    </tr>
-                </table>
+                <div style="page-break-inside: avoid;">
+                    <h3 style="color:#1f5e8a; text-decoration:underline;">
+                        <strong>Personal Information:</strong>
+                    </h3>
+                    <table class="table table-borderless" style="margin-bottom:16px;">
+                        <tr>
+                            <td style="width:35%;"><strong>Name:</strong></td>
+                            <td><span t-out="patient.name"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gender:</strong></td>
+                            <td>
+                                <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '')"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Age:</strong></td>
+                            <td>
+                                <t t-if="patient.age">
+                                    <span t-out="patient.age"/> years old
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Date:</strong></td>
+                            <td>
+                                <span t-if="o.encounter_date"
+                                      t-field="o.encounter_date"
+                                      t-options='{"format": "dd.MM.yyyy"}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Medical Record Number (MRN)</strong></td>
+                            <td><span t-out="patient.mrn"/></td>
+                        </tr>
+                    </table>
+                </div>
 
                 <!-- ============= Clinical Summary ============= -->
                 <t t-if="o.history_present_illness">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Clinical Summary:</strong>
-                    </h3>
-                    <div style="text-align:justify;">
-                        <t t-out="o.history_present_illness"/>
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Clinical Summary:</strong>
+                        </h3>
+                        <div style="text-align:justify;">
+                            <t t-out="o.history_present_illness"/>
+                        </div>
                     </div>
                 </t>
 
                 <!-- ============= Urgency Level ============= -->
                 <t t-if="o.urgency_level">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Urgency Level:</strong>
-                    </h3>
-                    <t t-set="pal" t-value="o._urgency_palette()"/>
-                    <p>
-                        <span t-attf-style="display:inline-block; width:12px;
-                                            height:12px; border-radius:50%;
-                                            background:{{pal['dot']}};
-                                            vertical-align:middle;
-                                            margin-right:8px;"/>
-                        <strong style="vertical-align:middle;"
-                                t-out="o._urgency_label()"/>
-                    </p>
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Urgency Level:</strong>
+                        </h3>
+                        <t t-set="pal" t-value="o._urgency_palette()"/>
+                        <p>
+                            <span t-attf-style="display:inline-block; width:12px;
+                                                height:12px; border-radius:50%;
+                                                background:{{pal['dot']}};
+                                                vertical-align:middle;
+                                                margin-right:8px;"/>
+                            <strong style="vertical-align:middle;"
+                                    t-out="o._urgency_label()"/>
+                        </p>
+                    </div>
                 </t>
 
                 <!-- ============= Clinical Notes & Course ============= -->
                 <t t-set="show_history"
                    t-value="patient.medical_history_ids or patient.active_medication_ids"/>
                 <t t-if="show_history or o.therapies_administered">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Clinical Notes &amp; Course:</strong>
-                    </h3>
-                </t>
-
-                <t t-if="show_history">
-                    <h4 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Patient History:</strong>
-                    </h4>
-                    <ul>
-                        <li t-foreach="patient.medical_history_ids" t-as="h">
-                            <span t-out="h.condition"/>
-                            <t t-if="h.status">
-                                (<span t-out="dict(h._fields['status'].selection).get(h.status, '')"/>)
-                            </t>
-                        </li>
-                        <li t-foreach="patient.active_medication_ids" t-as="m">
-                            The patient is currently on
-                            <strong t-out="m.product_name"/>
-                            <t t-if="m.dose">, <span t-out="m.dose"/></t>
-                            <t t-if="m.indication">
-                                for <span t-out="m.indication"/>
-                            </t>.
-                        </li>
-                    </ul>
-                </t>
-
-                <t t-if="o.therapies_administered">
-                    <h4 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Therapies Administered</strong>
-                    </h4>
-                    <div>
-                        <t t-out="o.therapies_administered"/>
+                    <!-- Keep the section H3 with the first subsection H4 -->
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Clinical Notes &amp; Course:</strong>
+                        </h3>
+                        <t t-if="show_history">
+                            <h4 style="color:#1f5e8a; text-decoration:underline;">
+                                <strong>Patient History:</strong>
+                            </h4>
+                            <ul>
+                                <li t-foreach="patient.medical_history_ids" t-as="h">
+                                    <span t-out="h.condition"/>
+                                    <t t-if="h.status">
+                                        (<span t-out="dict(h._fields['status'].selection).get(h.status, '')"/>)
+                                    </t>
+                                </li>
+                                <li t-foreach="patient.active_medication_ids" t-as="m">
+                                    The patient is currently on
+                                    <strong t-out="m.product_name"/>
+                                    <t t-if="m.dose">, <span t-out="m.dose"/></t>
+                                    <t t-if="m.indication">
+                                        for <span t-out="m.indication"/>
+                                    </t>.
+                                </li>
+                            </ul>
+                        </t>
                     </div>
-                </t>
 
-                <!-- ============= Vital Signs ============= -->
-                <t t-if="o.vitals_ids">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Vital Signs Table:</strong>
-                    </h3>
-                    <table class="table table-bordered"
-                           style="text-align:center; font-size:10pt;">
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Date</th>
-                                <th>BP</th>
-                                <th>Temperature</th>
-                                <th>Pulse</th>
-                                <th>RBS</th>
-                                <th>RR</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr t-foreach="o.vitals_ids.sorted('measurement_time')"
-                                t-as="v">
-                                <td>
-                                    <span t-if="v.measurement_time"
-                                          t-field="v.measurement_time"
-                                          t-options='{"format": "hh:mm a"}'/>
-                                </td>
-                                <td>
-                                    <span t-if="v.measurement_time"
-                                          t-field="v.measurement_time"
-                                          t-options='{"format": "dd.MM.yyyy"}'/>
-                                </td>
-                                <td><span t-out="v.bp_display or ''"/></td>
-                                <td>
-                                    <t t-if="v.temperature">
-                                        <span t-out="v.temperature"/>
-                                    </t>
-                                </td>
-                                <td>
-                                    <t t-if="v.heart_rate">
-                                        <span t-out="v.heart_rate"/>
-                                    </t>
-                                </td>
-                                <td>
-                                    <t t-if="v.glucose">
-                                        <span t-out="v.glucose"/>
-                                    </t>
-                                </td>
-                                <td>
-                                    <t t-if="v.respiratory_rate">
-                                        <span t-out="v.respiratory_rate"/>
-                                    </t>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </t>
-
-                <!-- ============= Diagnosis ============= -->
-                <t t-if="o.diagnosis_ids">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Diagnosis:</strong>
-                    </h3>
-                    <p style="text-align:center;">
-                        <strong t-out="' and '.join(o.diagnosis_ids.mapped('name'))"/>
-                    </p>
-                </t>
-
-                <!-- ============= Medications Prescribed upon Discharge ============= -->
-                <t t-if="o.prescription_line_ids or o.discharge_medication_notes">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Medications Prescribed upon Discharge:</strong>
-                    </h3>
-
-                    <t t-if="o.discharge_medication_notes">
-                        <div style="text-align:justify;">
-                            <t t-out="o.discharge_medication_notes"/>
+                    <t t-if="o.therapies_administered">
+                        <div style="page-break-inside: avoid;">
+                            <h4 style="color:#1f5e8a; text-decoration:underline;">
+                                <strong>Therapies Administered</strong>
+                            </h4>
+                            <div>
+                                <t t-out="o.therapies_administered"/>
+                            </div>
                         </div>
                     </t>
                 </t>
 
+                <!-- ============= Vital Signs ============= -->
+                <t t-if="o.vitals_ids">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Vital Signs Table:</strong>
+                        </h3>
+                        <table class="table table-bordered"
+                               style="text-align:center; font-size:10pt;">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Date</th>
+                                    <th>BP</th>
+                                    <th>Temperature</th>
+                                    <th>Pulse</th>
+                                    <th>RBS</th>
+                                    <th>RR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.vitals_ids.sorted('measurement_time')"
+                                    t-as="v">
+                                    <td>
+                                        <span t-if="v.measurement_time"
+                                              t-field="v.measurement_time"
+                                              t-options='{"format": "hh:mm a"}'/>
+                                    </td>
+                                    <td>
+                                        <span t-if="v.measurement_time"
+                                              t-field="v.measurement_time"
+                                              t-options='{"format": "dd.MM.yyyy"}'/>
+                                    </td>
+                                    <td><span t-out="v.bp_display or ''"/></td>
+                                    <td>
+                                        <t t-if="v.temperature">
+                                            <span t-out="v.temperature"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="v.heart_rate">
+                                            <span t-out="v.heart_rate"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="v.glucose">
+                                            <span t-out="v.glucose"/>
+                                        </t>
+                                    </td>
+                                    <td>
+                                        <t t-if="v.respiratory_rate">
+                                            <span t-out="v.respiratory_rate"/>
+                                        </t>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+
+                <!-- ============= Diagnosis ============= -->
+                <t t-if="o.diagnosis_ids">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Diagnosis:</strong>
+                        </h3>
+                        <p style="text-align:center;">
+                            <strong t-out="' and '.join(o.diagnosis_ids.mapped('name'))"/>
+                        </p>
+                    </div>
+                </t>
+
+                <!-- ============= Medications Prescribed upon Discharge ============= -->
+                <t t-if="o.prescription_line_ids or o.discharge_medication_notes">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Medications Prescribed upon Discharge:</strong>
+                        </h3>
+                        <t t-if="o.discharge_medication_notes">
+                            <div style="text-align:justify;">
+                                <t t-out="o.discharge_medication_notes"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
                 <!-- ============= Medical Recommendation ============= -->
                 <t t-if="o.plan">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Medical Recommendation:</strong>
-                    </h3>
-                    <div style="text-align:justify;">
-                        <t t-out="o.plan"/>
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Medical Recommendation:</strong>
+                        </h3>
+                        <div style="text-align:justify;">
+                            <t t-out="o.plan"/>
+                        </div>
                     </div>
                 </t>
 
                 <!-- ============= Condition at Discharge ============= -->
                 <t t-if="o.discharge_condition">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Condition at Discharge:</strong>
-                    </h3>
-                    <div style="text-align:justify;">
-                        <t t-out="o.discharge_condition"/>
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Condition at Discharge:</strong>
+                        </h3>
+                        <div style="text-align:justify;">
+                            <t t-out="o.discharge_condition"/>
+                        </div>
                     </div>
                 </t>
 
                 <!-- ============= Conclusion ============= -->
                 <t t-if="o.discharge_conclusion">
-                    <h3 style="color:#1f5e8a; text-decoration:underline;">
-                        <strong>Conclusion:</strong>
-                    </h3>
-                    <div style="text-align:justify;">
-                        <t t-out="o.discharge_conclusion"/>
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Conclusion:</strong>
+                        </h3>
+                        <div style="text-align:justify;">
+                            <t t-out="o.discharge_conclusion"/>
+                        </div>
                     </div>
                 </t>
 
                 <!-- ============= Signature ============= -->
                 <t t-if="o.doctor_id">
-                    <div style="margin-top:24px;">
+                    <div style="margin-top:24px; page-break-inside: avoid;">
                         <p style="margin-bottom:2px;">
                             <strong style="text-decoration:underline;">
                                 Report prepared and reviewed by:

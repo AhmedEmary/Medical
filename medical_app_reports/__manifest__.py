@@ -45,7 +45,9 @@ Sections
         # Report templates first, then the action that references them,
         # then the mail template that references the action.
         'report/medical_encounter_report.xml',
+        'report/prescription_report.xml',
         'report/medical_report_actions.xml',
+        'report/prescription_report_actions.xml',
         'data/mail_template_medical_report.xml',
     ],
     'application': False,

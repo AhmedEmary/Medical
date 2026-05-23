@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Report action for the standalone prescription PDF.
+
+        Bound to medical.encounter so it appears in the *Print* dropdown
+        alongside the Medical Report. The filename uses the encounter
+        reference, e.g. ``Prescription - ENC/2026/0001.pdf``.
+    -->
+    <record id="action_report_prescription" model="ir.actions.report">
+        <field name="name">Prescription</field>
+        <field name="model">medical.encounter</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medical_app_reports.report_prescription</field>
+        <field name="report_file">medical_app_reports.report_prescription</field>
+        <field name="print_report_name">
+            "Prescription - %s" % (object.reference or object.id)
+        </field>
+        <field name="binding_model_id" ref="medical_app.model_medical_encounter"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

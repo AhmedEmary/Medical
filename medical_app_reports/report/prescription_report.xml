@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Standalone prescription PDF.
+
+        Renders the encounter's structured ``medical.prescription.line``
+        records as a printable Rx for the patient / pharmacist. Layout
+        mirrors the main medical report (same external_layout, same blue
+        heading style, same horizontal rule under the company header).
+    -->
+
+    <template id="report_prescription">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="medical_app_reports.report_prescription_document"
+                   t-lang="user.lang or 'en_US'"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_prescription_document">
+        <t t-call="web.external_layout">
+            <t t-set="patient" t-value="o.patient_id"/>
+
+            <div class="page">
+
+                <!-- Horizontal separator under the company header -->
+                <hr style="border:0; border-top:2px solid #1f5e8a;
+                           margin:0 0 16px 0;"/>
+
+                <!-- ============= Title ============= -->
+                <div style="page-break-inside: avoid; text-align:center;
+                            margin-bottom:12px;">
+                    <h2 style="color:#1f5e8a; margin:0;">
+                        <strong>Prescription (Rx)</strong>
+                    </h2>
+                    <p style="margin:4px 0 0 0; color:#475569; font-size:10pt;">
+                        Encounter:
+                        <strong t-out="o.reference"/>
+                    </p>
+                </div>
+
+                <!-- ============= Patient Information ============= -->
+                <div style="page-break-inside: avoid;">
+                    <h3 style="color:#1f5e8a; text-decoration:underline;">
+                        <strong>Patient Information:</strong>
+                    </h3>
+                    <table class="table table-borderless"
+                           style="margin-bottom:16px;">
+                        <tr>
+                            <td style="width:25%;"><strong>Name:</strong></td>
+                            <td style="width:35%;"><span t-out="patient.name"/></td>
+                            <td style="width:15%;"><strong>MRN:</strong></td>
+                            <td><span t-out="patient.mrn"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Gender:</strong></td>
+                            <td>
+                                <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '')"/>
+                            </td>
+                            <td><strong>Age:</strong></td>
+                            <td>
+                                <t t-if="patient.age">
+                                    <span t-out="patient.age"/> years
+                                </t>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Date:</strong></td>
+                            <td>
+                                <span t-if="o.report_date"
+                                      t-field="o.report_date"
+                                      t-options='{"format": "dd.MM.yyyy"}'/>
+                            </td>
+                            <td><strong>Weight:</strong></td>
+                            <td>
+                                <t t-set="latest_v"
+                                   t-value="o.vitals_ids and o.vitals_ids.sorted('measurement_time')[-1] or False"/>
+                                <t t-if="latest_v and latest_v.weight">
+                                    <span t-out="latest_v.weight"/> kg
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ============= Allergies banner ============= -->
+                <t t-if="patient.allergy_ids">
+                    <div style="page-break-inside: avoid;
+                                border:1px solid #c0392b; background:#fdecea;
+                                padding:8px 12px; margin-bottom:16px;
+                                border-radius:3px;">
+                        <strong style="color:#c0392b;">Known Allergies:</strong>
+                        <ul style="margin:6px 0 0 18px; padding:0;">
+                            <li t-foreach="patient.allergy_ids" t-as="a">
+                                <strong t-out="a.allergen"/>
+                                <t t-if="a.severity">
+                                    —
+                                    <span t-out="dict(a._fields['severity'].selection).get(a.severity, '')"/>
+                                </t>
+                                <t t-if="a.reaction">
+                                    (<span t-out="a.reaction"/>)
+                                </t>
+                            </li>
+                        </ul>
+                    </div>
+                </t>
+
+                <!-- ============= Rx Lines ============= -->
+                <t t-if="o.prescription_line_ids">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>℞ Prescribed Medications:</strong>
+                        </h3>
+                        <table class="table table-bordered"
+                               style="font-size:10pt; width:100%;">
+                            <thead style="background:#eef2f5;">
+                                <tr>
+                                    <th style="width:4%;">#</th>
+                                    <th style="width:30%;">Drug</th>
+                                    <th style="width:14%;">Frequency</th>
+                                    <th style="width:10%;">Route</th>
+                                    <th style="width:10%;">Duration</th>
+                                    <th style="width:12%;">Quantity</th>
+                                    <th style="width:6%;">Refills</th>
+                                    <th>Instructions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.prescription_line_ids.sorted('sequence')"
+                                    t-as="rx">
+                                    <td style="text-align:center;">
+                                        <span t-out="rx_index + 1"/>
+                                    </td>
+                                    <td>
+                                        <strong t-out="rx.product_name"/>
+                                        <t t-if="rx.generic_name">
+                                            <br/>
+                                            <span style="color:#64748b;
+                                                         font-size:9pt;"
+                                                  t-out="rx.generic_name"/>
+                                        </t>
+                                    </td>
+                                    <td><span t-out="rx._frequency_label()"/></td>
+                                    <td><span t-out="rx._route_label()"/></td>
+                                    <td>
+                                        <t t-if="rx.duration_days">
+                                            <span t-out="rx.duration_days"/> day(s)
+                                        </t>
+                                    </td>
+                                    <td><span t-out="rx.quantity or ''"/></td>
+                                    <td style="text-align:center;">
+                                        <span t-out="rx.refills or 0"/>
+                                    </td>
+                                    <td><span t-out="rx.instructions or ''"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+
+                <!-- ============= Additional Notes ============= -->
+                <t t-if="o.discharge_medication_notes">
+                    <div style="page-break-inside: avoid; margin-top:12px;">
+                        <h4 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Additional Notes:</strong>
+                        </h4>
+                        <div style="text-align:justify;">
+                            <t t-out="o.discharge_medication_notes"/>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ============= Doctor signature ============= -->
+                <t t-if="o.doctor_id">
+                    <div style="margin-top:30px; page-break-inside: avoid;">
+                        <p style="margin-bottom:2px;">
+                            <strong style="text-decoration:underline;">
+                                Prescribing physician:
+                            </strong>
+                        </p>
+                        <p style="margin:0;">
+                            <strong>Dr. <span t-out="o.doctor_id.name"/></strong>
+                        </p>
+                        <p style="margin:0;">
+                            <t t-if="o.doctor_id.partner_id.function">
+                                <span t-out="o.doctor_id.partner_id.function"/>
+                            </t>
+                            <t t-else="">Medical Officer</t>
+                        </p>
+                        <p style="margin:0;">
+                            <strong>Date: </strong>
+                            <span t-if="o.report_date"
+                                  t-field="o.report_date"
+                                  t-options='{"format": "dd.MM.yyyy"}'/>
+                        </p>
+                        <p style="color:#c0392b; font-size:9pt; margin-top:10px;">
+                            This prescription is generated electronically and
+                            does not require a stamp.
+                        </p>
+                    </div>
+                </t>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

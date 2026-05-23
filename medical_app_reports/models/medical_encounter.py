@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 
 # Triage palette → background / text / dot colours for the urgency pill
@@ -84,6 +85,21 @@ class MedicalEncounter(models.Model):
         """Trigger the standard PDF report from a form button."""
         return self.env.ref(
             'medical_app_reports.action_report_medical_encounter'
+        ).report_action(self)
+
+    def action_print_prescription(self):
+        """Trigger the standalone prescription PDF.
+
+        Guards against printing an empty Rx — there must be at least one
+        structured prescription line on the encounter.
+        """
+        self.ensure_one()
+        if not self.prescription_line_ids:
+            raise UserError(_(
+                "There are no prescription items on this encounter. "
+                "Add at least one medication before printing the prescription."))
+        return self.env.ref(
+            'medical_app_reports.action_report_prescription'
         ).report_action(self)
 
     def action_send_by_email(self):
