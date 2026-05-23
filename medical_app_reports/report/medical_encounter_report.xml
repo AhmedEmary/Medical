@@ -71,6 +71,15 @@
                             <td><strong>Medical Record Number (MRN)</strong></td>
                             <td><span t-out="patient.mrn"/></td>
                         </tr>
+                        <tr t-if="patient.patient_category == 'hotel_guest'">
+                            <td><strong>Hotel:</strong></td>
+                            <td>
+                                <span t-out="patient.hotel_name or ''"/>
+                                <t t-if="patient.room_number">
+                                    — Room <span t-out="patient.room_number"/>
+                                </t>
+                            </td>
+                        </tr>
                     </table>
                 </div>
 

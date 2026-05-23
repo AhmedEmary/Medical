@@ -120,6 +120,8 @@
                     <group>
                         <group string="Category">
                             <field name="patient_category"/>
+                            <field name="hotel_name"
+                                   invisible="patient_category != 'hotel_guest'"/>
                             <field name="room_number"
                                    invisible="patient_category != 'hotel_guest'"/>
                             <field name="check_in_date"

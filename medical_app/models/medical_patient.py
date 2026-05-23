@@ -77,6 +77,9 @@ class MedicalPatient(models.Model):
         ('non_hotel_employee', 'Non-hotel Employee'),
         ('external', 'External Patient'),
     ], string='Patient Category', required=True, default='external', tracking=True)
+    hotel_name = fields.Char(string='Hotel',
+        help="Name of the hotel the guest is staying at. Printed on the "
+             "medical report when the patient category is Hotel Guest.")
     room_number = fields.Char(string='Room Number',
         help="Hotel room number if applicable.")
     check_in_date = fields.Date(string='Check-in Date')
