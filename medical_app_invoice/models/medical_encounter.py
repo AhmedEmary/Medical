@@ -81,19 +81,16 @@ class MedicalEncounter(models.Model):
                 "save once to auto-create the contact, then try again."
             ) % self.patient_id.display_name)
 
-        narration_bits = []
-        if self.chief_complaint:
-            narration_bits.append(_("Chief complaint: %s") % self.chief_complaint)
-        if self.diagnosis_ids:
-            narration_bits.append(_("Diagnosis: %s") % ", ".join(
-                "%s %s" % (d.code, d.name) for d in self.diagnosis_ids))
+        # The invoice mirrors the encounter date; narration stays empty.
+        encounter_date = (
+            self.encounter_date.date() if self.encounter_date
+            else fields.Date.context_today(self))
 
         move = self.env['account.move'].create({
             'move_type': 'out_invoice',
             'partner_id': partner.id,
             'encounter_id': self.id,
-            'invoice_date': fields.Date.context_today(self),
-            'narration': "\n".join(narration_bits) or False,
+            'invoice_date': encounter_date,
         })
         return {
             'type': 'ir.actions.act_window',
