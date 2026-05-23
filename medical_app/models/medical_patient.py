@@ -82,8 +82,6 @@ class MedicalPatient(models.Model):
              "medical report when the patient category is Hotel Guest.")
     room_number = fields.Char(string='Room Number',
         help="Hotel room number if applicable.")
-    check_in_date = fields.Date(string='Check-in Date')
-    check_out_date = fields.Date(string='Check-out Date')
 
     # ------------------------------------------------------------
     # Insurance
@@ -211,13 +209,6 @@ class MedicalPatient(models.Model):
         for rec in self:
             if rec.date_of_birth and rec.date_of_birth > date.today():
                 raise ValidationError(_("Date of birth cannot be in the future."))
-
-    @api.constrains('check_in_date', 'check_out_date')
-    def _check_hotel_dates(self):
-        for rec in self:
-            if rec.check_in_date and rec.check_out_date \
-                    and rec.check_in_date > rec.check_out_date:
-                raise ValidationError(_("Check-in date must be before check-out date."))
 
     # ============================================================
     # CRUD

@@ -37,42 +37,38 @@
                         <strong>Personal Information:</strong>
                     </h3>
                     <table class="table table-borderless" style="margin-bottom:16px;">
-                        <tr>
+                        <tr t-if="patient.name">
                             <td style="width:35%;"><strong>Name:</strong></td>
                             <td><span t-out="patient.name"/></td>
                         </tr>
-                        <tr>
+                        <tr t-if="patient.gender">
                             <td><strong>Gender:</strong></td>
                             <td>
                                 <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '')"/>
                             </td>
                         </tr>
-                        <tr>
+                        <tr t-if="patient.age">
                             <td><strong>Age:</strong></td>
-                            <td>
-                                <t t-if="patient.age">
-                                    <span t-out="patient.age"/> years old
-                                </t>
-                            </td>
+                            <td><span t-out="patient.age"/> years old</td>
                         </tr>
-                        <tr>
+                        <tr t-if="o.encounter_date">
                             <td><strong>Date:</strong></td>
                             <td>
-                                <span t-if="o.encounter_date"
-                                      t-field="o.encounter_date"
+                                <span t-field="o.encounter_date"
                                       t-options='{"format": "dd.MM.yyyy"}'/>
                             </td>
                         </tr>
-                        <tr>
+                        <tr t-if="patient.mrn">
                             <td><strong>Medical Record Number (MRN)</strong></td>
                             <td><span t-out="patient.mrn"/></td>
                         </tr>
-                        <tr t-if="patient.patient_category == 'hotel_guest'">
+                        <tr t-if="patient.patient_category == 'hotel_guest' and (patient.hotel_name or patient.room_number)">
                             <td><strong>Hotel:</strong></td>
                             <td>
-                                <span t-out="patient.hotel_name or ''"/>
+                                <span t-if="patient.hotel_name" t-out="patient.hotel_name"/>
+                                <t t-if="patient.hotel_name and patient.room_number"> — </t>
                                 <t t-if="patient.room_number">
-                                    — Room <span t-out="patient.room_number"/>
+                                    Room <span t-out="patient.room_number"/>
                                 </t>
                             </td>
                         </tr>

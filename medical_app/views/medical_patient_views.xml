@@ -124,10 +124,6 @@
                                    invisible="patient_category != 'hotel_guest'"/>
                             <field name="room_number"
                                    invisible="patient_category != 'hotel_guest'"/>
-                            <field name="check_in_date"
-                                   invisible="patient_category != 'hotel_guest'"/>
-                            <field name="check_out_date"
-                                   invisible="patient_category != 'hotel_guest'"/>
                         </group>
                         <group string="Emergency Contact">
                             <field name="emergency_contact_name"/>

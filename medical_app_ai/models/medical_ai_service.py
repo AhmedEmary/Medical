@@ -4,6 +4,9 @@ import json
 import logging
 import os
 import re
+import time
+
+import requests
 
 from odoo import _, api, models
 from odoo.exceptions import UserError
@@ -34,6 +37,14 @@ except ImportError:  # pragma: no cover
 MAX_TOKENS = 8000
 API_TIMEOUT = 120.0
 
+# Manus is an agentic, asynchronous API: ``task.create`` returns a task ID
+# and the agent runs in the background. ``_call_manus`` polls
+# ``task.listMessages`` to keep the same synchronous (text, log) contract
+# as the other providers.
+MANUS_API_BASE = 'https://api.manus.ai/v2'
+MANUS_POLL_INTERVAL = 3.0   # seconds between polls
+MANUS_TIMEOUT = 300.0       # hard cap so the request can't block forever
+
 # Supported AI providers. To add another provider: add an entry here and a
 # matching ``_call_<key>`` handler on MedicalAIService below — nothing else
 # in the module needs to change.
@@ -58,6 +69,13 @@ PROVIDERS = {
         'env_keys': ('OPENAI_API_KEY',),
         'model_hint': 'e.g. gpt-4o, gpt-4o-mini, o3',
         'package': 'openai',
+    },
+    'manus': {
+        'label': 'Manus (Agent)',
+        'default_model': 'auto',
+        'env_keys': ('MANUS_API_KEY',),
+        'model_hint': "Leave as 'auto' — Manus picks the model.",
+        'package': 'requests (built-in)',
     },
 }
 PROVIDER_SELECTION = [(key, meta['label']) for key, meta in PROVIDERS.items()]
@@ -438,6 +456,97 @@ class MedicalAIService(models.AbstractModel):
             getattr(usage, 'prompt_tokens', 0) if usage else 0,
             getattr(usage, 'completion_tokens', 0) if usage else 0,
         )
+
+    @api.model
+    def _call_manus(self, model, system_prompt, user_prompt, max_tokens):
+        """Synchronous wrapper around Manus's async task API.
+
+        Manus has no separate ``system`` role, so the system prompt is
+        concatenated to the user prompt. We POST ``task.create``, then
+        poll ``task.listMessages`` every ``MANUS_POLL_INTERVAL`` seconds
+        until the agent reaches ``stopped`` (success) or ``error``,
+        giving up after ``MANUS_TIMEOUT``.
+        """
+        api_key = self._get_api_key('manus')
+        headers = {
+            'x-manus-api-key': api_key,
+            'Content-Type': 'application/json',
+        }
+        payload = {
+            'message': {'text': system_prompt + "\n\n" + user_prompt},
+        }
+        try:
+            resp = requests.post(
+                MANUS_API_BASE + '/task.create',
+                headers=headers, json=payload, timeout=API_TIMEOUT)
+            resp.raise_for_status()
+            data = resp.json()
+        except requests.RequestException as exc:
+            raise UserError(_(
+                "Manus task.create failed: %s") % exc) from exc
+
+        if not data.get('ok') or not data.get('task', {}).get('id'):
+            err = (data.get('error') or {}).get('message') or _("unknown error")
+            raise UserError(_("Manus rejected the task: %s") % err)
+        task_id = data['task']['id']
+
+        deadline = time.time() + MANUS_TIMEOUT
+        while time.time() < deadline:
+            time.sleep(MANUS_POLL_INTERVAL)
+            try:
+                lresp = requests.get(
+                    MANUS_API_BASE + '/task.listMessages',
+                    params={'task_id': task_id, 'order': 'asc', 'limit': 200},
+                    headers=headers, timeout=API_TIMEOUT)
+                lresp.raise_for_status()
+                ldata = lresp.json()
+            except requests.RequestException as exc:
+                raise UserError(_(
+                    "Manus polling failed for task %s: %s") % (task_id, exc)
+                ) from exc
+
+            if not ldata.get('ok'):
+                err = (ldata.get('error') or {}).get('message') or _("unknown error")
+                raise UserError(_("Manus polling failed: %s") % err)
+
+            events = ldata.get('events') or []
+            # Walk events in order; track the latest agent status and any
+            # error message; collect assistant_message text for the result.
+            agent_status = None
+            error_message = ''
+            assistant_texts = []
+            for ev in events:
+                ev_type = ev.get('type')
+                if ev_type == 'status_update':
+                    upd = ev.get('status_update') or {}
+                    agent_status = upd.get('agent_status') or agent_status
+                    if upd.get('error_message'):
+                        error_message = upd['error_message']
+                elif ev_type == 'assistant_message':
+                    text = (ev.get('assistant_message') or {}).get('text') or ''
+                    if text:
+                        assistant_texts.append(text)
+
+            if agent_status == 'error':
+                raise UserError(_("Manus agent failed: %s") % (
+                    error_message or _("no error message provided")))
+            if agent_status == 'stopped':
+                return ("\n".join(assistant_texts).strip(), 0, 0)
+
+        raise UserError(_(
+            "Manus task %(t)s did not finish within %(s)s seconds. "
+            "Increase MANUS_TIMEOUT or use a different provider.") % {
+                't': task_id, 's': int(MANUS_TIMEOUT)})
+
+    @api.model
+    def _call_vision_manus(self, model, system_prompt, user_prompt,
+                          images, max_tokens):
+        """Vision is not implemented for Manus — raise a clear error."""
+        raise UserError(_(
+            "The Manus provider does not currently support image inputs. "
+            "Switch the AI provider to Anthropic, Google or OpenAI in "
+            "Settings → Medical AI Configuration to run document or ID "
+            "scans, or use the Manus features that work on text only."))
 
     @api.model
     def _parse_json(self, text):

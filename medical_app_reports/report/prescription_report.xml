@@ -42,48 +42,50 @@
                     <h3 style="color:#1f5e8a; text-decoration:underline;">
                         <strong>Patient Information:</strong>
                     </h3>
+                    <t t-set="latest_v"
+                       t-value="o.vitals_ids and o.vitals_ids.sorted('measurement_time')[-1] or False"/>
                     <table class="table table-borderless"
                            style="margin-bottom:16px;">
-                        <tr>
-                            <td style="width:25%;"><strong>Name:</strong></td>
-                            <td style="width:35%;"><span t-out="patient.name"/></td>
-                            <td style="width:15%;"><strong>MRN:</strong></td>
+                        <tr t-if="patient.name">
+                            <td style="width:30%;"><strong>Name:</strong></td>
+                            <td><span t-out="patient.name"/></td>
+                        </tr>
+                        <tr t-if="patient.mrn">
+                            <td><strong>MRN:</strong></td>
                             <td><span t-out="patient.mrn"/></td>
                         </tr>
-                        <tr>
+                        <tr t-if="patient.gender">
                             <td><strong>Gender:</strong></td>
                             <td>
                                 <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '')"/>
                             </td>
-                            <td><strong>Age:</strong></td>
-                            <td>
-                                <t t-if="patient.age">
-                                    <span t-out="patient.age"/> years
-                                </t>
-                            </td>
                         </tr>
-                        <tr>
+                        <tr t-if="patient.age">
+                            <td><strong>Age:</strong></td>
+                            <td><span t-out="patient.age"/> years</td>
+                        </tr>
+                        <tr t-if="o.report_date">
                             <td><strong>Date:</strong></td>
                             <td>
-                                <span t-if="o.report_date"
-                                      t-field="o.report_date"
+                                <span t-field="o.report_date"
                                       t-options='{"format": "dd.MM.yyyy"}'/>
                             </td>
-                            <td><strong>Weight:</strong></td>
-                            <td>
-                                <t t-set="latest_v"
-                                   t-value="o.vitals_ids and o.vitals_ids.sorted('measurement_time')[-1] or False"/>
-                                <t t-if="latest_v and latest_v.weight">
-                                    <span t-out="latest_v.weight"/> kg
-                                </t>
-                            </td>
                         </tr>
-                        <tr t-if="patient.patient_category == 'hotel_guest'">
+                        <tr t-if="latest_v and latest_v.weight">
+                            <td><strong>Weight:</strong></td>
+                            <td><span t-out="latest_v.weight"/> kg</td>
+                        </tr>
+                        <tr t-if="latest_v and latest_v.height">
+                            <td><strong>Height:</strong></td>
+                            <td><span t-out="latest_v.height"/> cm</td>
+                        </tr>
+                        <tr t-if="patient.patient_category == 'hotel_guest' and (patient.hotel_name or patient.room_number)">
                             <td><strong>Hotel:</strong></td>
-                            <td colspan="3">
-                                <span t-out="patient.hotel_name or ''"/>
+                            <td>
+                                <span t-if="patient.hotel_name" t-out="patient.hotel_name"/>
+                                <t t-if="patient.hotel_name and patient.room_number"> — </t>
                                 <t t-if="patient.room_number">
-                                    — Room <span t-out="patient.room_number"/>
+                                    Room <span t-out="patient.room_number"/>
                                 </t>
                             </td>
                         </tr>
@@ -116,7 +118,7 @@
                 <t t-if="o.prescription_line_ids">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
-                            <strong>℞ Prescribed Medications:</strong>
+                            <strong>Prescribed Medications:</strong>
                         </h3>
                         <table class="table table-bordered"
                                style="font-size:10pt; width:100%;">
@@ -162,18 +164,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </t>
-
-                <!-- ============= Additional Notes ============= -->
-                <t t-if="o.discharge_medication_notes">
-                    <div style="page-break-inside: avoid; margin-top:12px;">
-                        <h4 style="color:#1f5e8a; text-decoration:underline;">
-                            <strong>Additional Notes:</strong>
-                        </h4>
-                        <div style="text-align:justify;">
-                            <t t-out="o.discharge_medication_notes"/>
-                        </div>
                     </div>
                 </t>
 
