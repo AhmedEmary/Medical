@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_encounter_form_inherit_invoice"
+            model="ir.ui.view">
+        <field name="name">medical.encounter.form.invoice</field>
+        <field name="model">medical.encounter</field>
+        <field name="inherit_id" ref="medical_app.view_medical_encounter_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Restore 'invoiced' on the statusbar -->
+            <xpath expr="//header/field[@name='state']" position="attributes">
+                <attribute name="statusbar_visible">draft,in_progress,completed,invoiced</attribute>
+            </xpath>
+
+            <!-- Header: Create Invoice button next to Complete -->
+            <xpath expr="//header/button[@name='action_cancel']" position="before">
+                <button name="action_create_invoice" type="object"
+                        string="Create Invoice" class="oe_highlight"
+                        icon="fa-file-text-o"
+                        invisible="state in ('draft', 'cancelled')"
+                        groups="account.group_account_invoice"/>
+            </xpath>
+
+            <!-- Fancy stat button: count + total amount -->
+            <xpath expr="//div[@name='button_box']/button[@name='action_view_attachments']"
+                   position="before">
+                <button name="action_view_invoices" type="object"
+                        class="oe_stat_button"
+                        icon="fa-money"
+                        invisible="invoice_count == 0">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="invoice_total" widget="monetary"
+                                   options="{'currency_field': 'invoice_currency_id'}"/>
+                        </span>
+                        <span class="o_stat_text">
+                            <field name="invoice_count"/> Invoice(s)
+                        </span>
+                        <span class="o_stat_text">
+                            <field name="invoice_status" widget="badge"
+                                   decoration-success="invoice_status == 'paid'"
+                                   decoration-info="invoice_status == 'posted'"
+                                   decoration-warning="invoice_status == 'draft'"
+                                   decoration-muted="invoice_status == 'none'"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Invisible monetary helper field needed by the stat button -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="invoice_currency_id" invisible="1"/>
+                <field name="invoice_residual" invisible="1"/>
+            </xpath>
+
+            <!-- Cancel button shouldn't be available on invoiced encounters -->
+            <xpath expr="//header/button[@name='action_cancel']"
+                   position="attributes">
+                <attribute name="invisible">state in ('cancelled', 'invoiced')</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

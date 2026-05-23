@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Inherit the standard customer invoice PDF to inject a
+        "Medical Encounter Information" block under the invoice header
+        whenever the move is linked to a clinical encounter.
+    -->
+    <template id="report_invoice_document_inherit_medical"
+              inherit_id="account.report_invoice_document">
+        <xpath expr="//div[hasclass('page')]//table[1]"
+               position="before">
+            <t t-if="o.is_medical_invoice and o.encounter_id">
+                <div style="page-break-inside: avoid; margin-bottom:14px;
+                            padding:10px 14px;
+                            border:1px solid #cbd5e1;
+                            background:#f8fafc; border-radius:4px;">
+                    <h4 style="color:#1f5e8a; margin:0 0 8px 0;
+                               text-decoration:underline;">
+                        <strong>Medical Encounter Information</strong>
+                    </h4>
+                    <table class="table table-borderless table-sm"
+                           style="margin:0; font-size:10pt;">
+                        <tr>
+                            <td style="width:22%;"><strong>Encounter:</strong></td>
+                            <td style="width:28%;">
+                                <span t-out="o.encounter_id.reference"/>
+                            </td>
+                            <td style="width:22%;"><strong>Patient:</strong></td>
+                            <td>
+                                <span t-out="o.patient_id.name or ''"/>
+                            </td>
+                        </tr>
+                        <tr t-if="o.medical_passport">
+                            <td><strong>Passport / National ID:</strong></td>
+                            <td colspan="3">
+                                <span t-out="o.medical_passport"/>
+                            </td>
+                        </tr>
+                        <tr t-if="o.medical_insurance_provider_id">
+                            <td><strong>Insurance Provider:</strong></td>
+                            <td>
+                                <span t-out="o.medical_insurance_provider_id.name"/>
+                            </td>
+                            <td><strong>Policy Number:</strong></td>
+                            <td>
+                                <span t-out="o.medical_insurance_policy_number or ''"/>
+                            </td>
+                        </tr>
+                        <tr t-if="o.medical_insurance_coverage_type or o.medical_insurance_valid_until">
+                            <td><strong>Coverage Type:</strong></td>
+                            <td>
+                                <span t-out="o.medical_insurance_coverage_type or ''"/>
+                            </td>
+                            <td><strong>Valid Until:</strong></td>
+                            <td>
+                                <span t-if="o.medical_insurance_valid_until"
+                                      t-field="o.medical_insurance_valid_until"
+                                      t-options='{"format": "dd.MM.yyyy"}'/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
