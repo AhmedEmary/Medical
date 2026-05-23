@@ -82,9 +82,16 @@ class MedicalEncounter(models.Model):
             ) % self.patient_id.display_name)
 
         # The invoice mirrors the encounter date; narration stays empty.
-        encounter_date = (
-            self.encounter_date.date() if self.encounter_date
-            else fields.Date.context_today(self))
+        # encounter_date is stored in UTC, so convert to the user's
+        # timezone before taking the date — otherwise an encounter
+        # logged late at night local time would land on the previous
+        # day's invoice.
+        if self.encounter_date:
+            local_dt = fields.Datetime.context_timestamp(
+                self, self.encounter_date)
+            encounter_date = local_dt.date()
+        else:
+            encounter_date = fields.Date.context_today(self)
 
         move = self.env['account.move'].create({
             'move_type': 'out_invoice',
