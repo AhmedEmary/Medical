@@ -90,16 +90,16 @@
                             groups="medical_app.group_medical_doctor"/>
                     <button name="action_cancel" type="object"
                             string="Cancel"
-                            invisible="state in ('cancelled', 'invoiced')"
+                            invisible="state == 'cancelled'"
                             confirm="Are you sure you want to cancel this encounter?"/>
                     <button name="action_draft" type="object"
                             string="Set to Draft"
                             invisible="state != 'cancelled'"/>
                     <field name="state" widget="statusbar"
-                           statusbar_visible="draft,in_progress,completed,invoiced"/>
+                           statusbar_visible="draft,in_progress,completed"/>
                 </header>
                 <sheet>
-                    <!-- Ribbon for cancelled / invoiced -->
+                    <!-- Ribbon for state -->
                     <widget name="web_ribbon" title="Cancelled" bg_color="bg-danger"
                             invisible="state != 'cancelled'"/>
                     <widget name="web_ribbon" title="Completed" bg_color="bg-success"
@@ -215,10 +215,6 @@
                             <field name="history_present_illness" class="o_medical_note"
                                    placeholder="Onset, duration, character, aggravating/relieving factors..."/>
 
-                            <separator string="Review of Systems (S)"/>
-                            <field name="review_of_systems" class="o_medical_note"
-                                   placeholder="System-by-system review..."/>
-
                             <separator string="Physical Examination (O)"/>
                             <field name="physical_exam" class="o_medical_note"
                                    placeholder="Examination findings by system..."/>
@@ -234,10 +230,6 @@
                             <separator string="Plan (P)"/>
                             <field name="plan" class="o_medical_note"
                                    placeholder="Treatment plan, follow-up, referrals..."/>
-
-                            <separator string="Additional Notes"/>
-                            <field name="clinical_notes" class="o_medical_note"
-                                   placeholder="Any other relevant notes..."/>
                         </page>
 
                         <page string="Prescription" name="prescription">
@@ -326,13 +318,6 @@
                             </group>
                         </page>
 
-                        <page string="Audit" name="audit"
-                              groups="medical_app.group_medical_manager">
-                            <group>
-                                <field name="completed_date" readonly="1"/>
-                                <field name="completed_by" readonly="1"/>
-                            </group>
-                        </page>
                     </notebook>
                 </sheet>
                 <chatter/>

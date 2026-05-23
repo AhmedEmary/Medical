@@ -213,27 +213,6 @@
                             <t t-out="o.discharge_medication_notes"/>
                         </div>
                     </t>
-
-                    <t t-if="o.prescription_line_ids">
-                        <p>The prescribed treatment plan includes:</p>
-                        <ul>
-                            <li t-foreach="o.prescription_line_ids" t-as="rx">
-                                <strong t-out="rx.product_name or ''"/>
-                                <t t-if="rx._frequency_label()">:
-                                    <span t-out="rx._frequency_label()"/>
-                                </t>
-                                <t t-if="rx._route_label()">
-                                    (<span t-out="rx._route_label()"/>)
-                                </t>
-                                <t t-if="rx.duration_days">
-                                    for <span t-out="rx.duration_days"/> days
-                                </t>
-                                <t t-if="rx.instructions">
-                                    — <span t-out="rx.instructions"/>
-                                </t>
-                            </li>
-                        </ul>
-                    </t>
                 </t>
 
                 <!-- ============= Medical Recommendation ============= -->

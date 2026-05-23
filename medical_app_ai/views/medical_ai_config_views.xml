@@ -18,6 +18,9 @@
                     <field name="model" placeholder="e.g. claude-opus-4-7"/>
                     <field name="model_hint" readonly="1"/>
                 </group>
+                <group string="Doctor controls">
+                    <field name="preview_prompts"/>
+                </group>
                 <footer>
                     <button name="action_save" type="object"
                             string="Save" class="btn-primary"/>

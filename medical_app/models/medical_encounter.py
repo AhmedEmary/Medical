@@ -6,14 +6,10 @@ from odoo.exceptions import UserError
 class MedicalEncounter(models.Model):
     """A clinical encounter (visit/consultation).
 
-    This is the central transactional document. It ties together:
-    - the patient and doctor
-    - vitals recorded during the visit
-    - the resulting medical report (Phase 2)
-    - prescriptions issued (Phase 2)
-    - the invoice (Phase 2)
+    Central transactional document tying together the patient, doctor,
+    vitals, diagnoses, prescriptions, and the printed medical report.
 
-    State machine: draft -> in_progress -> completed -> invoiced/cancelled
+    State machine: draft -> in_progress -> completed (or cancelled).
     """
     _name = 'medical.encounter'
     _description = 'Clinical Encounter'
@@ -61,9 +57,7 @@ class MedicalEncounter(models.Model):
         help="The main reason the patient is presenting today, in their own words.",
     )
     history_present_illness = fields.Html(string='History of Present Illness')
-    review_of_systems = fields.Html(string='Review of Systems')
     physical_exam = fields.Html(string='Physical Examination')
-    clinical_notes = fields.Html(string='Clinical Notes')
     assessment = fields.Html(string='Assessment')
     plan = fields.Html(string='Plan')
 
@@ -121,12 +115,8 @@ class MedicalEncounter(models.Model):
         ('draft', 'Draft'),
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
-        ('invoiced', 'Invoiced'),
         ('cancelled', 'Cancelled'),
     ], default='draft', required=True, tracking=True, index=True)
-
-    completed_date = fields.Datetime(readonly=True)
-    completed_by = fields.Many2one('res.users', readonly=True)
 
     # ------------------------------------------------------------
     # Counts & attachments
@@ -231,28 +221,18 @@ class MedicalEncounter(models.Model):
             if rec.state not in ('draft', 'in_progress'):
                 raise UserError(
                     _("Only draft or in-progress encounters can be completed."))
-            if not rec.chief_complaint and not rec.clinical_notes:
+            if not rec.chief_complaint:
                 raise UserError(
-                    _("Please document at least the chief complaint or clinical notes "
+                    _("Please document at least the chief complaint "
                       "before completing the encounter."))
-            rec.write({
-                'state': 'completed',
-                'completed_date': fields.Datetime.now(),
-                'completed_by': self.env.user.id,
-            })
+            rec.state = 'completed'
 
     def action_reopen(self):
         for rec in self:
-            if rec.state == 'invoiced':
-                raise UserError(
-                    _("Cannot reopen an invoiced encounter. Cancel the invoice first."))
             rec.state = 'in_progress'
 
     def action_cancel(self):
         for rec in self:
-            if rec.state == 'invoiced':
-                raise UserError(
-                    _("Cannot cancel an invoiced encounter. Cancel the invoice first."))
             rec.state = 'cancelled'
 
     def action_draft(self):

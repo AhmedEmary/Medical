@@ -531,11 +531,9 @@ class MedicalAIService(models.AbstractModel):
         # Any clinical text already on the encounter.
         for label, field in [
             ('History of present illness', 'history_present_illness'),
-            ('Review of systems', 'review_of_systems'),
             ('Physical examination', 'physical_exam'),
             ('Assessment', 'assessment'),
             ('Plan', 'plan'),
-            ('Clinical notes', 'clinical_notes'),
         ]:
             value = html2plaintext(encounter[field] or '').strip()
             if value:
@@ -572,30 +570,8 @@ class MedicalAIService(models.AbstractModel):
     # Feature methods
     # ============================================================
     @api.model
-    def draft_report(self, encounter):
-        """Return ``(dict, log)`` — drafted free-text sections for the PDF
-        medical report.
-
-        The doctor's terse notes (whatever they typed into each of the six
-        report fields on the encounter) are passed in as **seed material**;
-        the AI expands them into the verbose, formal style of a hotel-medical
-        discharge report — full paragraphs, bullet lists where appropriate,
-        bolded key clinical terms.
-
-        Output is HTML (using only ``<p>``, ``<ul>``, ``<li>``, ``<strong>``,
-        ``<br/>``) so the wizard can render and edit it in the rich-text
-        editor and write it straight to the encounter's Html fields.
-
-        Fields filled:
-
-        * ``history_present_illness`` — "Clinical Summary"
-        * ``therapies_administered`` — "Therapies Administered"
-        * ``discharge_medication_notes`` — "Medications Prescribed upon Discharge"
-        * ``plan`` — "Medical Recommendation"
-        * ``discharge_condition`` — "Condition at Discharge"
-        * ``discharge_conclusion`` — "Conclusion"
-        """
-        system = SYSTEM_BASE + """
+    def _draft_report_system(self):
+        return SYSTEM_BASE + """
 
 TASK: Draft the six free-text sections of a formal hotel-medical discharge
 report. The doctor has typed minimal seed notes into each section on the
@@ -679,12 +655,26 @@ above (or "" if no data supports it):
   "discharge_condition": "...",
   "discharge_conclusion": "..."
 }"""
-        user = (
+
+    @api.model
+    def _draft_report_user(self, encounter):
+        return (
             "Draft the report sections for this encounter.\n\n"
             + self._encounter_context(encounter)
             + "\n\n"
             + self._doctor_notes_block(encounter)
         )
+
+    @api.model
+    def draft_report(self, encounter, system=None, user=None):
+        """Return ``(dict, log)`` — drafted free-text sections for the PDF
+        medical report. Pass ``system``/``user`` to override the built-in
+        prompts (used by the preview wizard).
+        """
+        if system is None:
+            system = self._draft_report_system()
+        if user is None:
+            user = self._draft_report_user(encounter)
         text, log = self._call(
             'report_draft', system, user, encounter=encounter)
         data = self._parse_json(text)
@@ -733,12 +723,11 @@ above (or "" if no data supports it):
         return "\n".join(lines)
 
     @api.model
-    def suggest_diagnoses(self, encounter):
-        """Return ``(list, log)`` — suggested ``{code, rationale}`` dicts."""
+    def _suggest_diagnoses_system(self):
         catalog = self.env['medical.diagnosis'].search([])
         catalog_text = "\n".join(
             "%s | %s" % (d.code, d.name) for d in catalog)
-        system = SYSTEM_BASE + """
+        return SYSTEM_BASE + """
 
 TASK: Suggest the most relevant ICD-10 diagnoses for this encounter.
 You MUST pick only from the catalog of codes provided below — never invent
@@ -750,30 +739,50 @@ an empty list.
 
 AVAILABLE ICD-10 CODES (code | description):
 """ + catalog_text
-        user = "Suggest ICD-10 diagnoses for this encounter.\n\n" \
+
+    @api.model
+    def _suggest_diagnoses_user(self, encounter):
+        return "Suggest ICD-10 diagnoses for this encounter.\n\n" \
             + self._encounter_context(encounter)
+
+    @api.model
+    def suggest_diagnoses(self, encounter, system=None, user=None):
+        """Return ``(list, log)`` — suggested ``{code, rationale}`` dicts."""
+        if system is None:
+            system = self._suggest_diagnoses_system()
+        if user is None:
+            user = self._suggest_diagnoses_user(encounter)
         text, log = self._call(
             'diagnosis_suggest', system, user, encounter=encounter)
         data = self._parse_json(text)
         return data.get('suggestions') or [], log
 
     @api.model
-    def summarize_patient(self, patient):
-        """Return ``(text, log)`` — a concise clinical briefing."""
-        system = SYSTEM_BASE + """
+    def _summarize_patient_system(self):
+        return SYSTEM_BASE + """
 
 TASK: Write a concise clinical briefing of this patient for a clinician who
 is about to see them. Cover active problems, relevant history, allergies and
 current medications, and anything that needs attention. Use short paragraphs
 or bullet points. Plain text only."""
-        user = "Summarise this patient.\n\n" \
+
+    @api.model
+    def _summarize_patient_user(self, patient):
+        return "Summarise this patient.\n\n" \
             + self._patient_full_context(patient)
+
+    @api.model
+    def summarize_patient(self, patient, system=None, user=None):
+        """Return ``(text, log)`` — a concise clinical briefing."""
+        if system is None:
+            system = self._summarize_patient_system()
+        if user is None:
+            user = self._summarize_patient_user(patient)
         return self._call('history_summary', system, user, patient=patient)
 
     @api.model
-    def safety_check(self, encounter):
-        """Return ``(text, log)`` — a safety review of the encounter plan."""
-        system = SYSTEM_BASE + """
+    def _safety_check_system(self):
+        return SYSTEM_BASE + """
 
 TASK: Review this encounter's assessment and plan for safety concerns. Check
 the proposed treatment against the patient's documented allergies and current
@@ -783,6 +792,44 @@ Plain text only. Start with one overall line — either
 "Overall: no major concerns identified" or
 "Overall: concerns found - see below" — then list specific findings.
 If something cannot be assessed because data is missing, say so."""
-        user = "Perform a safety check on this encounter.\n\n" \
+
+    @api.model
+    def _safety_check_user(self, encounter):
+        return "Perform a safety check on this encounter.\n\n" \
             + self._encounter_context(encounter)
+
+    @api.model
+    def safety_check(self, encounter, system=None, user=None):
+        """Return ``(text, log)`` — a safety review of the encounter plan."""
+        if system is None:
+            system = self._safety_check_system()
+        if user is None:
+            user = self._safety_check_user(encounter)
         return self._call('safety_check', system, user, encounter=encounter)
+
+    # ============================================================
+    # Prompt preview helpers
+    # ============================================================
+    @api.model
+    def build_prompts(self, mode, encounter=None, patient=None):
+        """Return ``(system, user)`` for a given preview mode without
+        sending anything. Used by the prompt-preview wizard."""
+        if mode == 'report':
+            return self._draft_report_system(), self._draft_report_user(encounter)
+        if mode == 'diagnosis':
+            return (self._suggest_diagnoses_system(),
+                    self._suggest_diagnoses_user(encounter))
+        if mode == 'summary':
+            return (self._summarize_patient_system(),
+                    self._summarize_patient_user(patient))
+        if mode == 'safety':
+            return (self._safety_check_system(),
+                    self._safety_check_user(encounter))
+        raise UserError(_("Unknown AI preview mode: %s") % mode)
+
+    @api.model
+    def preview_enabled(self):
+        """Read the 'show prompt preview' user setting (default on)."""
+        val = self.env['ir.config_parameter'].sudo().get_param(
+            'medical_app_ai.preview_prompts', 'True')
+        return str(val).strip().lower() not in ('0', 'false', 'no', '')

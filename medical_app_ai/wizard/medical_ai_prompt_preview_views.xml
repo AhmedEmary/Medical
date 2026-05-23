@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_ai_prompt_preview_form" model="ir.ui.view">
+        <field name="name">medical.ai.prompt.preview.form</field>
+        <field name="model">medical.ai.prompt.preview</field>
+        <field name="arch" type="xml">
+            <form string="Preview AI Prompt">
+                <div class="alert alert-info" role="alert">
+                    <strong>Review what's going to the AI.</strong>
+                    Add anything that isn't already on the encounter in
+                    <em>Extra context</em>. Enable <em>Advanced edit</em>
+                    only if you need to rewrite the user prompt itself.
+                </div>
+                <group>
+                    <group>
+                        <field name="mode" readonly="1"/>
+                        <field name="encounter_id" readonly="1"
+                               invisible="not encounter_id"/>
+                        <field name="patient_id" readonly="1"
+                               invisible="not patient_id"/>
+                    </group>
+                    <group>
+                        <field name="provider_label"/>
+                        <field name="model_name"/>
+                        <field name="advanced_edit"/>
+                    </group>
+                </group>
+
+                <separator string="Extra context / notes (appended)"/>
+                <field name="extra_context"
+                       placeholder="Anything not in the chart yet: verbal complaints, phone call notes, points you want emphasised, allergies the patient mentioned today..."
+                       nolabel="1"/>
+
+                <notebook>
+                    <page string="User prompt" name="user_prompt">
+                        <field name="user_prompt"
+                               readonly="not advanced_edit"
+                               nolabel="1"/>
+                        <div class="text-muted small mt-2">
+                            <i class="fa fa-info-circle me-1" title="Notice" role="img" aria-label="Notice"/>
+                            This is the data block sent to the AI. With
+                            Advanced edit off, only your Extra context is
+                            appended.
+                        </div>
+                    </page>
+                    <page string="System prompt" name="system_prompt">
+                        <field name="system_prompt" readonly="1" nolabel="1"/>
+                        <div class="text-muted small mt-2">
+                            <i class="fa fa-lock me-1" title="Locked" role="img" aria-label="Locked"/>
+                            The system prompt is fixed — it contains the
+                            output format the wizard needs to parse.
+                        </div>
+                    </page>
+                </notebook>
+
+                <footer>
+                    <button name="action_send" type="object"
+                            string="Send to AI" class="btn-primary"
+                            icon="fa-paper-plane"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -51,6 +51,7 @@ provider, which always works as long as one of the SDKs above is set up.
     ],
     'data': [
         'security/ir.model.access.csv',
+        'wizard/medical_ai_prompt_preview_views.xml',
         'wizard/medical_ai_suggestion_views.xml',
         'wizard/medical_id_scan_views.xml',
         'wizard/medical_encounter_scan_views.xml',

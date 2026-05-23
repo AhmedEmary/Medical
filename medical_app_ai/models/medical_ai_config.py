@@ -32,6 +32,12 @@ class MedicalAIConfig(models.TransientModel):
     model_hint = fields.Char(
         string='Example models', compute='_compute_model_hint',
         help="Example model identifiers for the selected provider.")
+    preview_prompts = fields.Boolean(
+        string='Preview prompts before sending', default=True,
+        help="Open a wizard showing the exact prompt about to be sent to "
+             "the AI, with a field for the doctor to add extra context. "
+             "Turn off to send immediately on click.",
+    )
 
     @api.depends('provider')
     def _compute_model_hint(self):
@@ -47,6 +53,7 @@ class MedicalAIConfig(models.TransientModel):
         res['provider'] = provider
         res['api_key'] = service._param_api_key(provider)
         res['model'] = service._param_model(provider)
+        res['preview_prompts'] = service.preview_enabled()
         return res
 
     @api.onchange('provider')
@@ -67,4 +74,6 @@ class MedicalAIConfig(models.TransientModel):
                       self.api_key or '')
         icp.set_param('medical_app_ai.model_%s' % provider,
                       self.model or PROVIDERS[provider]['default_model'])
+        icp.set_param('medical_app_ai.preview_prompts',
+                      'True' if self.preview_prompts else 'False')
         return {'type': 'ir.actions.act_window_close'}

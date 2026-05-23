@@ -3,6 +3,8 @@ access_medical_ai_log_doctor,medical.ai.log.doctor,model_medical_ai_log,medical_
 access_medical_ai_log_manager,medical.ai.log.manager,model_medical_ai_log,medical_app.group_medical_manager,1,1,1,1
 access_medical_ai_suggestion_doctor,medical.ai.suggestion.doctor,model_medical_ai_suggestion,medical_app.group_medical_doctor,1,1,1,1
 access_medical_ai_suggestion_manager,medical.ai.suggestion.manager,model_medical_ai_suggestion,medical_app.group_medical_manager,1,1,1,1
+access_medical_ai_prompt_preview_doctor,medical.ai.prompt.preview.doctor,model_medical_ai_prompt_preview,medical_app.group_medical_doctor,1,1,1,1
+access_medical_ai_prompt_preview_manager,medical.ai.prompt.preview.manager,model_medical_ai_prompt_preview,medical_app.group_medical_manager,1,1,1,1
 access_medical_ai_config_manager,medical.ai.config.manager,model_medical_ai_config,medical_app.group_medical_manager,1,1,1,1
 access_medical_id_scan_wizard_receptionist,medical.id.scan.wizard.receptionist,model_medical_id_scan_wizard,medical_app.group_medical_receptionist,1,1,1,1
 access_medical_id_scan_wizard_manager,medical.id.scan.wizard.manager,model_medical_id_scan_wizard,medical_app.group_medical_manager,1,1,1,1
