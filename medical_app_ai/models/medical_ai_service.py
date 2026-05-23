@@ -472,44 +472,134 @@ class MedicalAIService(models.AbstractModel):
             'x-manus-api-key': api_key,
             'Content-Type': 'application/json',
         }
+        combined = system_prompt + "\n\n" + user_prompt
         payload = {
-            'message': {'text': system_prompt + "\n\n" + user_prompt},
+            'message': {
+                'content': [{'type': 'text', 'text': combined}],
+            },
         }
+        _logger.info(
+            "[MANUS] POST %s/task.create — payload=%s (text chars=%s)",
+            MANUS_API_BASE, json.dumps(payload)[:1500], len(combined))
         try:
             resp = requests.post(
                 MANUS_API_BASE + '/task.create',
                 headers=headers, json=payload, timeout=API_TIMEOUT)
-            resp.raise_for_status()
-            data = resp.json()
         except requests.RequestException as exc:
+            _logger.warning("[MANUS] task.create transport error: %s", exc)
             raise UserError(_(
                 "Manus task.create failed: %s") % exc) from exc
 
-        if not data.get('ok') or not data.get('task', {}).get('id'):
-            err = (data.get('error') or {}).get('message') or _("unknown error")
+        _logger.info(
+            "[MANUS] task.create HTTP %s; body=%s",
+            resp.status_code, (resp.text or '')[:2000])
+
+        if resp.status_code >= 400:
+            detail = self._manus_extract_error(resp)
+            _logger.warning(
+                "[MANUS] task.create %s: %s | sent payload top-level keys=%s "
+                "message keys=%s text chars=%s",
+                resp.status_code, detail,
+                list(payload.keys()),
+                list(payload['message'].keys()),
+                len(combined))
+            raise UserError(_(
+                "Manus task.create failed (HTTP %(c)s): %(d)s") % {
+                    'c': resp.status_code, 'd': detail})
+
+        try:
+            data = resp.json()
+        except ValueError as exc:
+            _logger.warning("[MANUS] non-JSON response: %s", resp.text[:1000])
+            raise UserError(_(
+                "Manus returned a non-JSON response: %s") % resp.text[:500]
+            ) from exc
+
+        # The Manus response shape isn't stable across docs/versions, so
+        # try several known places for the task id before giving up.
+        task_id = (
+            (data.get('task') or {}).get('id')
+            or (data.get('data') or {}).get('task_id')
+            or (data.get('data') or {}).get('id')
+            or data.get('task_id')
+            or data.get('id')
+        )
+        if not task_id:
+            _logger.warning(
+                "[MANUS] task.create returned no usable task id; "
+                "response body=%s", json.dumps(data)[:2000])
+            err = (
+                ((data.get('error') or {}) if isinstance(data.get('error'), dict) else {})
+                .get('message')
+                or (data.get('error') if isinstance(data.get('error'), str) else None)
+                or data.get('message')
+                or data.get('detail')
+                or _("response shape not recognised — see server log for the raw body")
+            )
             raise UserError(_("Manus rejected the task: %s") % err)
-        task_id = data['task']['id']
+
+        _logger.info("[MANUS] task created id=%s — starting poll loop", task_id)
 
         deadline = time.time() + MANUS_TIMEOUT
+        poll_count = 0
         while time.time() < deadline:
             time.sleep(MANUS_POLL_INTERVAL)
+            poll_count += 1
             try:
                 lresp = requests.get(
                     MANUS_API_BASE + '/task.listMessages',
                     params={'task_id': task_id, 'order': 'asc', 'limit': 200},
                     headers=headers, timeout=API_TIMEOUT)
-                lresp.raise_for_status()
-                ldata = lresp.json()
             except requests.RequestException as exc:
+                _logger.warning(
+                    "[MANUS] polling transport error for task %s: %s",
+                    task_id, exc)
                 raise UserError(_(
                     "Manus polling failed for task %s: %s") % (task_id, exc)
                 ) from exc
 
-            if not ldata.get('ok'):
-                err = (ldata.get('error') or {}).get('message') or _("unknown error")
+            _logger.info(
+                "[MANUS] poll #%s task=%s HTTP %s; body=%s",
+                poll_count, task_id, lresp.status_code,
+                (lresp.text or '')[:2000])
+
+            if lresp.status_code >= 400:
+                detail = self._manus_extract_error(lresp)
+                raise UserError(_(
+                    "Manus polling failed (HTTP %(c)s): %(d)s") % {
+                        'c': lresp.status_code, 'd': detail})
+
+            try:
+                ldata = lresp.json()
+            except ValueError as exc:
+                _logger.warning(
+                    "[MANUS] non-JSON poll response for task %s: %s",
+                    task_id, lresp.text[:1000])
+                raise UserError(_(
+                    "Manus returned a non-JSON poll response: %s"
+                ) % lresp.text[:500]) from exc
+
+            # `ok` is informational only — some Manus responses just return
+            # the events array without an envelope. Only bail if there's an
+            # actual error field.
+            if isinstance(ldata, dict) and ldata.get('error'):
+                err = (
+                    (ldata.get('error') or {}).get('message')
+                    if isinstance(ldata.get('error'), dict) else ldata['error']
+                ) or _("unknown error")
                 raise UserError(_("Manus polling failed: %s") % err)
 
-            events = ldata.get('events') or []
+            events = (
+                (ldata.get('events') if isinstance(ldata, dict) else None)
+                or (ldata.get('messages') if isinstance(ldata, dict) else None)
+                or (ldata.get('data') if isinstance(ldata, dict) else None)
+                or []
+            )
+            _logger.info(
+                "[MANUS] poll #%s parsed %s event(s); types=%s",
+                poll_count, len(events) if hasattr(events, '__len__') else '?',
+                [ev.get('type') for ev in events
+                 if isinstance(ev, dict)][:20] if events else [])
             # Walk events in order; track the latest agent status and any
             # error message; collect assistant_message text for the result.
             agent_status = None
@@ -523,7 +613,9 @@ class MedicalAIService(models.AbstractModel):
                     if upd.get('error_message'):
                         error_message = upd['error_message']
                 elif ev_type == 'assistant_message':
-                    text = (ev.get('assistant_message') or {}).get('text') or ''
+                    am = ev.get('assistant_message') or {}
+                    # Accept either 'content' (new API) or 'text' (legacy).
+                    text = am.get('content') or am.get('text') or ''
                     if text:
                         assistant_texts.append(text)
 
@@ -537,6 +629,28 @@ class MedicalAIService(models.AbstractModel):
             "Manus task %(t)s did not finish within %(s)s seconds. "
             "Increase MANUS_TIMEOUT or use a different provider.") % {
                 't': task_id, 's': int(MANUS_TIMEOUT)})
+
+    @api.model
+    def _manus_extract_error(self, resp):
+        """Pull the most informative error string out of a Manus
+        non-2xx response. Tries JSON paths first, falls back to raw text."""
+        try:
+            body = resp.json()
+        except ValueError:
+            return (resp.text or '')[:500] or _("empty response body")
+        # Common shapes: {"ok": false, "error": {"message": "..."}}
+        # or {"error": "..."} or {"message": "..."} or {"detail": "..."}.
+        err = body.get('error')
+        if isinstance(err, dict):
+            for k in ('message', 'detail', 'description', 'code'):
+                if err.get(k):
+                    return str(err[k])
+        if isinstance(err, str) and err:
+            return err
+        for k in ('message', 'detail', 'description'):
+            if body.get(k):
+                return str(body[k])
+        return json.dumps(body)[:500]
 
     @api.model
     def _call_vision_manus(self, model, system_prompt, user_prompt,
