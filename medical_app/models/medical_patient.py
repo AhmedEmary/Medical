@@ -89,7 +89,6 @@ class MedicalPatient(models.Model):
         domain="[('is_company', '=', True)]",
     )
     insurance_policy_number = fields.Char(string='Policy Number')
-    insurance_coverage_type = fields.Char(string='Coverage Type')
     insurance_valid_until = fields.Date(string='Valid Until')
 
     # ------------------------------------------------------------

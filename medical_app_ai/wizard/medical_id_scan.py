@@ -6,7 +6,11 @@ Reception uploads an image of a passport / national ID, the wizard runs OCR
 edit anything that looks off, then click Apply to write the data onto either
 a patient record, a contact, or both.
 """
+import base64
+import io
 import logging
+
+from PIL import Image
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -90,6 +94,23 @@ class MedicalIdScanWizard(models.TransientModel):
     place_of_birth = fields.Char()
     raw_text = fields.Text(string='Raw OCR Output', readonly=True)
 
+    # Holder photo extracted from the document
+    cropped_face = fields.Binary(
+        string='Cropped Photo', readonly=True, attachment=False,
+        help="Holder portrait cropped from the scanned document.")
+    has_cropped_face = fields.Boolean(
+        compute='_compute_has_cropped_face',
+        help="Driven by cropped_face — controls visibility of the preview.")
+    apply_face_to_patient = fields.Boolean(
+        string='Set as patient photo', default=True,
+        help="Write the cropped portrait to the patient (and contact) "
+             "image when applying the scan.")
+
+    @api.depends('cropped_face')
+    def _compute_has_cropped_face(self):
+        for rec in self:
+            rec.has_cropped_face = bool(rec.cropped_face)
+
     # ============================================================
     # Default targets — populated from the action context
     # ============================================================
@@ -145,6 +166,11 @@ class MedicalIdScanWizard(models.TransientModel):
         if ocr_doc_type and ocr_doc_type in dict(DOC_TYPES):
             doc_type = ocr_doc_type
 
+        cropped = self._crop_face(
+            self.image.decode() if isinstance(self.image, bytes) else self.image,
+            result.get('face_bbox'),
+        )
+
         self.write({
             'state': 'review',
             'source': result.get('source') or False,
@@ -161,6 +187,7 @@ class MedicalIdScanWizard(models.TransientModel):
             'place_of_birth': result.get('place_of_birth') or '',
             'raw_text': result.get('raw_text') or '',
             'doc_type': doc_type,
+            'cropped_face': cropped or False,
         })
         return self._reopen()
 
@@ -202,6 +229,12 @@ class MedicalIdScanWizard(models.TransientModel):
         # a copy of the source document on record.
         if self.image:
             self._attach_document(partner, patient)
+
+        # Push the cropped portrait onto the contact (patient.image_1920
+        # is a related field on partner.image_1920, so partner is enough).
+        if (self.apply_face_to_patient and self.cropped_face
+                and partner):
+            partner.image_1920 = self.cropped_face
 
         return self._open_target(partner, patient)
 
@@ -279,6 +312,41 @@ class MedicalIdScanWizard(models.TransientModel):
             'view_mode': 'form',
             'target': 'new',
         }
+
+    def _crop_face(self, image_b64, bbox):
+        """Crop the holder's portrait from the scanned document.
+
+        ``bbox`` is the normalized ``{x, y, width, height}`` dict returned
+        by the OCR (relative to the image's full size, all values in 0..1).
+        Returns a base64-encoded JPEG of the cropped face, or ``False``
+        when no usable bbox was returned or the crop fails for any reason
+        (corrupt image, bbox outside the picture, …). Failures are
+        non-fatal — the rest of the scan still completes.
+        """
+        if not image_b64 or not isinstance(bbox, dict):
+            return False
+        try:
+            raw = base64.b64decode(image_b64)
+            with Image.open(io.BytesIO(raw)) as img:
+                # Strip alpha so we can save as JPEG; keep EXIF rotation.
+                img = img.convert('RGB')
+                w, h = img.size
+                # Add a small padding margin so the crop captures the
+                # whole head instead of a tight rectangle.
+                pad = 0.08
+                left = max(0, int((bbox['x'] - pad) * w))
+                top = max(0, int((bbox['y'] - pad) * h))
+                right = min(w, int((bbox['x'] + bbox['width'] + pad) * w))
+                bottom = min(h, int((bbox['y'] + bbox['height'] + pad) * h))
+                if right - left < 20 or bottom - top < 20:
+                    return False
+                face = img.crop((left, top, right, bottom))
+                buf = io.BytesIO()
+                face.save(buf, format='JPEG', quality=90)
+            return base64.b64encode(buf.getvalue())
+        except Exception as exc:  # noqa: BLE001 - cropping is best-effort
+            _logger.info("Face crop skipped: %s", exc)
+            return False
 
     def _open_target(self, partner, patient):
         """After Apply, navigate to whichever record the wizard updated."""

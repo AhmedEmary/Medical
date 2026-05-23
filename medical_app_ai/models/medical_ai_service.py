@@ -45,6 +45,11 @@ MANUS_API_BASE = 'https://api.manus.ai/v2'
 MANUS_POLL_INTERVAL = 3.0   # seconds between polls
 MANUS_TIMEOUT = 300.0       # hard cap so the request can't block forever
 
+# Providers that handle image inputs. Used to transparently fall back to a
+# vision-capable provider when the configured one (e.g. Manus) only does
+# text. Order = preference for the fallback.
+VISION_PROVIDERS = ('anthropic', 'google', 'openai')
+
 # Supported AI providers. To add another provider: add an entry here and a
 # matching ``_call_<key>`` handler on MedicalAIService below — nothing else
 # in the module needs to change.
@@ -273,6 +278,16 @@ class MedicalAIService(models.AbstractModel):
         )
 
     @api.model
+    def _pick_vision_fallback(self):
+        """Return the first vision-capable provider with an API key set,
+        or ``None`` if none are configured. Used by ``_call_vision`` to
+        bridge over text-only providers like Manus."""
+        for candidate in VISION_PROVIDERS:
+            if self._param_api_key(candidate):
+                return candidate
+        return None
+
+    @api.model
     def _call_vision(self, feature, system_prompt, user_prompt, image_b64,
                      mime_type='image/jpeg', extra_images=None,
                      encounter=None, patient=None,
@@ -286,6 +301,25 @@ class MedicalAIService(models.AbstractModel):
         single request. Returns ``(text, log)`` like :meth:`_call`.
         """
         provider = self._param_provider()
+        # Manus has no vision endpoint. Transparently fall back to the first
+        # vision-capable provider that has a key configured (anthropic →
+        # google → openai). This way users keep Manus selected for the
+        # text-based AI features without breaking ID/document scans.
+        if provider not in VISION_PROVIDERS:
+            fallback = self._pick_vision_fallback()
+            if fallback:
+                _logger.info(
+                    "Vision call: provider '%s' has no vision; falling back "
+                    "to '%s'.", provider, fallback)
+                provider = fallback
+            else:
+                raise UserError(_(
+                    "The configured AI provider ('%s') does not support "
+                    "image inputs, and no other vision-capable provider "
+                    "has an API key configured.\n\nOpen Medical AI "
+                    "Configuration and add a key for Anthropic, Google or "
+                    "OpenAI to enable ID and document scans."
+                ) % provider)
         model = self._param_model(provider)
         if encounter and not patient:
             patient = encounter.patient_id
@@ -664,7 +698,14 @@ class MedicalAIService(models.AbstractModel):
 
     @api.model
     def _parse_json(self, text):
-        """Parse a JSON object out of the model's response, tolerantly."""
+        """Parse a JSON object out of the model's response, tolerantly.
+
+        Accepts plain JSON, JSON wrapped in ``` fences, or a JSON object
+        embedded in surrounding text. As a last resort, attempts to repair
+        a truncated/unbalanced JSON object (closing dangling strings and
+        braces) so that at least the partial fields are usable instead
+        of the whole call being lost.
+        """
         cleaned = (text or '').strip()
         fenced = re.match(r'^```(?:json)?\s*(.*?)\s*```$', cleaned, re.DOTALL)
         if fenced:
@@ -672,14 +713,113 @@ class MedicalAIService(models.AbstractModel):
         try:
             return json.loads(cleaned)
         except (ValueError, TypeError):
+            # Greedy: outermost { … } in the whole string.
             match = re.search(r'\{.*\}', cleaned, re.DOTALL)
             if match:
                 try:
                     return json.loads(match.group(0))
                 except ValueError:
                     pass
+            # Fallback: non-greedy across multiple ```json fences.
+            for fence in re.findall(
+                    r'```(?:json)?\s*(\{.*?\})\s*```', cleaned, re.DOTALL):
+                try:
+                    return json.loads(fence)
+                except ValueError:
+                    continue
+            # Last resort: AI responses are sometimes cut mid-string by
+            # network/length/agent-stop. Try to close dangling strings
+            # and braces so the partially extracted fields are still
+            # usable.
+            repaired = self._repair_truncated_json(cleaned)
+            if repaired is not None:
+                _logger.warning(
+                    "[AI] _parse_json: response was truncated but repaired "
+                    "by closing %s unbalanced container(s). Raw (%s chars):"
+                    "\n%s",
+                    repaired[1], len(text or ''), (text or '')[:2000])
+                return repaired[0]
+        _logger.warning(
+            "[AI] _parse_json could not extract JSON. Raw response (%s chars):"
+            "\n%s", len(text or ''), (text or '')[:2000])
+        snippet = (text or '').strip()
+        if len(snippet) > 300:
+            snippet = snippet[:300] + '…'
         raise UserError(_(
-            "The AI returned an unexpected format. Please try again."))
+            "The AI returned an unexpected format (no JSON object was "
+            "found). Try again, or switch to a different provider in "
+            "Medical AI Configuration.\n\nResponse preview:\n%s"
+        ) % (snippet or _("(empty)")))
+
+    @api.model
+    def _repair_truncated_json(self, text):
+        """Attempt to repair a JSON object truncated mid-string/mid-block.
+
+        Walks the text tracking quote/escape state and brace/bracket
+        depth, then appends the closing characters needed to make it
+        parseable. Tries two strategies and returns the first that parses:
+
+        1. Trim the unfinished trailing key/value (so an aborted field
+           doesn't poison the document) and balance braces.
+        2. Leave the body intact and just close any open string/braces.
+
+        Returns ``(parsed_dict, close_count)`` on success, or ``None``
+        if there's nothing JSON-like to recover.
+        """
+        if not text:
+            return None
+        start = text.find('{')
+        if start == -1:
+            return None
+        body = text[start:]
+
+        # Strategy 1: trim a trailing partial pair (",\n  \"key\": ..." or
+        # ",\n  \"key\": \"value...) so the leftover document ends on a
+        # complete value, then balance braces.
+        trimmed = body.rstrip()
+        trimmed = re.sub(
+            r',\s*"[^"]*"\s*:\s*"[^"]*$', '', trimmed)  # mid-string value
+        trimmed = re.sub(
+            r',\s*"[^"]*"\s*:\s*$', '', trimmed)        # hanging colon
+        trimmed = re.sub(
+            r',\s*"[^"]*$', '', trimmed)                # unclosed key
+        trimmed = re.sub(r',\s*$', '', trimmed)         # dangling comma
+
+        for candidate in (trimmed, body):
+            in_string = escape = False
+            brace_depth = bracket_depth = 0
+            for ch in candidate:
+                if escape:
+                    escape = False
+                    continue
+                if ch == '\\':
+                    escape = True
+                    continue
+                if ch == '"':
+                    in_string = not in_string
+                    continue
+                if in_string:
+                    continue
+                if ch == '{':
+                    brace_depth += 1
+                elif ch == '}':
+                    brace_depth -= 1
+                elif ch == '[':
+                    bracket_depth += 1
+                elif ch == ']':
+                    bracket_depth -= 1
+            closure = ''
+            if in_string:
+                closure += '"'
+            closure += ']' * max(bracket_depth, 0)
+            closure += '}' * max(brace_depth, 0)
+            if not closure:
+                continue  # not actually unbalanced; nothing to repair here
+            try:
+                return json.loads(candidate + closure), len(closure)
+            except ValueError:
+                continue
+        return None
 
     # ============================================================
     # Clinical context builders

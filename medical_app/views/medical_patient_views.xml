@@ -202,7 +202,6 @@
                             <group>
                                 <field name="insurance_provider_id"/>
                                 <field name="insurance_policy_number"/>
-                                <field name="insurance_coverage_type"/>
                                 <field name="insurance_valid_until"/>
                             </group>
                         </page>
@@ -238,6 +237,7 @@
                 <field name="age_display"/>
                 <field name="gender"/>
                 <field name="patient_category"/>
+                <field name="hotel_name"/>
                 <field name="image_128"/>
                 <field name="has_critical_allergy"/>
                 <field name="encounter_count"/>
@@ -256,6 +256,9 @@
                                     <field name="age_display"/> ·
                                     <field name="gender"/> ·
                                     <field name="patient_category"/>
+                                    <t t-if="record.patient_category.raw_value == 'hotel_guest' and record.hotel_name.raw_value">
+                                        · <field name="hotel_name"/>
+                                    </t>
                                 </div>
                                 <div t-if="record.has_critical_allergy.raw_value"
                                      class="badge text-bg-danger mt-1">⚠ Critical allergy</div>

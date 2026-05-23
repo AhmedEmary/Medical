@@ -63,6 +63,15 @@
                         <field name="issue_date"/>
                         <field name="expiry_date"/>
                     </group>
+                    <group string="Cropped Photo" col="1"
+                           invisible="not has_cropped_face">
+                        <field name="has_cropped_face" invisible="1"/>
+                        <field name="cropped_face" widget="image"
+                               nolabel="1"
+                               options="{'size': [160, 200]}"
+                               readonly="1"/>
+                        <field name="apply_face_to_patient"/>
+                    </group>
                     <group string="Raw OCR" col="1">
                         <field name="raw_text" nolabel="1"
                                widget="text" readonly="1"/>

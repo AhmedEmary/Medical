@@ -53,6 +53,7 @@ RESULT_FIELDS = (
     'expiry_date',       # date or False
     'place_of_birth',
     'raw_text',          # whatever the source produced, for debugging
+    'face_bbox',         # {'x','y','width','height'} as 0-1 floats, or None
 )
 
 SEX_MAP = {
@@ -81,6 +82,12 @@ Rules:
 
 OCR_USER_PROMPT = """Extract the holder's identity data from this document image.
 
+Also locate the holder's portrait photo on the document and return its
+bounding box as relative coordinates: top-left ``x`` and ``y`` together
+with ``width`` and ``height``, all as floats between 0 and 1 (fractions
+of the image's width and height). If you cannot see a photo, return
+``face_bbox`` as null.
+
 Respond with ONLY a JSON object with exactly these keys:
 {
   "document_type": "",
@@ -94,7 +101,8 @@ Respond with ONLY a JSON object with exactly these keys:
   "country_code": "",
   "issue_date": "",
   "expiry_date": "",
-  "place_of_birth": ""
+  "place_of_birth": "",
+  "face_bbox": {"x": 0.0, "y": 0.0, "width": 0.0, "height": 0.0}
 }"""
 
 
@@ -216,6 +224,8 @@ class MedicalIdOcrService(models.AbstractModel):
     def _extract_ai(self, image_b64, mime_type, patient=None):
         """Call the configured vision provider and parse its JSON response."""
         service = self.env['medical.ai.service']
+        # Use a generous output budget so reasoning-token consumption on
+        # 'thinking' models (e.g. Gemini 2.5) doesn't starve the JSON body.
         text, _log = service._call_vision(
             feature='id_ocr',
             system_prompt=OCR_SYSTEM_PROMPT,
@@ -223,7 +233,7 @@ class MedicalIdOcrService(models.AbstractModel):
             image_b64=image_b64,
             mime_type=mime_type,
             patient=patient,
-            max_tokens=1500,
+            max_tokens=8000,
         )
         data = service._parse_json(text)
 
@@ -243,6 +253,7 @@ class MedicalIdOcrService(models.AbstractModel):
             'expiry_date': _parse_iso(data.get('expiry_date')),
             'place_of_birth': (data.get('place_of_birth') or '').strip(),
             'raw_text': text,
+            'face_bbox': _normalize_bbox(data.get('face_bbox')),
         }
 
 
@@ -250,8 +261,35 @@ class MedicalIdOcrService(models.AbstractModel):
 # Helpers (module-level, no Odoo state)
 # ============================================================
 def _empty_result():
-    return {k: ('' if k != 'date_of_birth' and 'date' not in k else False)
-            for k in RESULT_FIELDS}
+    blanks = {k: ('' if k != 'date_of_birth' and 'date' not in k else False)
+              for k in RESULT_FIELDS}
+    blanks['face_bbox'] = None
+    return blanks
+
+
+def _normalize_bbox(raw):
+    """Return a sanitized ``{x, y, width, height}`` dict (floats 0..1)
+    or ``None`` if the AI didn't report a usable face position."""
+    if not isinstance(raw, dict):
+        return None
+    try:
+        x = float(raw.get('x') or 0)
+        y = float(raw.get('y') or 0)
+        w = float(raw.get('width') or 0)
+        h = float(raw.get('height') or 0)
+    except (TypeError, ValueError):
+        return None
+    if w <= 0 or h <= 0:
+        return None
+    # Clamp into [0, 1] in case the model overshoots.
+    x = max(0.0, min(1.0, x))
+    y = max(0.0, min(1.0, y))
+    w = max(0.0, min(1.0 - x, w))
+    h = max(0.0, min(1.0 - y, h))
+    if w < 0.02 or h < 0.02:
+        # Too small to be a useful crop.
+        return None
+    return {'x': x, 'y': y, 'width': w, 'height': h}
 
 
 def _is_complete(result):
