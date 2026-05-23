@@ -37,13 +37,6 @@
                         <span class="o_stat_text">
                             <field name="invoice_count"/> Invoice(s)
                         </span>
-                        <span class="o_stat_text">
-                            <field name="invoice_status" widget="badge"
-                                   decoration-success="invoice_status == 'paid'"
-                                   decoration-info="invoice_status == 'posted'"
-                                   decoration-warning="invoice_status == 'draft'"
-                                   decoration-muted="invoice_status == 'none'"/>
-                        </span>
                     </div>
                 </button>
             </xpath>
