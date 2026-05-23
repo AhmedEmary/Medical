@@ -25,10 +25,6 @@
 
             <div class="page">
 
-                <!-- Horizontal separator under the company header -->
-                <hr style="border:0; border-top:2px solid #1f5e8a;
-                           margin:0 0 16px 0;"/>
-
                 <!-- ============= Title ============= -->
                 <div style="page-break-inside: avoid; text-align:center;
                             margin-bottom:12px;">

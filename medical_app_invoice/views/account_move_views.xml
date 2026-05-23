@@ -44,7 +44,6 @@
                             <field name="medical_insurance_provider_id"
                                    options="{'no_open': True}"/>
                             <field name="medical_insurance_policy_number"/>
-                            <field name="medical_insurance_coverage_type"/>
                             <field name="medical_insurance_valid_until"/>
                         </group>
                     </group>

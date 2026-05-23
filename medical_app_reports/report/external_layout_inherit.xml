@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Inject a blue horizontal rule under the company header on EVERY
+        page of medical encounter reports. The header is rendered by
+        web.external_layout and repeats on each page, so the rule must
+        live inside the layout itself — adding it to <div class="page">
+        only places it on page 1.
+
+        The layouts use ``t-attf-class="header ..."`` rather than a
+        plain ``class`` attribute, so we match the header element with
+        ``contains(@t-attf-class, 'header')``. None of the article/footer
+        divs contain "header" in their t-attf-class, so the xpath is
+        unambiguous.
+
+        The rule is scoped to medical.encounter so it does not appear on
+        invoices, sales orders or any other company report.
+    -->
+
+    <template id="external_layout_standard_medical_rule"
+              inherit_id="web.external_layout_standard">
+        <xpath expr="//div[contains(@t-attf-class, 'header')]"
+               position="inside">
+            <hr t-if="o and o._name == 'medical.encounter'"
+                style="border:0; border-top:2px solid #1f5e8a;
+                       margin:6px 0 0 0; padding:0;"/>
+        </xpath>
+    </template>
+
+    <template id="external_layout_boxed_medical_rule"
+              inherit_id="web.external_layout_boxed">
+        <xpath expr="//div[contains(@t-attf-class, 'header')]"
+               position="inside">
+            <hr t-if="o and o._name == 'medical.encounter'"
+                style="border:0; border-top:2px solid #1f5e8a;
+                       margin:6px 0 0 0; padding:0;"/>
+        </xpath>
+    </template>
+
+    <template id="external_layout_bold_medical_rule"
+              inherit_id="web.external_layout_bold">
+        <xpath expr="//div[contains(@t-attf-class, 'header')]"
+               position="inside">
+            <hr t-if="o and o._name == 'medical.encounter'"
+                style="border:0; border-top:2px solid #1f5e8a;
+                       margin:6px 0 0 0; padding:0;"/>
+        </xpath>
+    </template>
+
+    <template id="external_layout_striped_medical_rule"
+              inherit_id="web.external_layout_striped">
+        <xpath expr="//div[contains(@t-attf-class, 'header')]"
+               position="inside">
+            <hr t-if="o and o._name == 'medical.encounter'"
+                style="border:0; border-top:2px solid #1f5e8a;
+                       margin:6px 0 0 0; padding:0;"/>
+        </xpath>
+    </template>
+
+</odoo>

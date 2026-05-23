@@ -47,11 +47,7 @@
                                 <span t-out="o.medical_insurance_policy_number or ''"/>
                             </td>
                         </tr>
-                        <tr t-if="o.medical_insurance_coverage_type or o.medical_insurance_valid_until">
-                            <td><strong>Coverage Type:</strong></td>
-                            <td>
-                                <span t-out="o.medical_insurance_coverage_type or ''"/>
-                            </td>
+                        <tr t-if="o.medical_insurance_valid_until">
                             <td><strong>Valid Until:</strong></td>
                             <td>
                                 <span t-if="o.medical_insurance_valid_until"

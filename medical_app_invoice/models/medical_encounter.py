@@ -64,11 +64,12 @@ class MedicalEncounter(models.Model):
     # Actions
     # ============================================================
     def action_create_invoice(self):
-        """Create a draft invoice for the patient and open it.
+        """Create an empty draft invoice for the patient and open it.
 
-        One line for the consultation plus a description line per
-        prescription item. Prices default to 0 — the doctor or
-        receptionist sets the amounts before posting.
+        No invoice lines are pre-populated — the receptionist fills them
+        in directly on the invoice form. Encounter context (chief
+        complaint and diagnoses) is copied into the invoice's narration
+        for reference.
         """
         self.ensure_one()
         if not self.patient_id:
@@ -87,35 +88,12 @@ class MedicalEncounter(models.Model):
             narration_bits.append(_("Diagnosis: %s") % ", ".join(
                 "%s %s" % (d.code, d.name) for d in self.diagnosis_ids))
 
-        lines = [(0, 0, {
-            'name': _("Medical Consultation — %s") % (
-                self.reference or self.display_name),
-            'quantity': 1.0,
-            'price_unit': 0.0,
-        })]
-        for rx in self.prescription_line_ids:
-            descr_bits = [rx.product_name or _('Medication')]
-            freq = rx._frequency_label()
-            if freq:
-                descr_bits.append(freq)
-            route = rx._route_label()
-            if route:
-                descr_bits.append("(%s)" % route)
-            if rx.duration_days:
-                descr_bits.append(_("for %s days") % rx.duration_days)
-            lines.append((0, 0, {
-                'name': " — ".join(descr_bits),
-                'quantity': 1.0,
-                'price_unit': 0.0,
-            }))
-
         move = self.env['account.move'].create({
             'move_type': 'out_invoice',
             'partner_id': partner.id,
             'encounter_id': self.id,
             'invoice_date': fields.Date.context_today(self),
             'narration': "\n".join(narration_bits) or False,
-            'invoice_line_ids': lines,
         })
         return {
             'type': 'ir.actions.act_window',

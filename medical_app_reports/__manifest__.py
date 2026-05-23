@@ -44,6 +44,7 @@ Sections
         'views/medical_encounter_views.xml',
         # Report templates first, then the action that references them,
         # then the mail template that references the action.
+        'report/external_layout_inherit.xml',
         'report/medical_encounter_report.xml',
         'report/prescription_report.xml',
         'report/medical_report_actions.xml',

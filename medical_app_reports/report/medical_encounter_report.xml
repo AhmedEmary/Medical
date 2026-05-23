@@ -31,10 +31,6 @@
 
             <div class="page">
 
-                <!-- Horizontal separator under the company header -->
-                <hr style="border:0; border-top:2px solid #1f5e8a;
-                           margin:0 0 16px 0;"/>
-
                 <!-- ============= Personal Information ============= -->
                 <div style="page-break-inside: avoid;">
                     <h3 style="color:#1f5e8a; text-decoration:underline;">

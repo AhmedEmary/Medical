@@ -40,10 +40,7 @@ class AccountMove(models.Model):
         related='encounter_id.patient_id.insurance_policy_number',
         string='Policy Number', readonly=True, store=True,
     )
-    medical_insurance_coverage_type = fields.Char(
-        related='encounter_id.patient_id.insurance_coverage_type',
-        string='Coverage Type', readonly=True, store=True,
-    )
+
     medical_insurance_valid_until = fields.Date(
         related='encounter_id.patient_id.insurance_valid_until',
         string='Coverage Valid Until', readonly=True, store=True,
