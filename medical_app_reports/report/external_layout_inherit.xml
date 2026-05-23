@@ -22,9 +22,10 @@
               inherit_id="web.external_layout_standard">
         <xpath expr="//div[contains(@t-attf-class, 'header')]"
                position="inside">
-            <hr t-if="o and o._name == 'medical.encounter'"
-                style="border:0; border-top:2px solid #1f5e8a;
-                       margin:6px 0 0 0; padding:0;"/>
+            <div t-if="o and o._name == 'medical.encounter'"
+                 style="border-bottom:2px solid #1f5e8a;
+                        margin:8px 0 0 0; height:0; line-height:0;
+                        font-size:0;">&#160;</div>
         </xpath>
     </template>
 
@@ -32,9 +33,10 @@
               inherit_id="web.external_layout_boxed">
         <xpath expr="//div[contains(@t-attf-class, 'header')]"
                position="inside">
-            <hr t-if="o and o._name == 'medical.encounter'"
-                style="border:0; border-top:2px solid #1f5e8a;
-                       margin:6px 0 0 0; padding:0;"/>
+            <div t-if="o and o._name == 'medical.encounter'"
+                 style="border-bottom:2px solid #1f5e8a;
+                        margin:8px 0 0 0; height:0; line-height:0;
+                        font-size:0;">&#160;</div>
         </xpath>
     </template>
 
@@ -42,9 +44,10 @@
               inherit_id="web.external_layout_bold">
         <xpath expr="//div[contains(@t-attf-class, 'header')]"
                position="inside">
-            <hr t-if="o and o._name == 'medical.encounter'"
-                style="border:0; border-top:2px solid #1f5e8a;
-                       margin:6px 0 0 0; padding:0;"/>
+            <div t-if="o and o._name == 'medical.encounter'"
+                 style="border-bottom:2px solid #1f5e8a;
+                        margin:8px 0 0 0; height:0; line-height:0;
+                        font-size:0;">&#160;</div>
         </xpath>
     </template>
 
@@ -52,9 +55,43 @@
               inherit_id="web.external_layout_striped">
         <xpath expr="//div[contains(@t-attf-class, 'header')]"
                position="inside">
-            <hr t-if="o and o._name == 'medical.encounter'"
-                style="border:0; border-top:2px solid #1f5e8a;
-                       margin:6px 0 0 0; padding:0;"/>
+            <div t-if="o and o._name == 'medical.encounter'"
+                 style="border-bottom:2px solid #1f5e8a;
+                        margin:8px 0 0 0; height:0; line-height:0;
+                        font-size:0;">&#160;</div>
+        </xpath>
+    </template>
+
+    <template id="external_layout_folder_medical_rule"
+              inherit_id="web.external_layout_folder">
+        <xpath expr="//div[contains(@t-attf-class, 'header')]"
+               position="inside">
+            <div t-if="o and o._name == 'medical.encounter'"
+                 style="border-bottom:2px solid #1f5e8a;
+                        margin:8px 0 0 0; height:0; line-height:0;
+                        font-size:0;">&#160;</div>
+        </xpath>
+    </template>
+
+    <template id="external_layout_wave_medical_rule"
+              inherit_id="web.external_layout_wave">
+        <xpath expr="//div[contains(@t-attf-class, 'header')]"
+               position="inside">
+            <div t-if="o and o._name == 'medical.encounter'"
+                 style="border-bottom:2px solid #1f5e8a;
+                        margin:8px 0 0 0; height:0; line-height:0;
+                        font-size:0;">&#160;</div>
+        </xpath>
+    </template>
+
+    <template id="external_layout_bubble_medical_rule"
+              inherit_id="web.external_layout_bubble">
+        <xpath expr="//div[contains(@t-attf-class, 'header')]"
+               position="inside">
+            <div t-if="o and o._name == 'medical.encounter'"
+                 style="border-bottom:2px solid #1f5e8a;
+                        margin:8px 0 0 0; height:0; line-height:0;
+                        font-size:0;">&#160;</div>
         </xpath>
     </template>
 

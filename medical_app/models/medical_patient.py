@@ -57,8 +57,6 @@ class MedicalPatient(models.Model):
     phone = fields.Char(related='partner_id.phone', readonly=False, store=True)
     mobile = fields.Char(string='Mobile', tracking=True)
     email = fields.Char(related='partner_id.email', readonly=False, store=True)
-    street = fields.Char(related='partner_id.street', readonly=False)
-    city = fields.Char(related='partner_id.city', readonly=False)
     country_id = fields.Many2one(related='partner_id.country_id', readonly=False)
 
     # ------------------------------------------------------------

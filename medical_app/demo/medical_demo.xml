@@ -8,8 +8,6 @@
             <field name="is_patient">True</field>
             <field name="phone">+39 333 1234567</field>
             <field name="email">mario.rossi@example.com</field>
-            <field name="street">Via Roma 12</field>
-            <field name="city">Milano</field>
         </record>
 
         <record id="patient_demo_1" model="medical.patient">

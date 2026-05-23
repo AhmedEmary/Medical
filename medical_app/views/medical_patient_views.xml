@@ -111,8 +111,6 @@
                             <field name="phone"/>
                             <field name="mobile"/>
                             <field name="email" widget="email"/>
-                            <field name="street"/>
-                            <field name="city"/>
                             <field name="country_id"/>
                         </group>
                     </group>
