@@ -76,7 +76,7 @@
                 </div>
 
                 <!-- ============= Clinical Summary ============= -->
-                <t t-if="o.history_present_illness">
+                <t t-if="not is_html_empty(o.history_present_illness)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
                             <strong>Clinical Summary:</strong>
@@ -109,7 +109,9 @@
                 <!-- ============= Clinical Notes & Course ============= -->
                 <t t-set="show_history"
                    t-value="patient.medical_history_ids or patient.active_medication_ids"/>
-                <t t-if="show_history or o.therapies_administered">
+                <t t-set="show_therapies"
+                   t-value="not is_html_empty(o.therapies_administered)"/>
+                <t t-if="show_history or show_therapies">
                     <!-- Keep the section H3 with the first subsection H4 -->
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
@@ -138,7 +140,7 @@
                         </t>
                     </div>
 
-                    <t t-if="o.therapies_administered">
+                    <t t-if="show_therapies">
                         <div style="page-break-inside: avoid;">
                             <h4 style="color:#1f5e8a; text-decoration:underline;">
                                 <strong>Therapies Administered</strong>
@@ -222,21 +224,19 @@
                 </t>
 
                 <!-- ============= Medications Prescribed upon Discharge ============= -->
-                <t t-if="o.prescription_line_ids or o.discharge_medication_notes">
+                <t t-if="not is_html_empty(o.discharge_medication_notes)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
                             <strong>Medications Prescribed upon Discharge:</strong>
                         </h3>
-                        <t t-if="o.discharge_medication_notes">
-                            <div style="text-align:justify;">
-                                <t t-out="o.discharge_medication_notes"/>
-                            </div>
-                        </t>
+                        <div style="text-align:justify;">
+                            <t t-out="o.discharge_medication_notes"/>
+                        </div>
                     </div>
                 </t>
 
                 <!-- ============= Medical Recommendation ============= -->
-                <t t-if="o.plan">
+                <t t-if="not is_html_empty(o.plan)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
                             <strong>Medical Recommendation:</strong>
@@ -248,7 +248,7 @@
                 </t>
 
                 <!-- ============= Condition at Discharge ============= -->
-                <t t-if="o.discharge_condition">
+                <t t-if="not is_html_empty(o.discharge_condition)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
                             <strong>Condition at Discharge:</strong>
@@ -260,7 +260,7 @@
                 </t>
 
                 <!-- ============= Conclusion ============= -->
-                <t t-if="o.discharge_conclusion">
+                <t t-if="not is_html_empty(o.discharge_conclusion)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
                             <strong>Conclusion:</strong>
