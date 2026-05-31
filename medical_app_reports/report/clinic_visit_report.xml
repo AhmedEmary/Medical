@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Clinic Visit Note — a compact one-page summary printed after an
+        in-room or short-clinic visit. Designed for hotel medical teams:
+        hotel header, presenting complaint, brief examination narrative,
+        patient identity. Sections without data are omitted.
+    -->
+
+    <template id="report_clinic_visit">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="medical_app_reports.report_clinic_visit_document"
+                   t-lang="user.lang or 'en_US'"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_clinic_visit_document">
+        <t t-call="web.external_layout">
+            <t t-set="patient" t-value="o.patient_id"/>
+            <t t-set="doctor_name"
+               t-value="o.doctor_employee_id.name or o.doctor_id.name"/>
+            <t t-set="clinic_phone"
+               t-value="o.doctor_employee_id.company_id.phone or
+                        o.doctor_id.company_id.phone or
+                        o.company_id.phone"/>
+            <t t-set="is_hotel_guest"
+               t-value="patient.patient_category == 'hotel_guest'"/>
+
+            <div class="page" style="font-size:11pt; color:#1f2d3d;">
+
+                <!-- ============= Title block ============= -->
+                <div style="text-align:center; margin-bottom:18px;">
+                    <h2 style="color:#1f5e8a; margin:0; letter-spacing:0.5px;">
+                        <strong>Clinic Visit Note</strong>
+                    </h2>
+                    <t t-if="is_hotel_guest and patient.hotel_name">
+                        <p style="margin:6px 0 0 0; font-size:12pt;
+                                  color:#1f5e8a;">
+                            <strong t-out="patient.hotel_name"/>
+                            <span style="color:#475569;"> · Clinic Team</span>
+                        </p>
+                    </t>
+                    <t t-else="">
+                        <p style="margin:6px 0 0 0; font-size:12pt;
+                                  color:#475569;">
+                            <strong>Clinic Team</strong>
+                        </p>
+                    </t>
+                </div>
+
+                <!-- ============= Meta strip (phone / date / time) ============= -->
+                <div style="background:#eef4f9;
+                            border-left:4px solid #1f5e8a;
+                            padding:10px 14px;
+                            margin-bottom:18px;
+                            border-radius:4px;">
+                    <table style="width:100%; font-size:10pt;">
+                        <tr>
+                            <td t-if="clinic_phone" style="width:40%;">
+                                <strong>Clinic Phone:</strong>
+                                <span t-out="clinic_phone"/>
+                            </td>
+                            <td t-if="o.encounter_date" style="width:30%;">
+                                <strong>Date:</strong>
+                                <span t-field="o.encounter_date"
+                                      t-options='{"format": "d/M/yyyy"}'/>
+                            </td>
+                            <td t-if="o.encounter_date" style="width:30%;">
+                                <strong>Time:</strong>
+                                <span t-field="o.encounter_date"
+                                      t-options='{"format": "H:mm"}'/>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- ============= Intro line ============= -->
+                <t t-if="is_hotel_guest">
+                    <p style="margin:0 0 16px 0; font-style:italic;
+                              color:#334155;">
+                        The doctor visited the patient
+                        <t t-if="patient.room_number">in their room.</t>
+                        <t t-else="">on site.</t>
+                    </p>
+                </t>
+
+                <!-- ============= Clinical Assessment ============= -->
+                <t t-set="has_history" t-value="patient.medical_history_ids"/>
+                <t t-if="o.chief_complaint or has_history">
+                    <div style="page-break-inside: avoid; margin-bottom:14px;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;
+                                   margin-bottom:8px;">
+                            <strong>Clinical Assessment</strong>
+                        </h3>
+                        <ul style="margin:0 0 0 18px; padding:0;
+                                   line-height:1.5;">
+                            <li t-if="o.chief_complaint">
+                                <strong>Presenting Complaint:</strong>
+                                <span t-out="o.chief_complaint"/>
+                            </li>
+                            <li t-if="has_history">
+                                <strong>Relevant Medical History:</strong>
+                                <ul style="margin:4px 0 0 18px; padding:0;">
+                                    <li t-foreach="patient.medical_history_ids"
+                                        t-as="h">
+                                        <span t-out="h.condition"/>
+                                        <t t-if="h.status">
+                                            (<span t-out="dict(h._fields['status'].selection).get(h.status, '')"/>)
+                                        </t>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </t>
+
+                <!-- ============= Examination narrative ============= -->
+                <t t-set="narrative"
+                   t-value="o.assessment if not is_html_empty(o.assessment)
+                            else (o.physical_exam if not is_html_empty(o.physical_exam) else False)"/>
+                <t t-if="narrative">
+                    <div style="page-break-inside: avoid; margin-bottom:16px;
+                                text-align:justify;">
+                        <t t-out="narrative"/>
+                    </div>
+                </t>
+
+                <!-- ============= Patient Information ============= -->
+                <div style="page-break-inside: avoid;
+                            border:1px solid #cfd8e3;
+                            border-radius:4px;
+                            padding:10px 14px;
+                            background:#fbfdff;
+                            margin-bottom:18px;">
+                    <h3 style="color:#1f5e8a; text-decoration:underline;
+                               margin:0 0 8px 0;">
+                        <strong>Patient Information</strong>
+                    </h3>
+                    <ul style="margin:0 0 0 18px; padding:0; line-height:1.6;">
+                        <li t-if="patient.name">
+                            <strong>Name:</strong>
+                            <span t-out="patient.name"/>
+                        </li>
+                        <li t-if="patient.age">
+                            <strong>Age:</strong>
+                            <span t-out="patient.age"/> years
+                        </li>
+                        <li t-if="patient.country_id">
+                            <strong>Nationality:</strong>
+                            <span t-out="patient.country_id.name"/>
+                        </li>
+                        <li t-if="patient.room_number">
+                            <strong>Room Number:</strong>
+                            <span t-out="patient.room_number"/>
+                        </li>
+                        <li t-if="patient.mrn">
+                            <strong>MRN:</strong>
+                            <span t-out="patient.mrn"/>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- ============= Footer signature ============= -->
+                <div style="page-break-inside: avoid; margin-top:24px;
+                            text-align:right;">
+                    <p style="margin:0; color:#1f5e8a; font-size:11pt;">
+                        <strong>AMC Healthcare Team</strong>
+                    </p>
+                    <p t-if="doctor_name"
+                       style="margin:2px 0 0 0; color:#475569;
+                              font-size:10pt;">
+                        Dr. <span t-out="doctor_name"/>
+                        <t t-if="o.doctor_employee_id.job_title">
+                            · <span t-out="o.doctor_employee_id.job_title"/>
+                        </t>
+                    </p>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>
