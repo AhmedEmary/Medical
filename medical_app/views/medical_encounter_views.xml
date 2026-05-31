@@ -195,7 +195,7 @@
                                    readonly="1" invisible="not patient_id"/>
                         </group>
                         <group>
-                            <field name="doctor_id"/>
+                            <field name="doctor_employee_id"/>
                             <field name="encounter_date"/>
                             <field name="encounter_type"/>
                             <field name="patient_has_critical_allergy" invisible="1"/>

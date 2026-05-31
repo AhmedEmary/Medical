@@ -21,11 +21,13 @@ that depend on this one.
     'author': 'Axio Parts',
     'website': 'https://axiob2b.com',
     'license': 'LGPL-3',
+    'version': '1.2.0',
     'depends': [
         'base',
         'mail',
         'contacts',
         'product',
+        'hr',
     ],
     'data': [
         # Security

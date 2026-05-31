@@ -36,6 +36,16 @@ class MedicalEncounter(models.Model):
         default=lambda self: self.env.user,
         tracking=True,
     )
+    doctor_employee_id = fields.Many2one(
+        'hr.employee', string='Doctor (Employee)',
+        domain=lambda self: [
+            ('user_id.all_group_ids', 'in', self.env.ref('medical_app.group_medical_doctor').id)
+        ] if self.env.ref('medical_app.group_medical_doctor', raise_if_not_found=False) else [],
+        default=lambda self: self.env.user.employee_id,
+        tracking=True,
+        help="HR employee record for the doctor — used for job title, "
+             "work email and other HR-side data on reports.",
+    )
     encounter_date = fields.Datetime(
         string='Date & Time', required=True,
         default=fields.Datetime.now, tracking=True,

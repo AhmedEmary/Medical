@@ -170,10 +170,13 @@
                             </strong>
                         </p>
                         <p style="margin:0;">
-                            <strong>Dr. <span t-out="o.doctor_id.name"/></strong>
+                            <strong>Dr. <span t-out="o.doctor_employee_id.name or o.doctor_id.name"/></strong>
                         </p>
                         <p style="margin:0;">
-                            <t t-if="o.doctor_id.partner_id.function">
+                            <t t-if="o.doctor_employee_id.job_title">
+                                <span t-out="o.doctor_employee_id.job_title"/>
+                            </t>
+                            <t t-elif="o.doctor_id.partner_id.function">
                                 <span t-out="o.doctor_id.partner_id.function"/>
                             </t>
                             <t t-else="">Medical Officer</t>

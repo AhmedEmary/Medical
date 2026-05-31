@@ -67,5 +67,30 @@
             <field name="patient_category">external</field>
         </record>
 
+        <!-- Demo doctor: user (audit) + linked employee (HR) -->
+        <record id="user_doctor_demo" model="res.users">
+            <field name="name">Dr. Giulia Conti</field>
+            <field name="login">giulia.conti@example.com</field>
+            <field name="email">giulia.conti@example.com</field>
+            <field name="groups_id" eval="[(4, ref('medical_app.group_medical_doctor'))]"/>
+        </record>
+
+        <record id="employee_doctor_demo" model="hr.employee">
+            <field name="name">Dr. Giulia Conti</field>
+            <field name="user_id" ref="user_doctor_demo"/>
+            <field name="work_email">giulia.conti@example.com</field>
+            <field name="job_title">General Practitioner</field>
+        </record>
+
+        <!-- Demo encounter for patient 1 -->
+        <record id="encounter_demo_1" model="medical.encounter">
+            <field name="patient_id" ref="patient_demo_1"/>
+            <field name="doctor_id" ref="user_doctor_demo"/>
+            <field name="doctor_employee_id" ref="employee_doctor_demo"/>
+            <field name="encounter_type">consultation</field>
+            <field name="chief_complaint">Headache and dizziness over the past 3 days.</field>
+            <field name="state">in_progress</field>
+        </record>
+
     </data>
 </odoo>
