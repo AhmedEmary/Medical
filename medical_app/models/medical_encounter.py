@@ -29,11 +29,11 @@ class MedicalEncounter(models.Model):
         index=True, tracking=True,
     )
     doctor_id = fields.Many2one(
-        'res.users', string='Doctor',
+        'hr.employee', string='Doctor',
         domain=lambda self: [
-            ('all_group_ids', 'in', self.env.ref('medical_app.group_medical_doctor').id)
+            ('user_id.all_group_ids', 'in', self.env.ref('medical_app.group_medical_doctor').id)
         ] if self.env.ref('medical_app.group_medical_doctor', raise_if_not_found=False) else [],
-        default=lambda self: self.env.user,
+        default=lambda self: self.env.user.employee_id,
         tracking=True,
     )
     encounter_date = fields.Datetime(
