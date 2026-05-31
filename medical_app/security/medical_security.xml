@@ -51,7 +51,7 @@
             <field name="name">Encounter: Doctor sees own encounters</field>
             <field name="model_id" ref="model_medical_encounter"/>
             <field name="groups" eval="[(4, ref('group_medical_doctor'))]"/>
-            <field name="domain_force">['|', ('doctor_id.user_id', '=', user.id), ('doctor_id', '=', False)]</field>
+            <field name="domain_force">['|', ('doctor_id', '=', user.id), ('doctor_id', '=', False)]</field>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>

@@ -45,7 +45,7 @@
                 <field name="chief_complaint"/>
                 <separator/>
                 <filter string="My Encounters" name="my_encounters"
-                        domain="[('doctor_id.user_id', '=', uid)]"/>
+                        domain="[('doctor_id', '=', uid)]"/>
                 <filter string="Today" name="today"
                         domain="[('encounter_date', '&gt;=', context_today().strftime('%Y-%m-%d 00:00:00'))]"/>
                 <separator/>
