@@ -53,8 +53,11 @@
                         <span t-out="patient.national_id or ''"/>
                     </p>
                     <p style="margin:0 0 10px 0;">
-                        <strong>Department / Clinic:</strong>
-                        <span t-out="department_name or ''"/>
+                        <strong>Hotel:</strong>
+                        <span t-out="patient.hotel_name or ''"/>
+                        &#160;|&#160;
+                        <strong>Room Number:</strong>
+                        <span t-out="patient.room_number or ''"/>
                     </p>
                 </div>
 
@@ -82,12 +85,13 @@
                 </p>
 
                 <p style="margin:0 0 6px 0;">
-                    <strong>[ ] Refuse the recommended medical intervention/plan:</strong>
+                    <strong>Refuse the recommended medical intervention/plan:</strong>
                 </p>
-                <p style="margin:0 0 18px 0;
-                          border-bottom:1px solid #1f2d3d; min-height:22px;">
-                    &#160;
-                </p>
+                <div style="margin:0 0 18px 0; padding:8px 10px;
+                            border:1px solid #1f2d3d; min-height:22px;">
+                    <span t-if="o.plan" t-out="o.plan"/>
+                    <span t-else="">&#160;</span>
+                </div>
 
                 <p style="margin:0 0 18px 0; text-align:justify;">
                     By signing this form, I assume full responsibility for any
@@ -114,11 +118,6 @@
                             <span t-out="patient.name or ''"/>
                         </li>
                         <li>
-                            <strong>Signature / Thumb print:</strong>
-                            <span style="display:inline-block; min-width:260px;
-                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
-                        </li>
-                        <li>
                             <strong>Date:</strong>
                             <span t-if="o.encounter_date"
                                   t-field="o.encounter_date"
@@ -130,6 +129,11 @@
                                   t-field="o.encounter_date"
                                   t-options='{"format": "h:mm a"}'/>
                             <span t-else="">_____ : _____ (AM/PM)</span>
+                        </li>
+                        <li>
+                            <strong>Signature:</strong>
+                            <span style="display:inline-block; min-width:260px;
+                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
                         </li>
                     </ul>
                 </div>
