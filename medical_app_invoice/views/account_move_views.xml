@@ -2,9 +2,11 @@
 <odoo>
 
     <!--
-        Adds a "Medical Encounter" section to the customer invoice form,
-        with the encounter link and (when set) the patient's passport
-        and insurance details.
+        Adds a "Medical Information" section to the customer invoice form,
+        with patient identity, demographics, hotel/room (if applicable),
+        and insurance details. The section is visible whenever the contact
+        is a registered patient or the invoice is linked to a clinical
+        encounter.
     -->
     <record id="view_move_form_inherit_medical" model="ir.ui.view">
         <field name="name">account.move.form.medical</field>
@@ -27,20 +29,32 @@
                 </button>
             </xpath>
 
-            <!-- A medical-encounter notebook page (last tab) -->
+            <!-- A medical-information notebook page (last tab) -->
             <xpath expr="//notebook" position="inside">
-                <page string="Medical Encounter" name="medical_encounter_page"
+                <page string="Medical Information" name="medical_encounter_page"
                       invisible="not is_medical_invoice">
                     <field name="is_medical_invoice" invisible="1"/>
+                    <field name="patient_id" invisible="1"/>
                     <group>
-                        <group string="Encounter">
+                        <group string="Patient">
+                            <field name="patient_id" readonly="1"
+                                   options="{'no_open': False}"/>
+                            <field name="medical_mrn"/>
+                            <field name="medical_passport"/>
+                            <field name="medical_date_of_birth"/>
+                            <field name="medical_age_display"/>
+                            <field name="medical_gender"/>
+                            <field name="medical_nationality_id"
+                                   options="{'no_open': True}"/>
+                            <field name="medical_mobile"/>
+                        </group>
+                        <group string="Stay &amp; Encounter">
+                            <field name="medical_hotel_name"/>
+                            <field name="medical_room_number"/>
                             <field name="encounter_id" readonly="1"
                                    options="{'no_open': False}"/>
-                            <field name="patient_id" readonly="1"
-                                   options="{'no_open': True}"/>
-                            <field name="medical_passport"/>
                         </group>
-                        <group string="Insurance">
+                        <group string="Insurance" colspan="2">
                             <field name="medical_insurance_provider_id"
                                    options="{'no_open': True}"/>
                             <field name="medical_insurance_policy_number"/>
