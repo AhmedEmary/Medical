@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Refusal of Medical Advice / Discharge Against Medical Advice (DAMA).
+
+        Printed per encounter so the patient (or legal guardian) can sign
+        off on refusing the recommended treatment. Identification fields
+        are pre-filled from the encounter; signature, date and refused-
+        intervention fields are left blank for handwriting on paper.
+    -->
+
+    <template id="report_dama">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="medical_app_reports.report_dama_document"
+                   t-lang="user.lang or 'en_US'"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_dama_document">
+        <t t-call="web.external_layout">
+            <t t-set="patient" t-value="o.patient_id"/>
+            <t t-set="doctor_name"
+               t-value="o.doctor_employee_id.name or o.doctor_id.name"/>
+            <t t-set="department_name"
+               t-value="o.doctor_employee_id.department_id.name or
+                        dict(o._fields['encounter_type'].selection).get(o.encounter_type, '')"/>
+
+            <div class="page" style="font-size:11pt; color:#1f2d3d;
+                                     line-height:1.55;">
+
+                <!-- ============= Title ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h3 style="margin:0; text-decoration:underline;">
+                        <strong>Refusal of Medical Advice / Discharge Against Medical Advice (DAMA)</strong>
+                    </h3>
+                </div>
+
+                <!-- ============= Identification ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <p style="margin:0 0 10px 0;">
+                        <strong>Patient Name:</strong>
+                        <span t-out="patient.name or ''"/>
+                    </p>
+                    <p style="margin:0 0 10px 0;">
+                        <strong>Medical Record Number (MRN):</strong>
+                        <span t-out="patient.mrn or ''"/>
+                    </p>
+                    <p style="margin:0 0 10px 0;">
+                        <strong>ID / Passport Number:</strong>
+                        <span t-out="patient.national_id or ''"/>
+                    </p>
+                    <p style="margin:0 0 10px 0;">
+                        <strong>Department / Clinic:</strong>
+                        <span t-out="department_name or ''"/>
+                    </p>
+                </div>
+
+                <!-- ============= Acknowledgement ============= -->
+                <p style="margin:0 0 12px 0; text-align:justify;">
+                    I, the undersigned, acknowledge that my attending physician
+                    has fully explained my current medical condition, the
+                    proposed treatment plan, and the expected benefits of
+                    continuing medical care within this facility.
+                </p>
+
+                <p style="margin:0 0 12px 0; text-align:justify;">
+                    I also acknowledge that the physician has clearly
+                    explained all the
+                    <strong>potential health risks and complications</strong>
+                    — which may include severe deterioration of my health
+                    status, permanent disability, or death — that may result
+                    from my decision to refuse medical advice or leave the
+                    facility before completing my treatment.
+                </p>
+
+                <p style="margin:0 0 12px 0; text-align:justify;">
+                    Consequently, by my own free will and with full legal
+                    capacity, I choose to:
+                </p>
+
+                <p style="margin:0 0 6px 0;">
+                    <strong>[ ] Refuse the recommended medical intervention/plan:</strong>
+                </p>
+                <p style="margin:0 0 18px 0;
+                          border-bottom:1px solid #1f2d3d; min-height:22px;">
+                    &#160;
+                </p>
+
+                <p style="margin:0 0 18px 0; text-align:justify;">
+                    By signing this form, I assume full responsibility for any
+                    and all clinical consequences or complications resulting
+                    from this decision. I hereby release and hold harmless the
+                    medical facility, its administration, and the medical and
+                    nursing staff from any legal or clinical liability arising
+                    from my decision.
+                </p>
+
+                <p style="margin:0 0 18px 0; text-align:justify;">
+                    I have been given a full opportunity to ask questions, and
+                    all my questions have been answered to my satisfaction.
+                </p>
+
+                <!-- ============= Patient / Guardian signature ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <p style="margin:0 0 8px 0;">
+                        <strong>Patient (or Legal Guardian/Next of Kin) Signature:</strong>
+                    </p>
+                    <ul style="margin:0 0 0 18px; padding:0; line-height:1.9;">
+                        <li>
+                            <strong>Full Name:</strong>
+                            <span t-out="patient.name or ''"/>
+                        </li>
+                        <li>
+                            <strong>Signature / Thumb print:</strong>
+                            <span style="display:inline-block; min-width:260px;
+                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
+                        </li>
+                        <li>
+                            <strong>Date:</strong>
+                            <span t-if="o.encounter_date"
+                                  t-field="o.encounter_date"
+                                  t-options='{"format": "dd / MM / yyyy"}'/>
+                            <span t-else="">_____ / _____ / _____</span>
+                            &#160;|&#160;
+                            <strong>Time:</strong>
+                            <span t-if="o.encounter_date"
+                                  t-field="o.encounter_date"
+                                  t-options='{"format": "h:mm a"}'/>
+                            <span t-else="">_____ : _____ (AM/PM)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- ============= Witnesses ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <p style="margin:0 0 8px 0;">
+                        <strong>Medical Staff Witnesses:</strong>
+                    </p>
+
+                    <p style="margin:0 0 4px 0;">
+                        <strong>1. Attending / Duty Physician:</strong>
+                    </p>
+                    <ul style="margin:0 0 12px 18px; padding:0; line-height:1.9;">
+                        <li>
+                            <strong>Full Name:</strong>
+                            <span t-out="doctor_name or ''"/>
+                        </li>
+                        <li>
+                            <strong>Signature &amp; Stamp:</strong>
+                            <span style="display:inline-block; min-width:260px;
+                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
+                        </li>
+                    </ul>
+
+                    <p style="margin:0 0 4px 0;">
+                        <strong>2. Charge Nurse:</strong>
+                    </p>
+                    <ul style="margin:0 0 0 18px; padding:0; line-height:1.9;">
+                        <li>
+                            <strong>Full Name:</strong>
+                            <span style="display:inline-block; min-width:260px;
+                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
+                        </li>
+                        <li>
+                            <strong>Signature:</strong>
+                            <span style="display:inline-block; min-width:260px;
+                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

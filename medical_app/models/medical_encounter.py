@@ -37,7 +37,7 @@ class MedicalEncounter(models.Model):
         tracking=True,
     )
     doctor_employee_id = fields.Many2one(
-        'hr.employee', string='Doctor',
+        'hr.employee', string='DoctorI have',
         default=lambda self: self.env.user.employee_id,
         tracking=True,
         help="HR employee record for the doctor — used for job title, "
