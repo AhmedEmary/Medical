@@ -107,6 +107,24 @@
                     all my questions have been answered to my satisfaction.
                 </p>
 
+                 <!-- ============= Witnesses ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <p style="margin:0 0 8px 0;">
+                        <strong>Medical Staff Witnesses:</strong>
+                    </p>
+
+                    <p style="margin:0 0 4px 0;">
+                        <strong>Attending / Duty Physician:</strong>
+                    </p>
+                    <ul style="margin:0 0 12px 18px; padding:0; line-height:1.9;">
+                        <li>
+                            <strong>Full Name:</strong>
+                            <span t-out="doctor_name or ''"/>
+                        </li>
+
+                    </ul>
+                </div>
+
                 <!-- ============= Patient / Guardian signature ============= -->
                 <div style="page-break-inside: avoid; margin-bottom:18px;">
                     <p style="margin:0 0 8px 0;">
@@ -129,44 +147,6 @@
                                   t-field="o.encounter_date"
                                   t-options='{"format": "h:mm a"}'/>
                             <span t-else="">_____ : _____ (AM/PM)</span>
-                        </li>
-                        <li>
-                            <strong>Signature:</strong>
-                            <span style="display:inline-block; min-width:260px;
-                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- ============= Witnesses ============= -->
-                <div style="page-break-inside: avoid; margin-bottom:18px;">
-                    <p style="margin:0 0 8px 0;">
-                        <strong>Medical Staff Witnesses:</strong>
-                    </p>
-
-                    <p style="margin:0 0 4px 0;">
-                        <strong>1. Attending / Duty Physician:</strong>
-                    </p>
-                    <ul style="margin:0 0 12px 18px; padding:0; line-height:1.9;">
-                        <li>
-                            <strong>Full Name:</strong>
-                            <span t-out="doctor_name or ''"/>
-                        </li>
-                        <li>
-                            <strong>Signature &amp; Stamp:</strong>
-                            <span style="display:inline-block; min-width:260px;
-                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
-                        </li>
-                    </ul>
-
-                    <p style="margin:0 0 4px 0;">
-                        <strong>2. Charge Nurse:</strong>
-                    </p>
-                    <ul style="margin:0 0 0 18px; padding:0; line-height:1.9;">
-                        <li>
-                            <strong>Full Name:</strong>
-                            <span style="display:inline-block; min-width:260px;
-                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
                         </li>
                         <li>
                             <strong>Signature:</strong>
