@@ -16,11 +16,6 @@
         <xpath expr="//div[hasclass('page')]//table[1]"
                position="before">
             <t t-if="o.is_medical_invoice and o.patient_id">
-
-                <!-- Gender label lookup -->
-                <t t-set="gender_label"
-                   t-value="dict(o._fields['medical_gender'].selection).get(o.medical_gender, '') if o.medical_gender else ''"/>
-
                 <div style="page-break-inside: avoid; margin:0 0 14px 0;
                             padding:10px 14px;
                             border:1px solid #cbd5e1;
@@ -63,7 +58,7 @@
                                 <span t-out="o.medical_nationality_id.name or ''"/>
                             </td>
                         </tr>
-                        <tr t-if="o.medical_date_of_birth or o.medical_age_display or gender_label">
+                        <tr t-if="o.medical_date_of_birth or o.medical_age_display or o.medical_gender">
                             <td>
                                 <strong>Date of Birth:</strong>
                             </td>
@@ -79,7 +74,8 @@
                                 <strong>Gender:</strong>
                             </td>
                             <td>
-                                <span t-out="gender_label"/>
+                                <span t-if="o.medical_gender"
+                                      t-field="o.medical_gender"/>
                             </td>
                         </tr>
                         <tr t-if="o.medical_mobile">
