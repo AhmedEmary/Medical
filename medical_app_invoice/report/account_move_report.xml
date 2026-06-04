@@ -10,6 +10,9 @@
         Block is placed immediately below the address / invoice header
         block and above the line items so the patient identity is the
         first thing seen, as required for medical billing.
+
+        Each individual field row is wrapped in ``t-if`` so empty
+        values are not printed at all.
     -->
     <template id="report_invoice_document_inherit_medical"
               inherit_id="account.report_invoice_document">
@@ -30,103 +33,93 @@
 
                     <table class="table table-borderless table-sm"
                            style="margin:0 0 6px 0; font-size:10pt;">
-                        <tr>
-                            <td style="width:22%;">
+                        <tr t-if="o.patient_id.name">
+                            <td style="width:30%;">
                                 <strong>Patient Name:</strong>
                             </td>
-                            <td style="width:28%;">
-                                <span t-out="o.patient_id.name or ''"/>
+                            <td>
+                                <span t-out="o.patient_id.name"/>
                             </td>
-                            <td style="width:22%;">
+                        </tr>
+                        <tr t-if="o.medical_mrn">
+                            <td style="width:30%;">
                                 <strong>MRN:</strong>
                             </td>
                             <td>
-                                <span t-out="o.medical_mrn or ''"/>
+                                <span t-out="o.medical_mrn"/>
                             </td>
                         </tr>
-                        <tr t-if="o.medical_passport or o.medical_nationality_id">
-                            <td>
+                        <tr t-if="o.medical_passport">
+                            <td style="width:30%;">
                                 <strong>Passport / National ID:</strong>
                             </td>
                             <td>
-                                <span t-out="o.medical_passport or ''"/>
+                                <span t-out="o.medical_passport"/>
                             </td>
-                            <td>
+                        </tr>
+                        <tr t-if="o.medical_nationality_id">
+                            <td style="width:30%;">
                                 <strong>Nationality:</strong>
                             </td>
                             <td>
-                                <span t-out="o.medical_nationality_id.name or ''"/>
+                                <span t-out="o.medical_nationality_id.name"/>
                             </td>
                         </tr>
-                        <tr t-if="o.medical_date_of_birth or o.medical_age_display or o.medical_gender">
-                            <td>
+                        <tr t-if="o.medical_date_of_birth">
+                            <td style="width:30%;">
                                 <strong>Date of Birth:</strong>
                             </td>
                             <td>
-                                <span t-if="o.medical_date_of_birth"
-                                      t-field="o.medical_date_of_birth"
+                                <span t-field="o.medical_date_of_birth"
                                       t-options='{"format": "dd / MM / yyyy"}'/>
                                 <t t-if="o.medical_age_display">
                                     (<span t-out="o.medical_age_display"/>)
                                 </t>
                             </td>
-                            <td>
+                        </tr>
+                        <tr t-if="o.medical_gender">
+                            <td style="width:30%;">
                                 <strong>Gender:</strong>
                             </td>
                             <td>
-                                <span t-if="o.medical_gender"
-                                      t-field="o.medical_gender"/>
+                                <span t-field="o.medical_gender"/>
                             </td>
                         </tr>
                         <tr t-if="o.medical_mobile">
-                            <td>
+                            <td style="width:30%;">
                                 <strong>Mobile:</strong>
                             </td>
-                            <td colspan="3">
+                            <td>
                                 <span t-out="o.medical_mobile"/>
                             </td>
                         </tr>
-                        <tr t-if="o.medical_hotel_name or o.medical_room_number">
-                            <td>
+                        <tr t-if="o.medical_hotel_name">
+                            <td style="width:30%;">
                                 <strong>Hotel:</strong>
                             </td>
                             <td>
-                                <span t-out="o.medical_hotel_name or ''"/>
+                                <span t-out="o.medical_hotel_name"/>
                             </td>
-                            <td>
+                        </tr>
+                        <tr t-if="o.medical_room_number">
+                            <td style="width:30%;">
                                 <strong>Room Number:</strong>
                             </td>
                             <td>
-                                <span t-out="o.medical_room_number or ''"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.encounter_id">
-                            <td>
-                                <strong>Encounter Ref.:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.encounter_id.reference or ''"/>
-                            </td>
-                            <td>
-                                <strong>Visit Date:</strong>
-                            </td>
-                            <td>
-                                <span t-if="o.encounter_id.encounter_date"
-                                      t-field="o.encounter_id.encounter_date"
-                                      t-options='{"format": "dd / MM / yyyy"}'/>
+                                <span t-out="o.medical_room_number"/>
                             </td>
                         </tr>
                         <tr t-if="o.encounter_id and (o.encounter_id.doctor_employee_id or o.encounter_id.doctor_id)">
-                            <td>
+                            <td style="width:30%;">
                                 <strong>Attending Physician:</strong>
                             </td>
-                            <td colspan="3">
-                                <span t-out="o.encounter_id.doctor_employee_id.name or o.encounter_id.doctor_id.name or ''"/>
+                            <td>
+                                <span t-out="o.encounter_id.doctor_employee_id.name or o.encounter_id.doctor_id.name"/>
                             </td>
                         </tr>
                     </table>
 
-                    <t t-if="o.medical_insurance_provider_id or o.medical_insurance_policy_number">
+                    <t t-if="o.medical_insurance_provider_id or o.medical_insurance_policy_number or o.medical_insurance_valid_until">
                         <h4 style="color:#1f5e8a; margin:10px 0 6px 0;
                                    border-bottom:1px solid #cbd5e1;
                                    padding-bottom:4px;">
@@ -134,25 +127,27 @@
                         </h4>
                         <table class="table table-borderless table-sm"
                                style="margin:0; font-size:10pt;">
-                            <tr>
-                                <td style="width:22%;">
-                                    <strong>Provider:</strong>
+                            <tr t-if="o.medical_insurance_provider_id">
+                                <td style="width:30%;">
+                                    <strong>Insurance Company:</strong>
                                 </td>
-                                <td style="width:28%;">
-                                    <span t-out="o.medical_insurance_provider_id.name or ''"/>
+                                <td>
+                                    <span t-out="o.medical_insurance_provider_id.name"/>
                                 </td>
-                                <td style="width:22%;">
+                            </tr>
+                            <tr t-if="o.medical_insurance_policy_number">
+                                <td style="width:30%;">
                                     <strong>Policy Number:</strong>
                                 </td>
                                 <td>
-                                    <span t-out="o.medical_insurance_policy_number or ''"/>
+                                    <span t-out="o.medical_insurance_policy_number"/>
                                 </td>
                             </tr>
                             <tr t-if="o.medical_insurance_valid_until">
-                                <td>
+                                <td style="width:30%;">
                                     <strong>Valid Until:</strong>
                                 </td>
-                                <td colspan="3">
+                                <td>
                                     <span t-field="o.medical_insurance_valid_until"
                                           t-options='{"format": "dd / MM / yyyy"}'/>
                                 </td>
