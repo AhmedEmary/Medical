@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Patient Registration & Medical Intake Form.
+
+        Printed per encounter so the patient can review/fill in personal,
+        emergency-contact, insurance, history and consent information.
+        Fields known to the system are pre-filled from the patient record
+        and the encounter; remaining fields (checkboxes, free-text history,
+        signature) are left blank for handwriting on paper.
+    -->
+
+    <template id="report_patient_registration">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="medical_app_reports.report_patient_registration_document"
+                   t-lang="user.lang or 'en_US'"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_patient_registration_document">
+        <t t-call="web.external_layout">
+            <t t-set="patient" t-value="o.patient_id"/>
+            <t t-set="doctor_name"
+               t-value="o.doctor_employee_id.name or o.doctor_id.name"/>
+
+            <div class="page" style="font-size:11pt; color:#1f2d3d;
+                                     line-height:1.55;">
+
+                <!-- ============= Title ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h3 style="margin:0; text-decoration:underline;">
+                        <strong>Patient Registration &amp; Medical Intake Form</strong>
+                    </h3>
+                </div>
+
+                <!-- ============= Patient information ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>Patient Information</strong>
+                    </h4>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Full Name:</strong>
+                        <span t-out="patient.name or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Gender:</strong>
+                        <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '') if patient.gender else ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Date of Birth:</strong>
+                        <span t-if="patient.date_of_birth"
+                              t-field="patient.date_of_birth"
+                              t-options='{"format": "dd / MM / yyyy"}'/>
+                        &#160;|&#160;
+                        <strong>Age:</strong>
+                        <span t-out="patient.age_display or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Nationality:</strong>
+                        <span t-out="patient.country_id.name or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Passport / National ID Number:</strong>
+                        <span t-out="patient.national_id or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Room Number (Hotel Guests):</strong>
+                        <span t-out="patient.room_number or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Mobile Number:</strong>
+                        <span t-out="patient.mobile or patient.phone or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Email Address:</strong>
+                        <span t-out="patient.email or ''"/>
+                    </p>
+                </div>
+
+                <!-- ============= Emergency contact ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>Emergency Contact</strong>
+                    </h4>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Contact Name:</strong>
+                        <span t-out="patient.emergency_contact_name or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Relationship:</strong>
+                        <span t-out="patient.emergency_contact_relation or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Mobile Number:</strong>
+                        <span t-out="patient.emergency_contact_phone or ''"/>
+                    </p>
+                </div>
+
+                <!-- ============= Insurance ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>Insurance Information</strong>
+                    </h4>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Insurance Company:</strong>
+                        <span t-out="patient.insurance_provider_id.name or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Policy Number:</strong>
+                        <span t-out="patient.insurance_policy_number or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Valid Until:</strong>
+                        <span t-if="patient.insurance_valid_until"
+                              t-field="patient.insurance_valid_until"
+                              t-options='{"format": "dd / MM / yyyy"}'/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Assistance Company:</strong>
+                        <span style="display:inline-block; min-width:260px;
+                                     border-bottom:1px solid #1f2d3d;">&#160;</span>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Franchise:</strong>
+                        <span style="display:inline-block; min-width:260px;
+                                     border-bottom:1px solid #1f2d3d;">&#160;</span>
+                    </p>
+                </div>
+
+                <!-- ============= Visit information ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>Visit Information</strong>
+                    </h4>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Date:</strong>
+                        <span t-if="o.encounter_date"
+                              t-field="o.encounter_date"
+                              t-options='{"format": "dd / MM / yyyy"}'/>
+                        &#160;|&#160;
+                        <strong>Time:</strong>
+                        <span t-if="o.encounter_date"
+                              t-field="o.encounter_date"
+                              t-options='{"format": "h:mm a"}'/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <span style="font-size:13pt;">&#9744;</span>
+                        Insurance
+                        &#160;&#160;&#160;&#160;
+                        <span style="font-size:13pt;">&#9744;</span>
+                        Cash
+                    </p>
+                </div>
+
+                <!-- ============= Medical history ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>Medical History</strong>
+                    </h4>
+                    <p style="margin:0 0 6px 0;">
+                        Do you have any of the following?
+                    </p>
+                    <table style="width:100%; border-collapse:collapse;
+                                  margin:0 0 8px 0;">
+                        <tr>
+                            <td style="width:33%; padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Diabetes
+                            </td>
+                            <td style="width:33%; padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Hypertension
+                            </td>
+                            <td style="width:34%; padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Heart Disease
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Asthma
+                            </td>
+                            <td style="padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Epilepsy
+                            </td>
+                            <td style="padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Thyroid Disease
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Kidney Disease
+                            </td>
+                            <td style="padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Liver Disease
+                            </td>
+                            <td style="padding:2px 0;">
+                                <span style="font-size:13pt;">&#9744;</span>
+                                Cancer
+                            </td>
+                        </tr>
+                    </table>
+                    <p style="margin:0 0 6px 0;">
+                        <span style="font-size:13pt;">&#9744;</span>
+                        <strong>Other:</strong>
+                        <span t-if="patient.medical_history_ids"
+                              t-out="', '.join(patient.medical_history_ids.mapped('condition'))"/>
+                        <span t-else=""
+                              style="display:inline-block; min-width:300px;
+                                     border-bottom:1px solid #1f2d3d;">&#160;</span>
+                    </p>
+
+                    <p style="margin:10px 0 4px 0;">
+                        <strong>Past Surgical History:</strong>
+                    </p>
+                    <div style="margin:0 0 10px 0; padding:8px 10px;
+                                border:1px solid #1f2d3d; min-height:30px;">
+                        <span t-if="patient.surgical_history_ids"
+                              t-out="', '.join(patient.surgical_history_ids.mapped('condition'))"/>
+                        <span t-else="">&#160;</span>
+                    </div>
+
+                    <p style="margin:0 0 4px 0;">
+                        <strong>Current Medications:</strong>
+                    </p>
+                    <div style="margin:0 0 10px 0; padding:8px 10px;
+                                border:1px solid #1f2d3d; min-height:30px;">
+                        <span t-if="patient.active_medication_ids">
+                            <t t-foreach="patient.active_medication_ids" t-as="med">
+                                <span t-out="med.product_name or ''"/>
+                                <t t-if="med.dose">
+                                    (<span t-out="med.dose"/>)
+                                </t>
+                                <t t-if="not med_last">, </t>
+                            </t>
+                        </span>
+                        <span t-else="">&#160;</span>
+                    </div>
+
+                    <p style="margin:0 0 4px 0;">
+                        <strong>Drug Allergies:</strong>
+                    </p>
+                    <div style="margin:0 0 6px 0; padding:8px 10px;
+                                border:1px solid #1f2d3d; min-height:30px;">
+                        <span t-if="patient.allergy_ids"
+                              t-out="', '.join(patient.allergy_ids.mapped('display_name'))"/>
+                        <span t-else="">&#160;</span>
+                    </div>
+                </div>
+
+                <!-- ============= Female patients ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>For Female Patients</strong>
+                    </h4>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Pregnant?</strong>
+                        &#160;&#160;
+                        <span style="font-size:13pt;">&#9744;</span>
+                        Yes
+                        &#160;&#160;&#160;&#160;
+                        <span style="font-size:13pt;">&#9744;</span>
+                        No
+                        &#160;&#160;&#160;&#160;
+                        <span style="font-size:13pt;">&#9744;</span>
+                        Unknown
+                    </p>
+                </div>
+
+                <!-- ============= Consent ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>Consent &amp; Privacy</strong>
+                    </h4>
+                    <p style="margin:0 0 10px 0; text-align:justify;">
+                        I confirm that the information provided above is
+                        accurate to the best of my knowledge.
+                    </p>
+                    <p style="margin:0 0 10px 0; text-align:justify;">
+                        I consent to medical examination and treatment by
+                        the healthcare provider.
+                    </p>
+                    <p style="margin:0 0 14px 0; text-align:justify;">
+                        I authorize the clinic to share relevant medical
+                        information with my insurance company or assistance
+                        provider when required for claim processing.
+                    </p>
+                    <ul style="margin:0 0 0 18px; padding:0; line-height:1.9;">
+                        <li>
+                            <strong>Patient Signature:</strong>
+                            <span style="display:inline-block; min-width:260px;
+                                         border-bottom:1px solid #1f2d3d;">&#160;</span>
+                        </li>
+                        <li>
+                            <strong>Date:</strong>
+                            <span t-if="o.encounter_date"
+                                  t-field="o.encounter_date"
+                                  t-options='{"format": "dd / MM / yyyy"}'/>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- ============= Clinic use only ============= -->
+                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                    <h4 style="margin:0 0 8px 0;
+                               border-bottom:1px solid #1f2d3d;">
+                        <strong>Clinic Use Only</strong>
+                    </h4>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Medical Record Number (MRN):</strong>
+                        <span t-out="patient.mrn or ''"/>
+                    </p>
+                    <p style="margin:0 0 6px 0;">
+                        <strong>Attending Physician:</strong>
+                        <span t-out="doctor_name or ''"/>
+                    </p>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>
