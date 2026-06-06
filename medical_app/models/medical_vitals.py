@@ -22,7 +22,11 @@ class MedicalVitals(models.Model):
         string='Measurement Time', default=fields.Datetime.now, required=True,
     )
     measured_by = fields.Many2one(
-        'res.users', default=lambda self: self.env.user, string='Measured By',
+        'res.users', string='Measured By (User, legacy)',
+    )
+    measured_by_employee_id = fields.Many2one(
+        'hr.employee', string='Measured By',
+        default=lambda self: self.env.user.employee_id,
     )
     display_name = fields.Char(compute='_compute_display_name')
 

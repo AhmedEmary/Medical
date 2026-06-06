@@ -13,7 +13,7 @@
                                    readonly="context.get('default_encounter_id')"/>
                             <field name="patient_id" readonly="1"/>
                             <field name="measurement_time"/>
-                            <field name="measured_by"/>
+                            <field name="measured_by_employee_id"/>
                         </group>
                         <group string="Blood Pressure">
                             <label for="bp_systolic" string="BP (Sys / Dia)"/>
@@ -66,7 +66,7 @@
                 <field name="spo2" string="SpO₂"/>
                 <field name="weight"/>
                 <field name="bmi"/>
-                <field name="measured_by"/>
+                <field name="measured_by_employee_id"/>
             </list>
         </field>
     </record>

@@ -287,7 +287,7 @@
                                     <field name="weight" optional="show"/>
                                     <field name="height" optional="show"/>
                                     <field name="bmi" optional="show"/>
-                                    <field name="measured_by" optional="hide"/>
+                                    <field name="measured_by_employee_id" optional="hide"/>
                                 </list>
                             </field>
                         </page>
