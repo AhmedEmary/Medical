@@ -90,6 +90,11 @@ class MedicalPatient(models.Model):
     )
     insurance_policy_number = fields.Char(string='Policy Number')
     insurance_valid_until = fields.Date(string='Valid Until')
+    insurance_assistance_company_id = fields.Many2one(
+        'res.partner', string='Assistance Company',
+        domain="[('is_company', '=', True)]",
+    )
+    insurance_franchise = fields.Char(string='Franchise')
 
     # ------------------------------------------------------------
     # Clinical data (One2many to dedicated models)

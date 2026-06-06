@@ -121,15 +121,15 @@
                               t-field="patient.insurance_valid_until"
                               t-options='{"format": "dd / MM / yyyy"}'/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.insurance_assistance_company_id"
+                       style="margin:0 0 6px 0;">
                         <strong>Assistance Company:</strong>
-                        <span style="display:inline-block; min-width:260px;
-                                     border-bottom:1px solid #1f2d3d;">&#160;</span>
+                        <span t-out="patient.insurance_assistance_company_id.name"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.insurance_franchise"
+                       style="margin:0 0 6px 0;">
                         <strong>Franchise:</strong>
-                        <span style="display:inline-block; min-width:260px;
-                                     border-bottom:1px solid #1f2d3d;">&#160;</span>
+                        <span t-out="patient.insurance_franchise"/>
                     </p>
                 </div>
 
