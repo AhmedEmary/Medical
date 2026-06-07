@@ -8,28 +8,23 @@
               web_icon="medical_app,static/description/icon.png"
               groups="group_medical_receptionist"/>
 
-    <!-- Operations -->
-    <menuitem id="menu_medical_operations"
-              name="Operations"
-              parent="menu_medical_root"
-              sequence="10"/>
 
     <menuitem id="menu_medical_patient"
               name="Patients"
-              parent="menu_medical_operations"
+              parent="menu_medical_root"
               action="action_medical_patient"
               sequence="10"/>
 
     <menuitem id="menu_medical_encounter"
               name="Encounters"
-              parent="menu_medical_operations"
+              parent="menu_medical_root"
               action="action_medical_encounter"
               sequence="20"
               groups="group_medical_nurse"/>
 
     <menuitem id="menu_medical_vitals"
               name="Vitals"
-              parent="menu_medical_operations"
+              parent="menu_medical_root"
               action="action_medical_vitals"
               sequence="30"
               groups="group_medical_nurse"/>
