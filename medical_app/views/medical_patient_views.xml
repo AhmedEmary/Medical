@@ -243,6 +243,7 @@
                 <field name="image_128"/>
                 <field name="has_critical_allergy"/>
                 <field name="encounter_count"/>
+                <field name="last_encounter_date"/>
                 <templates>
                     <t t-name="card">
                         <div class="d-flex">
@@ -261,6 +262,10 @@
                                     <t t-if="record.patient_category.raw_value == 'hotel_guest' and record.hotel_name.raw_value">
                                         · <field name="hotel_name"/>
                                     </t>
+                                </div>
+                                <div t-if="record.last_encounter_date.raw_value"
+                                     class="text-muted small">
+                                    Last visit: <field name="last_encounter_date"/>
                                 </div>
                                 <div t-if="record.has_critical_allergy.raw_value"
                                      class="badge text-bg-danger mt-1">⚠ Critical allergy</div>
