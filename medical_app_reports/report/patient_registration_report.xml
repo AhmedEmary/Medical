@@ -25,6 +25,8 @@
             <t t-set="patient" t-value="o.patient_id"/>
             <t t-set="doctor_name"
                t-value="o.doctor_employee_id.name or o.doctor_id.name"/>
+            <t t-set="has_insurance"
+               t-value="bool(patient.insurance_provider_id or patient.insurance_policy_number or patient.insurance_valid_until or patient.insurance_assistance_company_id or patient.insurance_franchise)"/>
 
             <div class="page" style="font-size:11pt; color:#1f2d3d;
                                      line-height:1.55;">
@@ -42,83 +44,88 @@
                                border-bottom:1px solid #1f2d3d;">
                         <strong>Patient Information</strong>
                     </h4>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.name" style="margin:0 0 6px 0;">
                         <strong>Full Name:</strong>
-                        <span t-out="patient.name or ''"/>
+                        <span t-out="patient.name"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.gender" style="margin:0 0 6px 0;">
                         <strong>Gender:</strong>
-                        <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '') if patient.gender else ''"/>
+                        <span t-out="dict(patient._fields['gender'].selection).get(patient.gender, '')"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.date_of_birth" style="margin:0 0 6px 0;">
                         <strong>Date of Birth:</strong>
-                        <span t-if="patient.date_of_birth"
-                              t-field="patient.date_of_birth"
+                        <span t-field="patient.date_of_birth"
                               t-options='{"format": "dd / MM / yyyy"}'/>
-                        &#160;|&#160;
-                        <strong>Age:</strong>
-                        <span t-out="patient.age_display or ''"/>
+                        <t t-if="patient.age_display">
+                            &#160;|&#160;
+                            <strong>Age:</strong>
+                            <span t-out="patient.age_display"/>
+                        </t>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.country_id" style="margin:0 0 6px 0;">
                         <strong>Nationality:</strong>
-                        <span t-out="patient.country_id.name or ''"/>
+                        <span t-out="patient.country_id.name"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.national_id" style="margin:0 0 6px 0;">
                         <strong>Passport / National ID Number:</strong>
-                        <span t-out="patient.national_id or ''"/>
+                        <span t-out="patient.national_id"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.room_number" style="margin:0 0 6px 0;">
                         <strong>Room Number (Hotel Guests):</strong>
-                        <span t-out="patient.room_number or ''"/>
+                        <span t-out="patient.room_number"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.mobile or patient.phone" style="margin:0 0 6px 0;">
                         <strong>Mobile Number:</strong>
-                        <span t-out="patient.mobile or patient.phone or ''"/>
+                        <span t-out="patient.mobile or patient.phone"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.email" style="margin:0 0 6px 0;">
                         <strong>Email Address:</strong>
-                        <span t-out="patient.email or ''"/>
+                        <span t-out="patient.email"/>
                     </p>
                 </div>
 
                 <!-- ============= Emergency contact ============= -->
-                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                <div t-if="patient.emergency_contact_name or patient.emergency_contact_relation or patient.emergency_contact_phone"
+                     style="page-break-inside: avoid; margin-bottom:18px;">
                     <h4 style="margin:0 0 8px 0;
                                border-bottom:1px solid #1f2d3d;">
                         <strong>Emergency Contact</strong>
                     </h4>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.emergency_contact_name" style="margin:0 0 6px 0;">
                         <strong>Contact Name:</strong>
-                        <span t-out="patient.emergency_contact_name or ''"/>
+                        <span t-out="patient.emergency_contact_name"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.emergency_contact_relation" style="margin:0 0 6px 0;">
                         <strong>Relationship:</strong>
-                        <span t-out="patient.emergency_contact_relation or ''"/>
+                        <span t-out="patient.emergency_contact_relation"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.emergency_contact_phone" style="margin:0 0 6px 0;">
                         <strong>Mobile Number:</strong>
-                        <span t-out="patient.emergency_contact_phone or ''"/>
+                        <span t-out="patient.emergency_contact_phone"/>
                     </p>
                 </div>
 
                 <!-- ============= Insurance ============= -->
-                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                <div t-if="has_insurance"
+                     style="page-break-inside: avoid; margin-bottom:18px;">
                     <h4 style="margin:0 0 8px 0;
                                border-bottom:1px solid #1f2d3d;">
                         <strong>Insurance Information</strong>
                     </h4>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.insurance_provider_id"
+                       style="margin:0 0 6px 0;">
                         <strong>Insurance Company:</strong>
-                        <span t-out="patient.insurance_provider_id.name or ''"/>
+                        <span t-out="patient.insurance_provider_id.name"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.insurance_policy_number"
+                       style="margin:0 0 6px 0;">
                         <strong>Policy Number:</strong>
-                        <span t-out="patient.insurance_policy_number or ''"/>
+                        <span t-out="patient.insurance_policy_number"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.insurance_valid_until"
+                       style="margin:0 0 6px 0;">
                         <strong>Valid Until:</strong>
-                        <span t-if="patient.insurance_valid_until"
-                              t-field="patient.insurance_valid_until"
+                        <span t-field="patient.insurance_valid_until"
                               t-options='{"format": "dd / MM / yyyy"}'/>
                     </p>
                     <p t-if="patient.insurance_assistance_company_id"
@@ -151,10 +158,12 @@
                               t-options='{"format": "h:mm a"}'/>
                     </p>
                     <p style="margin:0 0 6px 0;">
-                        <span style="font-size:13pt;">&#9744;</span>
+                        <span style="font-size:13pt;"
+                              t-out="'&#9745;' if has_insurance else '&#9744;'"/>
                         Insurance
                         &#160;&#160;&#160;&#160;
-                        <span style="font-size:13pt;">&#9744;</span>
+                        <span style="font-size:13pt;"
+                              t-out="'&#9744;' if has_insurance else '&#9745;'"/>
                         Cash
                     </p>
                 </div>
@@ -316,18 +325,19 @@
                 </div>
 
                 <!-- ============= Clinic use only ============= -->
-                <div style="page-break-inside: avoid; margin-bottom:18px;">
+                <div t-if="patient.mrn or doctor_name"
+                     style="page-break-inside: avoid; margin-bottom:18px;">
                     <h4 style="margin:0 0 8px 0;
                                border-bottom:1px solid #1f2d3d;">
                         <strong>Clinic Use Only</strong>
                     </h4>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="patient.mrn" style="margin:0 0 6px 0;">
                         <strong>Medical Record Number (MRN):</strong>
-                        <span t-out="patient.mrn or ''"/>
+                        <span t-out="patient.mrn"/>
                     </p>
-                    <p style="margin:0 0 6px 0;">
+                    <p t-if="doctor_name" style="margin:0 0 6px 0;">
                         <strong>Attending Physician:</strong>
-                        <span t-out="doctor_name or ''"/>
+                        <span t-out="doctor_name"/>
                     </p>
                 </div>
 
