@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_medical_invoice_scan_wizard_invoice,medical.invoice.scan.wizard.invoice,model_medical_invoice_scan_wizard,account.group_account_invoice,1,1,1,1
+access_medical_invoice_scan_wizard_manager,medical.invoice.scan.wizard.manager,model_medical_invoice_scan_wizard,account.group_account_manager,1,1,1,1
+access_medical_invoice_scan_wizard_line_invoice,medical.invoice.scan.wizard.line.invoice,model_medical_invoice_scan_wizard_line,account.group_account_invoice,1,1,1,1
+access_medical_invoice_scan_wizard_line_manager,medical.invoice.scan.wizard.line.manager,model_medical_invoice_scan_wizard_line,account.group_account_manager,1,1,1,1

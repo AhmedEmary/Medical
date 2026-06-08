@@ -14,6 +14,22 @@
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
 
+            <!--
+                'Scan Invoice' header button — uploads an invoice image,
+                runs AI OCR, lets the user review the extracted header
+                and lines, and applies them to this draft invoice.
+                Only available on draft customer invoices.
+            -->
+            <xpath expr="//header" position="inside">
+                <button name="action_scan_invoice_document" type="object"
+                        string="Scan Invoice" icon="fa-camera"
+                        class="btn-secondary"
+                        invisible="state != 'draft' or move_type not in ('out_invoice', 'out_refund')"
+                        help="Upload a photo or scan of an invoice; the AI
+                              extracts the header and line items and
+                              pre-fills this draft for you to review."/>
+            </xpath>
+
             <!-- Stat-button counterpart: jump back to the encounter -->
             <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
                 <button name="action_view_encounter" type="object"

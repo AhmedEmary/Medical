@@ -128,6 +128,18 @@ class AccountMove(models.Model):
             'target': 'current',
         }
 
+    def action_scan_invoice_document(self):
+        """Open the Scan Invoice wizard pre-targeted at this draft move."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Scan Invoice Document'),
+            'res_model': 'medical.invoice.scan.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_move_id': self.id},
+        }
+
     # ============================================================
     # Push encounter to 'invoiced' when posting; revert on cancel
     # ============================================================

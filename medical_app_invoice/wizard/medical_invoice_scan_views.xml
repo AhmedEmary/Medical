@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_invoice_scan_wizard_form" model="ir.ui.view">
+        <field name="name">medical.invoice.scan.wizard.form</field>
+        <field name="model">medical.invoice.scan.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Scan Invoice Document">
+                <field name="state" invisible="1"/>
+                <field name="move_id" invisible="1"/>
+
+                <!-- Step 1: upload one or more images -->
+                <group invisible="state != 'upload'">
+                    <div class="alert alert-info" role="alert" colspan="2">
+                        <strong>Scan an invoice.</strong>
+                        Upload one or more images of the invoice (printed
+                        bill, scanned PDF page, or photo). The AI reads
+                        the header, patient information and line items
+                        and pre-fills them for review. Nothing is written
+                        to the invoice until you click Apply.
+                        <span invisible="move_id">
+                            A new draft customer invoice will be created
+                            from the scanned data.
+                        </span>
+                    </div>
+                    <field name="attachment_ids"
+                           widget="many2many_binary"
+                           nolabel="1" colspan="2"/>
+                </group>
+
+                <!-- Step 2: review extracted data -->
+                <group invisible="state != 'review'">
+                    <div class="alert alert-warning" role="alert" colspan="2">
+                        <strong>Review before applying.</strong>
+                        OCR can mis-read characters and merge or split
+                        line descriptions. Check every field — especially
+                        line descriptions and amounts — and correct
+                        anything that looks wrong. Lines you don't want
+                        on the invoice can be deleted here.
+                    </div>
+
+                    <group>
+                        <group string="Invoice">
+                            <field name="invoice_number"/>
+                            <field name="invoice_date"/>
+                            <field name="due_date"/>
+                            <field name="currency_id"
+                                   options="{'no_create': True}"/>
+                            <field name="payment_term_id"
+                                   options="{'no_create': True}"/>
+                            <field name="payment_terms_text"
+                                   invisible="payment_term_id or not payment_terms_text"/>
+                        </group>
+                        <group string="Patient (from invoice)">
+                            <field name="patient_name"/>
+                            <field name="patient_id_number"/>
+                            <field name="hotel_name"/>
+                            <field name="room_number"/>
+                        </group>
+                    </group>
+
+                    <separator string="Invoice Lines"/>
+                    <field name="line_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="description"/>
+                            <field name="quantity"/>
+                            <field name="price_unit"/>
+                            <field name="subtotal" readonly="1"/>
+                        </list>
+                    </field>
+
+                    <group>
+                        <group string="Totals (reported by OCR)">
+                            <field name="ocr_subtotal"/>
+                            <field name="ocr_tax_total"/>
+                            <field name="ocr_total"/>
+                            <field name="lines_total"/>
+                        </group>
+                    </group>
+
+                    <separator string="Notes"/>
+                    <field name="narration" nolabel="1"/>
+
+                    <separator string="Raw AI Output"/>
+                    <field name="raw_text" nolabel="1" readonly="1"
+                           widget="text"/>
+                </group>
+
+                <footer>
+                    <button name="action_scan" type="object"
+                            string="Scan" class="btn-primary"
+                            invisible="state != 'upload'"/>
+                    <button name="action_apply" type="object"
+                            string="Apply to Invoice" class="btn-primary"
+                            invisible="state != 'review'"/>
+                    <button name="action_back_to_upload" type="object"
+                            string="Add / Replace Images" class="btn-secondary"
+                            invisible="state != 'review'"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Standalone launcher (creates a fresh draft invoice from the scan) -->
+    <record id="action_medical_invoice_scan_wizard" model="ir.actions.act_window">
+        <field name="name">Scan Invoice Document</field>
+        <field name="res_model">medical.invoice.scan.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

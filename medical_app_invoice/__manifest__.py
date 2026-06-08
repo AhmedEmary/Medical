@@ -26,9 +26,12 @@ Adds invoicing on top of medical_app:
     'license': 'LGPL-3',
     'depends': [
         'medical_app',
+        'medical_app_ai',
         'account',
     ],
     'data': [
+        'security/ir.model.access.csv',
+        'wizard/medical_invoice_scan_views.xml',
         'views/medical_encounter_views.xml',
         'views/account_move_views.xml',
         'report/account_move_report.xml',
