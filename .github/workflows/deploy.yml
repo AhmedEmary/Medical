@@ -21,3 +21,4 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: sudo -u odoo2 /opt/odoo2/deploy-medical.sh
           script_stop: true
+          time-out: 120s
