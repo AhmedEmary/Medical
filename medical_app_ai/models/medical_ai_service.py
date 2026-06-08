@@ -896,6 +896,7 @@ class MedicalAIService(models.AbstractModel):
             ('History of present illness', 'history_present_illness'),
             ('Physical examination', 'physical_exam'),
             ('Assessment', 'assessment'),
+            ('Investigations performed', 'investigations_performed'),
             ('Plan', 'plan'),
         ]:
             value = html2plaintext(encounter[field] or '').strip()
@@ -936,7 +937,7 @@ class MedicalAIService(models.AbstractModel):
     def _draft_report_system(self):
         return SYSTEM_BASE + """
 
-TASK: Draft the six free-text sections of a formal hotel-medical discharge
+TASK: Draft the nine free-text sections of a formal hotel-medical discharge
 report. The doctor has typed minimal seed notes into each section on the
 encounter (see "DOCTOR NOTES" in the input). Your job is to:
 
@@ -945,7 +946,7 @@ encounter (see "DOCTOR NOTES" in the input). Your job is to:
    doctor, and potentially an airline / insurer.
 2. Stay strictly within what the seed notes and the structured encounter
    data actually support. NEVER invent symptoms, findings, medications,
-   diagnoses or measurements that aren't in the data.
+   diagnoses, investigations or measurements that aren't in the data.
 3. If a seed note is blank, derive the section from the structured data
    (vitals, diagnoses, prescriptions, allergies, history) if possible;
    otherwise return "" for that section.
@@ -956,65 +957,95 @@ STYLE RULES (match the reference report closely):
 - Use HTML and ONLY these tags: <p>, <ul>, <li>, <strong>, <br/>.
 - Bold key clinical terms with <strong> (e.g. <strong>acute pharyngitis</strong>).
 - Multiple short paragraphs for narrative sections, one fact per paragraph.
-- Use bulleted <ul><li>…</li></ul> lists for itemised therapies,
-  recommendations, and discharge medications.
+- Use bulleted <ul><li>…</li></ul> lists for itemised investigations,
+  therapies, recommendations, and discharge medications.
 - Do NOT include section headings, the patient's name, the doctor's name,
   the date, or the signature — those are rendered by the template.
 
-SECTION-BY-SECTION FORMAT (mirror the reference):
+SECTION-BY-SECTION FORMAT (mirror the reference). The sections must be
+produced in exactly this order — it is the order the printed report
+follows:
 
-* "history_present_illness" (Clinical Summary): 3-5 short paragraphs.
-  - Para 1: open with the date and a one-sentence presentation of the
-    chief complaint and key symptoms (bold the symptoms).
-  - Para 2: explicitly state what dangerous findings were absent
-    ("There was no evidence of airway compromise, …").
-  - Para 3: the clinical evaluation performed and the conclusion
-    (bold the working diagnosis).
-  - Para 4: the immediate management initiated.
-  - Para 5: the follow-up arrangement and the warning signs that
-    should prompt return.
+1. "history_present_illness" (History of Present Illness / S): 3-5
+   short paragraphs.
+   - Para 1: open with the date and a one-sentence presentation of the
+     chief complaint and key symptoms (bold the symptoms).
+   - Para 2: relevant past history and risk factors that bear on the
+     current presentation.
+   - Para 3: explicitly state what dangerous findings were absent
+     ("There was no evidence of airway compromise, …").
+   - Para 4: the clinical evaluation performed and the conclusion
+     (bold the working diagnosis).
+   - Para 5: the follow-up arrangement and the warning signs that
+     should prompt return.
 
-* "therapies_administered": one short intro line ("During the visit, the
-  patient received:") followed by a <ul> listing each therapy as a
-  separate <li>. Each item is a full sentence with the route and reason
-  ("Intravenous Ceftriaxone 1 g was administered following a negative
-  sensitivity test."). Return "" if nothing was administered.
+2. "physical_exam" (Physical Examination / O): one short intro
+   ("On examination, the patient was …") followed by an organised
+   system-by-system narrative — general appearance, vitals summary,
+   then specific systems examined (HEENT, chest, abdomen, neuro, etc.).
+   Bold key findings ("<strong>right tympanic membrane dull</strong>").
+   State pertinent negatives explicitly. Return "" if no exam was
+   documented.
 
-* "discharge_medication_notes": one opening paragraph in the formal
-  "Following a comprehensive clinical assessment, … the patient was
-  assessed as <strong>clinically stable</strong>. Accordingly,
-  <strong>appropriate medical treatment was prescribed</strong>, as
-  outlined below, based on the clinical evaluation." Then a paragraph
-  "The prescribed treatment plan includes:" followed by a <ul> of
-  <li><strong>Drug</strong>: dose, frequency.</li> items. Close with a
-  single-paragraph line about duration if known. Return "" if there are
-  no discharge medications.
+3. "assessment" (Assessment / A): a short narrative explaining the
+   clinical reasoning that leads to the diagnoses, followed by a <ul>
+   of the working diagnoses in <strong>bold</strong>. Do NOT repeat the
+   diagnoses block printed by the template — your job is the reasoning
+   that supports them. Return "" if no diagnoses or reasoning is
+   available.
 
-* "plan" (Medical Recommendation): a <ul> of 4-7 <li> items, each a
-  full formal sentence ("The patient has been strongly advised to …",
-  "Strict adherence to the prescribed treatment regimen is essential …",
-  "Immediate medical re-evaluation is advised in case of …"). Cover:
-  rest/avoidance, adherence, hydration, irritants to avoid, warning
-  signs, follow-up. Skip items not supported by the data.
+4. "investigations_performed": one short intro line ("The following
+   investigations were performed:") followed by a <ul>. Each <li> is
+   one investigation with its result, e.g.
+   "<li><strong>Rapid strep test</strong>: negative.</li>",
+   "<li><strong>Random blood glucose</strong>: 110 mg/dL.</li>".
+   If imaging or bedside tests were done, include them with the
+   reported finding. Return "" if no investigations were performed.
 
-* "discharge_condition": 2-3 short paragraphs.
-  - Para 1: clinical status anchored on the documented vitals/assessment
-    (bold "stable", "improved", "fit to fly" where applicable).
-  - Para 2: explicit fit-to-fly framing if the patient was assessed for
-    travel, otherwise omit; reference the absence of red flags.
-  - Para 3: travel/post-discharge instructions.
+5. "plan" (Plan / P): a <ul> of 4-7 <li> items, each a full formal
+   sentence ("The patient has been strongly advised to …", "Strict
+   adherence to the prescribed treatment regimen is essential …",
+   "Immediate medical re-evaluation is advised in case of …"). Cover:
+   rest/avoidance, adherence, hydration, irritants to avoid, warning
+   signs, follow-up. Skip items not supported by the data.
 
-* "discharge_conclusion": exactly one closing sentence summarising the
-  patient's overall fitness.
+6. "therapies_administered": one short intro line ("During the visit,
+   the patient received:") followed by a <ul> listing each therapy as
+   a separate <li>. Each item is a full sentence with the route and
+   reason ("Intravenous Ceftriaxone 1 g was administered following a
+   negative sensitivity test."). Return "" if nothing was administered.
+
+7. "discharge_medication_notes": one opening paragraph in the formal
+   "Following a comprehensive clinical assessment, … the patient was
+   assessed as <strong>clinically stable</strong>. Accordingly,
+   <strong>appropriate medical treatment was prescribed</strong>, as
+   outlined below, based on the clinical evaluation." Then a paragraph
+   "The prescribed treatment plan includes:" followed by a <ul> of
+   <li><strong>Drug</strong>: dose, frequency.</li> items. Close with a
+   single-paragraph line about duration if known. Return "" if there
+   are no discharge medications.
+
+8. "discharge_condition": 2-3 short paragraphs.
+   - Para 1: clinical status anchored on the documented vitals/assessment
+     (bold "stable", "improved", "fit to fly" where applicable).
+   - Para 2: explicit fit-to-fly framing if the patient was assessed for
+     travel, otherwise omit; reference the absence of red flags.
+   - Para 3: travel/post-discharge instructions.
+
+9. "discharge_conclusion": exactly one closing sentence summarising the
+   patient's overall fitness.
 
 Respond with ONLY a JSON object (no other text, no markdown code fences)
-with exactly these six keys, each containing an HTML string as described
-above (or "" if no data supports it):
+with exactly these nine keys, in this order, each containing an HTML
+string as described above (or "" if no data supports it):
 {
   "history_present_illness": "...",
+  "physical_exam": "...",
+  "assessment": "...",
+  "investigations_performed": "...",
+  "plan": "...",
   "therapies_administered": "...",
   "discharge_medication_notes": "...",
-  "plan": "...",
   "discharge_condition": "...",
   "discharge_conclusion": "..."
 }"""
@@ -1043,10 +1074,14 @@ above (or "" if no data supports it):
         data = self._parse_json(text)
         result = {
             'history_present_illness': data.get('history_present_illness') or '',
+            'physical_exam': data.get('physical_exam') or '',
+            'assessment': data.get('assessment') or '',
+            'investigations_performed':
+                data.get('investigations_performed') or '',
+            'plan': data.get('plan') or '',
             'therapies_administered': data.get('therapies_administered') or '',
             'discharge_medication_notes':
                 data.get('discharge_medication_notes') or '',
-            'plan': data.get('plan') or '',
             'discharge_condition': data.get('discharge_condition') or '',
             'discharge_conclusion': data.get('discharge_conclusion') or '',
         }
@@ -1056,10 +1091,14 @@ above (or "" if no data supports it):
     def _doctor_notes_block(self, encounter):
         """Pass the doctor's terse per-section notes to the AI as seed text."""
         sections = [
-            ('Clinical Summary', 'history_present_illness'),
+            ('History of Present Illness (S)', 'history_present_illness'),
+            ('Physical Examination (O)', 'physical_exam'),
+            ('Assessment (A) / Diagnoses', 'assessment'),
+            ('Investigations Performed', 'investigations_performed'),
+            ('Plan (P)', 'plan'),
             ('Therapies Administered', 'therapies_administered'),
-            ('Discharge Medications', 'discharge_medication_notes'),
-            ('Medical Recommendation', 'plan'),
+            ('Medications Prescribed upon Discharge',
+             'discharge_medication_notes'),
             ('Condition at Discharge', 'discharge_condition'),
             ('Conclusion', 'discharge_conclusion'),
         ]

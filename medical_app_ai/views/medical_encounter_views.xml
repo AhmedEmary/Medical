@@ -70,32 +70,47 @@
                                       report draft."/>
                     </div>
 
-                    <separator string="Clinical Summary"/>
+                    <separator string="1. History of Present Illness (S)"/>
                     <field name="history_present_illness"
                            nolabel="1"
                            placeholder="e.g. Sore throat, fever, ear pain since yesterday. No respiratory distress on exam."/>
 
-                    <separator string="Therapies Administered"/>
-                    <field name="therapies_administered"
+                    <separator string="2. Physical Examination (O)"/>
+                    <field name="physical_exam"
                            nolabel="1"
-                           placeholder="e.g. IV paracetamol, IV ceftriaxone 1g, IV dexamethasone, normal saline."/>
+                           placeholder="e.g. Throat injected, tonsils enlarged, right TM dull. Chest clear."/>
 
-                    <separator string="Medications Prescribed upon Discharge"/>
-                    <field name="discharge_medication_notes"
+                    <separator string="3. Assessment (A) / Diagnoses"/>
+                    <field name="assessment"
                            nolabel="1"
-                           placeholder="e.g. 5-day course of Klacid XL, Doliprane, ear drops."/>
+                           placeholder="e.g. Acute pharyngotonsillitis, right otitis media."/>
 
-                    <separator string="Medical Recommendation"/>
+                    <separator string="4. Investigations Performed"/>
+                    <field name="investigations_performed"
+                           nolabel="1"
+                           placeholder="e.g. Rapid strep negative, RBS 110 mg/dL, SpO2 98% on RA."/>
+
+                    <separator string="5. Plan (P)"/>
                     <field name="plan"
                            nolabel="1"
                            placeholder="e.g. Rest, hydration, avoid cold drinks, return if symptoms worsen."/>
 
-                    <separator string="Condition at Discharge"/>
+                    <separator string="6. Therapies Administered"/>
+                    <field name="therapies_administered"
+                           nolabel="1"
+                           placeholder="e.g. IV paracetamol, IV ceftriaxone 1g, IV dexamethasone, normal saline."/>
+
+                    <separator string="7. Medications Prescribed upon Discharge"/>
+                    <field name="discharge_medication_notes"
+                           nolabel="1"
+                           placeholder="e.g. 5-day course of Klacid XL, Doliprane, ear drops."/>
+
+                    <separator string="8. Condition at Discharge"/>
                     <field name="discharge_condition"
                            nolabel="1"
                            placeholder="e.g. Stable, fit to fly, symptoms improving."/>
 
-                    <separator string="Conclusion"/>
+                    <separator string="9. Conclusion"/>
                     <field name="discharge_conclusion"
                            nolabel="1"
                            placeholder="e.g. Fit to travel."/>

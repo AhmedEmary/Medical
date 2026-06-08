@@ -22,17 +22,24 @@ class MedicalAISuggestion(models.TransientModel):
         'medical.encounter', string='Encounter', required=True, readonly=True)
     log_id = fields.Many2one('medical.ai.log', string='AI Log', readonly=True)
 
-    # Report draft — the six free-text sections that the PDF report prints.
+    # Report draft — the nine free-text sections that the PDF report prints.
     # Html (not Text) so the AI's <p>/<ul>/<strong> formatting renders and
     # the doctor can edit it with the rich-text widget before applying.
+    # Ordered to match the printed report.
     report_history_present_illness = fields.Html(
-        string='Clinical Summary', sanitize=True)
+        string='History of Present Illness (S)', sanitize=True)
+    report_physical_exam = fields.Html(
+        string='Physical Examination (O)', sanitize=True)
+    report_assessment = fields.Html(
+        string='Assessment (A) / Diagnoses', sanitize=True)
+    report_investigations_performed = fields.Html(
+        string='Investigations Performed', sanitize=True)
+    report_plan = fields.Html(
+        string='Plan (P)', sanitize=True)
     report_therapies_administered = fields.Html(
         string='Therapies Administered', sanitize=True)
     report_discharge_medication_notes = fields.Html(
         string='Medications Prescribed upon Discharge', sanitize=True)
-    report_plan = fields.Html(
-        string='Medical Recommendation', sanitize=True)
     report_discharge_condition = fields.Html(
         string='Condition at Discharge', sanitize=True)
     report_discharge_conclusion = fields.Html(
@@ -75,10 +82,14 @@ class MedicalAISuggestion(models.TransientModel):
         self.ensure_one()
         self.encounter_id.write({
             'history_present_illness': self.report_history_present_illness or False,
+            'physical_exam': self.report_physical_exam or False,
+            'assessment': self.report_assessment or False,
+            'investigations_performed':
+                self.report_investigations_performed or False,
+            'plan': self.report_plan or False,
             'therapies_administered': self.report_therapies_administered or False,
             'discharge_medication_notes':
                 self.report_discharge_medication_notes or False,
-            'plan': self.report_plan or False,
             'discharge_condition': self.report_discharge_condition or False,
             'discharge_conclusion': self.report_discharge_conclusion or False,
         })

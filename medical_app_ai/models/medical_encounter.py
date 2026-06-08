@@ -35,10 +35,14 @@ class MedicalEncounter(models.Model):
                 'encounter_id': self.id,
                 'log_id': log.id,
                 'report_history_present_illness': data['history_present_illness'],
+                'report_physical_exam': data['physical_exam'],
+                'report_assessment': data['assessment'],
+                'report_investigations_performed':
+                    data['investigations_performed'],
+                'report_plan': data['plan'],
                 'report_therapies_administered': data['therapies_administered'],
                 'report_discharge_medication_notes':
                     data['discharge_medication_notes'],
-                'report_plan': data['plan'],
                 'report_discharge_condition': data['discharge_condition'],
                 'report_discharge_conclusion': data['discharge_conclusion'],
             })

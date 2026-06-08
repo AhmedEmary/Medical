@@ -40,6 +40,12 @@ class MedicalEncounter(models.Model):
     ], string='Urgency Level', default='green', tracking=True,
         help="Triage colour shown on the medical report.")
 
+    investigations_performed = fields.Html(
+        string='Investigations Performed',
+        help="Labs, imaging and bedside tests performed during the "
+             "encounter and their results. Printed under "
+             "'Investigations Performed' on the report.")
+
     therapies_administered = fields.Html(
         string='Therapies Administered',
         help="What was given to the patient during the visit "

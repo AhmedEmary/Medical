@@ -16,32 +16,44 @@
                     responsible for the clinical record.
                 </div>
 
-                <!-- Report draft: the six free-text sections that go on
+                <!-- Report draft: the nine free-text sections that go on
                      the printed medical report. Rendered in the same order
                      and with the same headings as the PDF, so the doctor
                      sees what each section will look like before applying. -->
                 <div invisible="mode != 'report'">
-                    <separator string="Clinical Summary"/>
+                    <separator string="1. History of Present Illness (S)"/>
                     <field name="report_history_present_illness"
                            nolabel="1"/>
 
-                    <separator string="Therapies Administered"/>
-                    <field name="report_therapies_administered"
+                    <separator string="2. Physical Examination (O)"/>
+                    <field name="report_physical_exam"
                            nolabel="1"/>
 
-                    <separator string="Medications Prescribed upon Discharge"/>
-                    <field name="report_discharge_medication_notes"
+                    <separator string="3. Assessment (A) / Diagnoses"/>
+                    <field name="report_assessment"
                            nolabel="1"/>
 
-                    <separator string="Medical Recommendation"/>
+                    <separator string="4. Investigations Performed"/>
+                    <field name="report_investigations_performed"
+                           nolabel="1"/>
+
+                    <separator string="5. Plan (P)"/>
                     <field name="report_plan"
                            nolabel="1"/>
 
-                    <separator string="Condition at Discharge"/>
+                    <separator string="6. Therapies Administered"/>
+                    <field name="report_therapies_administered"
+                           nolabel="1"/>
+
+                    <separator string="7. Medications Prescribed upon Discharge"/>
+                    <field name="report_discharge_medication_notes"
+                           nolabel="1"/>
+
+                    <separator string="8. Condition at Discharge"/>
                     <field name="report_discharge_condition"
                            nolabel="1"/>
 
-                    <separator string="Conclusion"/>
+                    <separator string="9. Conclusion"/>
                     <field name="report_discharge_conclusion"
                            nolabel="1"/>
                 </div>

@@ -75,18 +75,6 @@
                     </table>
                 </div>
 
-                <!-- ============= Clinical Summary ============= -->
-                <t t-if="not is_html_empty(o.history_present_illness)">
-                    <div style="page-break-inside: avoid;">
-                        <h3 style="color:#1f5e8a; text-decoration:underline;">
-                            <strong>Clinical Summary:</strong>
-                        </h3>
-                        <div style="text-align:justify;">
-                            <t t-out="o.history_present_illness"/>
-                        </div>
-                    </div>
-                </t>
-
                 <!-- ============= Urgency Level ============= -->
                 <t t-if="o.urgency_level">
                     <div style="page-break-inside: avoid;">
@@ -106,17 +94,19 @@
                     </div>
                 </t>
 
-                <!-- ============= Clinical Notes & Course ============= -->
+                <!-- ============= 1. History of Present Illness (S) ============= -->
                 <t t-set="show_history"
                    t-value="patient.medical_history_ids or patient.active_medication_ids"/>
-                <t t-set="show_therapies"
-                   t-value="not is_html_empty(o.therapies_administered)"/>
-                <t t-if="show_history or show_therapies">
-                    <!-- Keep the section H3 with the first subsection H4 -->
+                <t t-if="not is_html_empty(o.history_present_illness) or show_history">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
-                            <strong>Clinical Notes &amp; Course:</strong>
+                            <strong>History of Present Illness (S):</strong>
                         </h3>
+                        <t t-if="not is_html_empty(o.history_present_illness)">
+                            <div style="text-align:justify;">
+                                <t t-out="o.history_present_illness"/>
+                            </div>
+                        </t>
                         <t t-if="show_history">
                             <h4 style="color:#1f5e8a; text-decoration:underline;">
                                 <strong>Patient History:</strong>
@@ -139,91 +129,133 @@
                             </ul>
                         </t>
                     </div>
+                </t>
 
-                    <t t-if="show_therapies">
-                        <div style="page-break-inside: avoid;">
-                            <h4 style="color:#1f5e8a; text-decoration:underline;">
-                                <strong>Therapies Administered</strong>
-                            </h4>
-                            <div>
-                                <t t-out="o.therapies_administered"/>
+                <!-- ============= 2. Physical Examination (O) ============= -->
+                <t t-if="not is_html_empty(o.physical_exam) or o.vitals_ids">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Physical Examination (O):</strong>
+                        </h3>
+                        <t t-if="not is_html_empty(o.physical_exam)">
+                            <div style="text-align:justify;">
+                                <t t-out="o.physical_exam"/>
                             </div>
+                        </t>
+                        <t t-if="o.vitals_ids">
+                            <h4 style="color:#1f5e8a; text-decoration:underline;">
+                                <strong>Vital Signs Table:</strong>
+                            </h4>
+                            <table class="table table-bordered"
+                                   style="text-align:center; font-size:10pt;">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Date</th>
+                                        <th>BP</th>
+                                        <th>Temperature</th>
+                                        <th>Pulse</th>
+                                        <th>RBS</th>
+                                        <th>RR</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="o.vitals_ids.sorted('measurement_time')"
+                                        t-as="v">
+                                        <td>
+                                            <span t-if="v.measurement_time"
+                                                  t-field="v.measurement_time"
+                                                  t-options='{"format": "hh:mm a"}'/>
+                                        </td>
+                                        <td>
+                                            <span t-if="v.measurement_time"
+                                                  t-field="v.measurement_time"
+                                                  t-options='{"format": "dd.MM.yyyy"}'/>
+                                        </td>
+                                        <td><span t-out="v.bp_display or ''"/></td>
+                                        <td>
+                                            <t t-if="v.temperature">
+                                                <span t-out="v.temperature"/>
+                                            </t>
+                                        </td>
+                                        <td>
+                                            <t t-if="v.heart_rate">
+                                                <span t-out="v.heart_rate"/>
+                                            </t>
+                                        </td>
+                                        <td>
+                                            <t t-if="v.glucose">
+                                                <span t-out="v.glucose"/>
+                                            </t>
+                                        </td>
+                                        <td>
+                                            <t t-if="v.respiratory_rate">
+                                                <span t-out="v.respiratory_rate"/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- ============= 3. Assessment (A) / Diagnoses ============= -->
+                <t t-if="o.diagnosis_ids or not is_html_empty(o.assessment)">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Assessment (A) / Diagnoses:</strong>
+                        </h3>
+                        <t t-if="o.diagnosis_ids">
+                            <p style="text-align:center;">
+                                <strong t-out="' and '.join(o.diagnosis_ids.mapped('name'))"/>
+                            </p>
+                        </t>
+                        <t t-if="not is_html_empty(o.assessment)">
+                            <div style="text-align:justify;">
+                                <t t-out="o.assessment"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+
+                <!-- ============= 4. Investigations Performed ============= -->
+                <t t-if="not is_html_empty(o.investigations_performed)">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Investigations Performed:</strong>
+                        </h3>
+                        <div style="text-align:justify;">
+                            <t t-out="o.investigations_performed"/>
                         </div>
-                    </t>
-                </t>
-
-                <!-- ============= Vital Signs ============= -->
-                <t t-if="o.vitals_ids">
-                    <div style="page-break-inside: avoid;">
-                        <h3 style="color:#1f5e8a; text-decoration:underline;">
-                            <strong>Vital Signs Table:</strong>
-                        </h3>
-                        <table class="table table-bordered"
-                               style="text-align:center; font-size:10pt;">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Date</th>
-                                    <th>BP</th>
-                                    <th>Temperature</th>
-                                    <th>Pulse</th>
-                                    <th>RBS</th>
-                                    <th>RR</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr t-foreach="o.vitals_ids.sorted('measurement_time')"
-                                    t-as="v">
-                                    <td>
-                                        <span t-if="v.measurement_time"
-                                              t-field="v.measurement_time"
-                                              t-options='{"format": "hh:mm a"}'/>
-                                    </td>
-                                    <td>
-                                        <span t-if="v.measurement_time"
-                                              t-field="v.measurement_time"
-                                              t-options='{"format": "dd.MM.yyyy"}'/>
-                                    </td>
-                                    <td><span t-out="v.bp_display or ''"/></td>
-                                    <td>
-                                        <t t-if="v.temperature">
-                                            <span t-out="v.temperature"/>
-                                        </t>
-                                    </td>
-                                    <td>
-                                        <t t-if="v.heart_rate">
-                                            <span t-out="v.heart_rate"/>
-                                        </t>
-                                    </td>
-                                    <td>
-                                        <t t-if="v.glucose">
-                                            <span t-out="v.glucose"/>
-                                        </t>
-                                    </td>
-                                    <td>
-                                        <t t-if="v.respiratory_rate">
-                                            <span t-out="v.respiratory_rate"/>
-                                        </t>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </t>
 
-                <!-- ============= Diagnosis ============= -->
-                <t t-if="o.diagnosis_ids">
+                <!-- ============= 5. Plan (P) ============= -->
+                <t t-if="not is_html_empty(o.plan)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
-                            <strong>Diagnosis:</strong>
+                            <strong>Plan (P):</strong>
                         </h3>
-                        <p style="text-align:center;">
-                            <strong t-out="' and '.join(o.diagnosis_ids.mapped('name'))"/>
-                        </p>
+                        <div style="text-align:justify;">
+                            <t t-out="o.plan"/>
+                        </div>
                     </div>
                 </t>
 
-                <!-- ============= Medications Prescribed upon Discharge ============= -->
+                <!-- ============= 6. Therapies Administered ============= -->
+                <t t-if="not is_html_empty(o.therapies_administered)">
+                    <div style="page-break-inside: avoid;">
+                        <h3 style="color:#1f5e8a; text-decoration:underline;">
+                            <strong>Therapies Administered:</strong>
+                        </h3>
+                        <div style="text-align:justify;">
+                            <t t-out="o.therapies_administered"/>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ============= 7. Medications Prescribed upon Discharge ============= -->
                 <t t-if="not is_html_empty(o.discharge_medication_notes)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
@@ -235,19 +267,7 @@
                     </div>
                 </t>
 
-                <!-- ============= Medical Recommendation ============= -->
-                <t t-if="not is_html_empty(o.plan)">
-                    <div style="page-break-inside: avoid;">
-                        <h3 style="color:#1f5e8a; text-decoration:underline;">
-                            <strong>Medical Recommendation:</strong>
-                        </h3>
-                        <div style="text-align:justify;">
-                            <t t-out="o.plan"/>
-                        </div>
-                    </div>
-                </t>
-
-                <!-- ============= Condition at Discharge ============= -->
+                <!-- ============= 8. Condition at Discharge ============= -->
                 <t t-if="not is_html_empty(o.discharge_condition)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
@@ -259,7 +279,7 @@
                     </div>
                 </t>
 
-                <!-- ============= Conclusion ============= -->
+                <!-- ============= 9. Conclusion ============= -->
                 <t t-if="not is_html_empty(o.discharge_conclusion)">
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
