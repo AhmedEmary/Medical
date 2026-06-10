@@ -91,6 +91,14 @@ class AccountMove(models.Model):
         related='patient_id.insurance_valid_until',
         string='Coverage Valid Until', readonly=True, store=True,
     )
+    medical_insurance_assistance_company_id = fields.Many2one(
+        related='patient_id.insurance_assistance_company_id',
+        string='Assistance Company', readonly=True, store=True,
+    )
+    medical_insurance_franchise = fields.Char(
+        related='patient_id.insurance_franchise',
+        string='Franchise', readonly=True, store=True,
+    )
 
     # ============================================================
     # Computes

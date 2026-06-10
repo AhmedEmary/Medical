@@ -31,128 +31,97 @@
                         <strong>Patient Information</strong>
                     </h4>
 
-                    <table class="table table-borderless table-sm"
-                           style="margin:0 0 6px 0; font-size:10pt;">
-                        <tr t-if="o.patient_id.name">
-                            <td style="width:30%;">
-                                <strong>Patient Name:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.patient_id.name"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_mrn">
-                            <td style="width:30%;">
-                                <strong>MRN:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.medical_mrn"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_passport">
-                            <td style="width:30%;">
-                                <strong>Passport / National ID:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.medical_passport"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_nationality_id">
-                            <td style="width:30%;">
-                                <strong>Nationality:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.medical_nationality_id.name"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_date_of_birth">
-                            <td style="width:30%;">
-                                <strong>Date of Birth:</strong>
-                            </td>
-                            <td>
-                                <span t-field="o.medical_date_of_birth"
-                                      t-options='{"format": "dd / MM / yyyy"}'/>
-                                <t t-if="o.medical_age_display">
-                                    (<span t-out="o.medical_age_display"/>)
-                                </t>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_gender">
-                            <td style="width:30%;">
-                                <strong>Gender:</strong>
-                            </td>
-                            <td>
-                                <span t-field="o.medical_gender"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_mobile">
-                            <td style="width:30%;">
-                                <strong>Mobile:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.medical_mobile"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_hotel_name">
-                            <td style="width:30%;">
-                                <strong>Hotel:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.medical_hotel_name"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.medical_room_number">
-                            <td style="width:30%;">
-                                <strong>Room Number:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.medical_room_number"/>
-                            </td>
-                        </tr>
-                        <tr t-if="o.encounter_id and (o.encounter_id.doctor_employee_id or o.encounter_id.doctor_id)">
-                            <td style="width:30%;">
-                                <strong>Attending Physician:</strong>
-                            </td>
-                            <td>
-                                <span t-out="o.encounter_id.doctor_employee_id.name or o.encounter_id.doctor_id.name"/>
-                            </td>
-                        </tr>
-                    </table>
+                    <div style="font-size:10pt; margin:0 0 6px 0;">
+                        <div t-if="o.patient_id.name"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Patient Name:</strong>
+                            <span t-out="o.patient_id.name"/>
+                        </div>
+                        <div t-if="o.medical_mrn"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>MRN:</strong>
+                            <span t-out="o.medical_mrn"/>
+                        </div>
+                        <div t-if="o.medical_passport"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Passport / National ID:</strong>
+                            <span t-out="o.medical_passport"/>
+                        </div>
+                        <div t-if="o.medical_nationality_id"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Nationality:</strong>
+                            <span t-out="o.medical_nationality_id.name"/>
+                        </div>
+                        <div t-if="o.medical_date_of_birth"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Date of Birth:</strong>
+                            <span t-field="o.medical_date_of_birth"
+                                  t-options='{"format": "dd / MM / yyyy"}'/>
+                            <t t-if="o.medical_age_display">
+                                (<span t-out="o.medical_age_display"/>)
+                            </t>
+                        </div>
+                        <div t-if="o.medical_gender"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Gender:</strong>
+                            <span t-field="o.medical_gender"/>
+                        </div>
+                        <div t-if="o.medical_mobile"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Mobile:</strong>
+                            <span t-out="o.medical_mobile"/>
+                        </div>
+                        <div t-if="o.medical_hotel_name"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Hotel:</strong>
+                            <span t-out="o.medical_hotel_name"/>
+                        </div>
+                        <div t-if="o.medical_room_number"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Room Number:</strong>
+                            <span t-out="o.medical_room_number"/>
+                        </div>
+                        <div t-if="o.encounter_id and (o.encounter_id.doctor_employee_id or o.encounter_id.doctor_id)"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Attending Physician:</strong>
+                            <span t-out="o.encounter_id.doctor_employee_id.name or o.encounter_id.doctor_id.name"/>
+                        </div>
+                    </div>
 
-                    <t t-if="o.medical_insurance_provider_id or o.medical_insurance_policy_number or o.medical_insurance_valid_until">
+                    <t t-if="o.medical_insurance_provider_id or o.medical_insurance_policy_number or o.medical_insurance_valid_until or o.medical_insurance_assistance_company_id or o.medical_insurance_franchise">
                         <h4 style="color:#1f5e8a; margin:10px 0 6px 0;
                                    border-bottom:1px solid #cbd5e1;
                                    padding-bottom:4px;">
                             <strong>Insurance Information</strong>
                         </h4>
-                        <table class="table table-borderless table-sm"
-                               style="margin:0; font-size:10pt;">
-                            <tr t-if="o.medical_insurance_provider_id">
-                                <td style="width:30%;">
-                                    <strong>Insurance Company:</strong>
-                                </td>
-                                <td>
-                                    <span t-out="o.medical_insurance_provider_id.name"/>
-                                </td>
-                            </tr>
-                            <tr t-if="o.medical_insurance_policy_number">
-                                <td style="width:30%;">
-                                    <strong>Policy Number:</strong>
-                                </td>
-                                <td>
-                                    <span t-out="o.medical_insurance_policy_number"/>
-                                </td>
-                            </tr>
-                            <tr t-if="o.medical_insurance_valid_until">
-                                <td style="width:30%;">
-                                    <strong>Valid Until:</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.medical_insurance_valid_until"
-                                          t-options='{"format": "dd / MM / yyyy"}'/>
-                                </td>
-                            </tr>
-                        </table>
+                        <div style="font-size:10pt; margin:0;">
+                            <div t-if="o.medical_insurance_provider_id"
+                                 style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                                <strong>Insurance Company:</strong>
+                                <span t-out="o.medical_insurance_provider_id.name"/>
+                            </div>
+                            <div t-if="o.medical_insurance_policy_number"
+                                 style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                                <strong>Policy Number:</strong>
+                                <span t-out="o.medical_insurance_policy_number"/>
+                            </div>
+                            <div t-if="o.medical_insurance_valid_until"
+                                 style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                                <strong>Valid Until:</strong>
+                                <span t-field="o.medical_insurance_valid_until"
+                                      t-options='{"format": "dd / MM / yyyy"}'/>
+                            </div>
+                            <div t-if="o.medical_insurance_assistance_company_id"
+                                 style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                                <strong>Assistance Company:</strong>
+                                <span t-out="o.medical_insurance_assistance_company_id.name"/>
+                            </div>
+                            <div t-if="o.medical_insurance_franchise"
+                                 style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                                <strong>Franchise:</strong>
+                                <span t-out="o.medical_insurance_franchise"/>
+                            </div>
+                        </div>
                     </t>
                 </div>
             </t>
