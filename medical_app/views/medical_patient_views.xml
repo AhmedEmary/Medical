@@ -202,6 +202,7 @@
                             <group>
                                 <field name="insurance_provider_id"/>
                                 <field name="insurance_policy_number"/>
+                                <field name="reference_number"/>
                                 <field name="insurance_valid_until"/>
                                 <field name="insurance_assistance_company_id"/>
                                 <field name="insurance_franchise"/>

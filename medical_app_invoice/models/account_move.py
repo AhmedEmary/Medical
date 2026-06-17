@@ -87,6 +87,10 @@ class AccountMove(models.Model):
         related='patient_id.insurance_policy_number',
         string='Policy Number', readonly=True, store=True,
     )
+    medical_reference_number = fields.Char(
+        related='patient_id.reference_number',
+        string='Reference Number', readonly=True, store=True,
+    )
     medical_insurance_valid_until = fields.Date(
         related='patient_id.insurance_valid_until',
         string='Coverage Valid Until', readonly=True, store=True,

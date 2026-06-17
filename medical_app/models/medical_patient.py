@@ -54,6 +54,7 @@ class MedicalPatient(models.Model):
         ('unknown', 'Unknown'),
     ], default='unknown', tracking=True)
     national_id = fields.Char(string='National ID / Passport', tracking=True)
+    reference_number = fields.Char(string='Reference Number', tracking=True)
     phone = fields.Char(related='partner_id.phone', readonly=False, store=True)
     mobile = fields.Char(string='Mobile', tracking=True)
     email = fields.Char(related='partner_id.email', readonly=False, store=True)

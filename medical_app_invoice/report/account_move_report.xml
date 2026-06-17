@@ -88,7 +88,7 @@
                         </div>
                     </div>
 
-                    <t t-if="o.medical_insurance_provider_id or o.medical_insurance_policy_number or o.medical_insurance_valid_until or o.medical_insurance_assistance_company_id or o.medical_insurance_franchise">
+                    <t t-if="o.medical_insurance_provider_id or o.medical_insurance_policy_number or o.medical_reference_number or o.medical_insurance_valid_until or o.medical_insurance_assistance_company_id or o.medical_insurance_franchise">
                         <h4 style="color:#1f5e8a; margin:10px 0 6px 0;
                                    border-bottom:1px solid #cbd5e1;
                                    padding-bottom:4px;">
@@ -104,6 +104,11 @@
                                  style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
                                 <strong>Policy Number:</strong>
                                 <span t-out="o.medical_insurance_policy_number"/>
+                            </div>
+                            <div t-if="o.medical_reference_number"
+                                 style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                                <strong>Reference Number:</strong>
+                                <span t-out="o.medical_reference_number"/>
                             </div>
                             <div t-if="o.medical_insurance_valid_until"
                                  style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">

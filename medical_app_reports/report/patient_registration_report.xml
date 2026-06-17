@@ -26,7 +26,7 @@
             <t t-set="doctor_name"
                t-value="o.doctor_employee_id.name or o.doctor_id.name"/>
             <t t-set="has_insurance"
-               t-value="bool(patient.insurance_provider_id or patient.insurance_policy_number or patient.insurance_valid_until or patient.insurance_assistance_company_id or patient.insurance_franchise)"/>
+               t-value="bool(patient.insurance_provider_id or patient.insurance_policy_number or patient.reference_number or patient.insurance_valid_until or patient.insurance_assistance_company_id or patient.insurance_franchise)"/>
 
             <div class="page" style="font-size:11pt; color:#1f2d3d;
                                      line-height:1.55;">
@@ -121,6 +121,11 @@
                        style="margin:0 0 6px 0;">
                         <strong>Policy Number:</strong>
                         <span t-out="patient.insurance_policy_number"/>
+                    </p>
+                    <p t-if="patient.reference_number"
+                       style="margin:0 0 6px 0;">
+                        <strong>Reference Number:</strong>
+                        <span t-out="patient.reference_number"/>
                     </p>
                     <p t-if="patient.insurance_valid_until"
                        style="margin:0 0 6px 0;">

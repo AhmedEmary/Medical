@@ -62,6 +62,10 @@
                             <td><strong>Medical Record Number (MRN)</strong></td>
                             <td><span t-out="patient.mrn"/></td>
                         </tr>
+                        <tr t-if="patient.reference_number">
+                            <td><strong>Reference Number:</strong></td>
+                            <td><span t-out="patient.reference_number"/></td>
+                        </tr>
                         <tr t-if="patient.patient_category == 'hotel_guest' and (patient.hotel_name or patient.room_number)">
                             <td><strong>Hotel:</strong></td>
                             <td>
@@ -154,6 +158,11 @@
 
                 <!-- ============= Vital Signs ============= -->
                 <t t-if="o.vitals_ids">
+                    <t t-set="show_bp" t-value="any(v.bp_display for v in o.vitals_ids)"/>
+                    <t t-set="show_temp" t-value="any(v.temperature for v in o.vitals_ids)"/>
+                    <t t-set="show_pulse" t-value="any(v.heart_rate for v in o.vitals_ids)"/>
+                    <t t-set="show_rbs" t-value="any(v.glucose for v in o.vitals_ids)"/>
+                    <t t-set="show_rr" t-value="any(v.respiratory_rate for v in o.vitals_ids)"/>
                     <div style="page-break-inside: avoid;">
                         <h3 style="color:#1f5e8a; text-decoration:underline;">
                             <strong>Vital Signs Table:</strong>
@@ -164,11 +173,11 @@
                                 <tr>
                                     <th>Time</th>
                                     <th>Date</th>
-                                    <th>BP</th>
-                                    <th>Temperature</th>
-                                    <th>Pulse</th>
-                                    <th>RBS</th>
-                                    <th>RR</th>
+                                    <th t-if="show_bp">BP</th>
+                                    <th t-if="show_temp">Temperature</th>
+                                    <th t-if="show_pulse">Pulse</th>
+                                    <th t-if="show_rbs">RBS</th>
+                                    <th t-if="show_rr">RR</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -184,23 +193,23 @@
                                               t-field="v.measurement_time"
                                               t-options='{"format": "dd.MM.yyyy"}'/>
                                     </td>
-                                    <td><span t-out="v.bp_display or ''"/></td>
-                                    <td>
+                                    <td t-if="show_bp"><span t-out="v.bp_display or ''"/></td>
+                                    <td t-if="show_temp">
                                         <t t-if="v.temperature">
                                             <span t-out="v.temperature"/>
                                         </t>
                                     </td>
-                                    <td>
+                                    <td t-if="show_pulse">
                                         <t t-if="v.heart_rate">
                                             <span t-out="v.heart_rate"/>
                                         </t>
                                     </td>
-                                    <td>
+                                    <td t-if="show_rbs">
                                         <t t-if="v.glucose">
                                             <span t-out="v.glucose"/>
                                         </t>
                                     </td>
-                                    <td>
+                                    <td t-if="show_rr">
                                         <t t-if="v.respiratory_rate">
                                             <span t-out="v.respiratory_rate"/>
                                         </t>
