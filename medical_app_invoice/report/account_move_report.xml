@@ -131,6 +131,69 @@
                 </div>
             </t>
         </xpath>
+
+        <!--
+            Enrich the standard "Payment Communication / on this account"
+            line with a structured Bank Details block listing the
+            IBAN (account number), SWIFT / BIC and bank address.
+            Each row is wrapped in t-if so empty values are not printed.
+        -->
+        <xpath expr="//p[@name='payment_communication']" position="after">
+            <t t-if="o.partner_bank_id">
+                <t t-set="_bank" t-value="o.partner_bank_id.bank_id"/>
+                <div name="bank_details"
+                     style="page-break-inside: avoid; margin:0 0 14px 0;
+                            padding:10px 14px;
+                            border:1px solid #cbd5e1;
+                            background:#f8fafc; border-radius:4px;
+                            font-size:10pt; color:#1f2d3d;">
+                    <h4 style="color:#1f5e8a; margin:0 0 8px 0;
+                               border-bottom:1px solid #cbd5e1;
+                               padding-bottom:4px;">
+                        <strong>Bank Details</strong>
+                    </h4>
+                    <div style="font-size:10pt; margin:0;">
+                        <div t-if="_bank.name"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Bank Name:</strong>
+                            <span t-out="_bank.name"/>
+                        </div>
+                        <div t-if="o.partner_bank_id.acc_holder_name or o.partner_bank_id.partner_id"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Account Holder:</strong>
+                            <span t-out="o.partner_bank_id.acc_holder_name or o.partner_bank_id.partner_id.name"/>
+                        </div>
+                        <div t-if="o.partner_bank_id.acc_number"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>IBAN / Account Number:</strong>
+                            <span t-out="o.partner_bank_id.acc_number"/>
+                        </div>
+                        <div t-if="o.partner_bank_id.bank_bic"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>SWIFT / BIC:</strong>
+                            <span t-out="o.partner_bank_id.bank_bic"/>
+                        </div>
+                        <div t-if="o.partner_bank_id.currency_id"
+                             style="display:inline-block; width:49%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Currency:</strong>
+                            <span t-out="o.partner_bank_id.currency_id.name"/>
+                        </div>
+                        <div t-if="_bank.street or _bank.street2 or _bank.city or _bank.state or _bank.zip or _bank.country"
+                             style="display:block; width:100%; vertical-align:top; padding:2px 4px; box-sizing:border-box;">
+                            <strong>Bank Address:</strong>
+                            <span>
+                                <t t-if="_bank.street"><t t-out="_bank.street"/></t>
+                                <t t-if="_bank.street2">, <t t-out="_bank.street2"/></t>
+                                <t t-if="_bank.city">, <t t-out="_bank.city"/></t>
+                                <t t-if="_bank.state">, <t t-out="_bank.state.name"/></t>
+                                <t t-if="_bank.zip"> <t t-out="_bank.zip"/></t>
+                                <t t-if="_bank.country">, <t t-out="_bank.country.name"/></t>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
     </template>
 
 </odoo>
