@@ -133,10 +133,18 @@
         </xpath>
 
         <!--
-            Enrich the standard "Payment Communication / on this account"
-            line with a structured Bank Details block listing the
-            IBAN (account number), SWIFT / BIC and bank address.
-            Each row is wrapped in t-if so empty values are not printed.
+            Drop the standard "on this account: <bank>" snippet that is
+            appended after the Payment Communication line, since the
+            bank details are now printed in a dedicated block below.
+        -->
+        <xpath expr="//p[@name='payment_communication']/t[@t-if='o.partner_bank_id']"
+               position="replace"/>
+
+        <!--
+            Enrich the standard "Payment Communication" line with a
+            structured Bank Details block listing the IBAN (account
+            number), SWIFT / BIC and bank address. Each row is wrapped
+            in t-if so empty values are not printed.
         -->
         <xpath expr="//p[@name='payment_communication']" position="after">
             <t t-if="o.partner_bank_id">
