@@ -136,8 +136,12 @@
             Drop the standard "on this account: <bank>" snippet that is
             appended after the Payment Communication line, since the
             bank details are now printed in a dedicated block below.
+            Target the <t> child generically so this works against both
+            the base report view (``t-if="o.partner_bank_id"``) and the
+            preview view (``t-if="account_number"``, set by
+            ``account.report_invoice_document_preview``).
         -->
-        <xpath expr="//p[@name='payment_communication']/t[@t-if='o.partner_bank_id']"
+        <xpath expr="//p[@name='payment_communication']/t"
                position="replace"/>
 
         <!--
