@@ -133,16 +133,19 @@
         </xpath>
 
         <!--
-            Drop the standard "on this account: <bank>" snippet that is
-            appended after the Payment Communication line, since the
-            bank details are now printed in a dedicated block below.
-            Target the <t> child generically so this works against both
-            the base report view (``t-if="o.partner_bank_id"``) and the
-            preview view (``t-if="account_number"``, set by
-            ``account.report_invoice_document_preview``).
+            Replace the entire Payment Communication paragraph with a
+            version that omits the trailing "on this account: <bank>"
+            snippet, since the bank details are now printed in a
+            dedicated block below. Replacing the whole <p> avoids the
+            inner <t> diverging between the base view and the
+            ``account.report_invoice_document_preview`` primary view
+            (which rewrites that <t> to use ``account_number``).
         -->
-        <xpath expr="//p[@name='payment_communication']/t"
-               position="replace"/>
+        <xpath expr="//p[@name='payment_communication']" position="replace">
+            <p name="payment_communication">
+                Payment Communication: <span class="fw-bold" t-field="o.payment_reference">INV/2023/00001</span>
+            </p>
+        </xpath>
 
         <!--
             Enrich the standard "Payment Communication" line with a
