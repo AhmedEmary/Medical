@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Add three OCR scan buttons to the External Visit form header -->
+    <record id="view_medical_external_visit_form_ai_scan" model="ir.ui.view">
+        <field name="name">medical.external.visit.form.ai.scan</field>
+        <field name="model">medical.external.visit</field>
+        <field name="inherit_id"
+               ref="medical_app.view_medical_external_visit_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_print_declaration']"
+                   position="before">
+                <button name="action_scan_guest_passport" type="object"
+                        string="Scan Guest Passport" icon="fa-id-card"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_receptionist"/>
+                <button name="action_scan_physician_passport" type="object"
+                        string="Scan Physician Passport" icon="fa-id-card-o"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_receptionist"/>
+                <button name="action_scan_syndicate_card" type="object"
+                        string="Scan Syndicate Card" icon="fa-credit-card"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_receptionist"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

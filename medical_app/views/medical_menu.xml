@@ -15,6 +15,12 @@
               action="action_medical_patient"
               sequence="10"/>
 
+    <menuitem id="menu_medical_external_visit"
+              name="External Visits"
+              parent="menu_medical_root"
+              action="action_medical_external_visit"
+              sequence="15"/>
+
     <menuitem id="menu_medical_encounter"
               name="Encounters"
               parent="menu_medical_root"

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- List view -->
+    <record id="view_medical_external_visit_list" model="ir.ui.view">
+        <field name="name">medical.external.visit.list</field>
+        <field name="model">medical.external.visit</field>
+        <field name="arch" type="xml">
+            <list string="External Visits" sample="1">
+                <field name="reference"/>
+                <field name="visit_date"/>
+                <field name="guest_name"/>
+                <field name="room_number"/>
+                <field name="physician_name"/>
+                <field name="syndicate_no" optional="show"/>
+                <field name="specialty" optional="show"/>
+                <field name="active" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search view -->
+    <record id="view_medical_external_visit_search" model="ir.ui.view">
+        <field name="name">medical.external.visit.search</field>
+        <field name="model">medical.external.visit</field>
+        <field name="arch" type="xml">
+            <search string="External Visits">
+                <field name="reference"/>
+                <field name="guest_name"/>
+                <field name="physician_name"/>
+                <field name="syndicate_no"/>
+                <field name="room_number"/>
+                <filter string="Archived" name="inactive"
+                        domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Visit Date" name="g_date"
+                            context="{'group_by': 'visit_date'}"/>
+                    <filter string="Physician" name="g_physician"
+                            context="{'group_by': 'physician_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form view -->
+    <record id="view_medical_external_visit_form" model="ir.ui.view">
+        <field name="name">medical.external.visit.form</field>
+        <field name="model">medical.external.visit</field>
+        <field name="arch" type="xml">
+            <form string="External Physician Visit">
+                <header>
+                    <button name="action_print_declaration" type="object"
+                            string="Print Declaration"
+                            class="btn-primary" icon="fa-print"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="reference" string="Reference"/>
+                        <h1>
+                            <field name="reference" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="visit_date"/>
+                        </group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Guest Information" name="guest">
+                            <group>
+                                <group string="Identity">
+                                    <field name="guest_name"/>
+                                    <field name="guest_national_id"/>
+                                    <field name="guest_nationality"/>
+                                </group>
+                                <group string="Stay">
+                                    <field name="room_number"/>
+                                    <field name="reservation_number"/>
+                                </group>
+                            </group>
+                            <group string="Passport / National ID Scan" col="1">
+                                <field name="guest_passport_filename" invisible="1"/>
+                                <field name="guest_passport_image" widget="image"
+                                       filename="guest_passport_filename"
+                                       options="{'size': [400, 280]}"/>
+                            </group>
+                        </page>
+
+                        <page string="External Physician" name="physician">
+                            <group>
+                                <group string="Physician Details">
+                                    <field name="physician_name"/>
+                                    <field name="physician_national_id"/>
+                                    <field name="syndicate_no"/>
+                                </group>
+                                <group string="Contact">
+                                    <field name="specialty"/>
+                                    <field name="physician_mobile" widget="phone"/>
+                                </group>
+                            </group>
+                            <group string="Passport / National ID Scan" col="1">
+                                <field name="physician_passport_filename" invisible="1"/>
+                                <field name="physician_passport_image" widget="image"
+                                       filename="physician_passport_filename"
+                                       options="{'size': [400, 280]}"/>
+                            </group>
+                            <group string="Medical Syndicate Card Scan" col="1">
+                                <field name="syndicate_card_filename" invisible="1"/>
+                                <field name="syndicate_card_image" widget="image"
+                                       filename="syndicate_card_filename"
+                                       options="{'size': [400, 280]}"/>
+                            </group>
+                        </page>
+
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_medical_external_visit" model="ir.actions.act_window">
+        <field name="name">External Visits</field>
+        <field name="res_model">medical.external.visit</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_medical_external_visit_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Record an external physician's visit
+            </p>
+            <p>
+                Document visits by physicians who are not part of the hotel's
+                contracted medical team. Captures the guest, the external
+                doctor's credentials, and prints a liability declaration.
+            </p>
+        </field>
+    </record>
+
+</odoo>

@@ -45,6 +45,7 @@ that depend on this one.
         'views/medical_encounter_views.xml',
         'views/medical_vitals_views.xml',
         'views/medical_diagnosis_views.xml',
+        'views/medical_external_visit_views.xml',
         'views/res_partner_views.xml',
         'views/medical_menu.xml',
     ],

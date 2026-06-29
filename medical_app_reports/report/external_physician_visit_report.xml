@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        External Physician Visit Declaration — printed when a physician
+        who is NOT on the hotel's contracted team visits a guest. Documents
+        the guest, the visiting doctor's credentials, and disclaims the
+        hotel medical provider's responsibility for the care delivered.
+    -->
+
+    <template id="report_external_physician_visit">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="medical_app_reports.report_external_physician_visit_document"
+                   t-lang="user.lang or 'en_US'"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_external_physician_visit_document">
+        <t t-call="web.external_layout">
+            <div class="page" style="font-size:11pt; color:#1f2d3d;">
+
+                <!-- ============= Title ============= -->
+                <div style="text-align:center; margin-bottom:18px;">
+                    <h2 style="color:#1f5e8a; margin:0; letter-spacing:0.5px;">
+                        <strong>External Physician Visit Declaration</strong>
+                    </h2>
+                </div>
+
+                <hr style="border:none; border-top:1px solid #cfd8e3;
+                           margin-bottom:18px;"/>
+
+                <!-- ============= Heading line + date/time ============= -->
+                <h3 style="color:#1f5e8a; margin:0 0 12px 0;">
+                    <strong>External Physician Visit Declaration</strong>
+                </h3>
+
+                <p style="margin:4px 0;">
+                    <strong>Date:</strong>
+                    <t t-if="o.visit_date">
+                        <span t-field="o.visit_date"
+                              t-options='{"format": "dd / MM / yyyy"}'/>
+                    </t>
+                    <t t-else="">
+                        ____ / ____ / ______
+                    </t>
+                </p>
+                <p style="margin:4px 0 16px 0;">
+                    <strong>Time:</strong>
+                    <t t-if="o.visit_date">
+                        <span t-field="o.visit_date"
+                              t-options='{"format": "HH:mm"}'/>
+                    </t>
+                    <t t-else="">
+                        __________
+                    </t>
+                </p>
+
+                <!-- ============= Guest Information ============= -->
+                <h3 style="color:#1f5e8a; margin:12px 0 8px 0;">
+                    <strong>Guest Information</strong>
+                </h3>
+                <ul style="margin:0 0 16px 18px; padding:0; line-height:1.7;">
+                    <li>
+                        <strong>Guest Name:</strong>
+                        <span t-out="o.guest_name or '………………………………………'"/>
+                    </li>
+                    <li>
+                        <strong>Room Number:</strong>
+                        <span t-out="o.room_number or '………………………………………'"/>
+                    </li>
+                    <li>
+                        <strong>Reservation Number (if applicable):</strong>
+                        <span t-out="o.reservation_number or '………………………………'"/>
+                    </li>
+                </ul>
+
+                <!-- ============= External Physician Information ============= -->
+                <h3 style="color:#1f5e8a; margin:12px 0 8px 0;">
+                    <strong>External Physician Information</strong>
+                </h3>
+                <ul style="margin:0 0 16px 18px; padding:0; line-height:1.7;">
+                    <li>
+                        <strong>Physician Name:</strong>
+                        <span t-out="o.physician_name or '………………………………………'"/>
+                    </li>
+                    <li>
+                        <strong>National ID / Passport No.:</strong>
+                        <span t-out="o.physician_national_id or '………………………………'"/>
+                    </li>
+                    <li>
+                        <strong>Medical Syndicate Registration No.:</strong>
+                        <span t-out="o.syndicate_no or '……………………………………………'"/>
+                    </li>
+                    <li>
+                        <strong>Specialty:</strong>
+                        <span t-out="o.specialty or '………………………………………'"/>
+                    </li>
+                    <li>
+                        <strong>Mobile Number:</strong>
+                        <span t-out="o.physician_mobile or '………………………………………'"/>
+                    </li>
+                </ul>
+
+                <!-- ============= Statement ============= -->
+                <h3 style="color:#1f5e8a; margin:18px 0 10px 0;">
+                    <strong>Statement</strong>
+                </h3>
+                <p style="margin:0 0 12px 0; text-align:justify;
+                          line-height:1.6;">
+                    This is to document that the above-mentioned physician,
+                    <strong>who is not affiliated with or authorized by the
+                    hotel's contracted medical service provider (Al-Hakim
+                    Medicare Pro)</strong>,
+                    attended the above-mentioned guest in their hotel room
+                    at the guest's and/or companion's own request.
+                </p>
+                <p style="margin:0 0 12px 0; text-align:justify;
+                          line-height:1.6;">
+                    The medical assessment, examination, diagnosis, treatment,
+                    prescriptions, medical advice, follow-up, and any
+                    subsequent medical decisions provided during this visit
+                    were carried out
+                    <strong>solely by the above-mentioned external
+                    physician</strong>,
+                    independently of the hotel's medical clinic and its
+                    contracted medical team.
+                </p>
+                <p style="margin:0 0 12px 0; text-align:justify;
+                          line-height:1.6;">
+                    Accordingly, this visit
+                    <strong>does not constitute a medical service provided
+                    by the hotel's medical provider</strong>,
+                    and all professional responsibility for the medical care
+                    delivered during this visit remains with the attending
+                    external physician.
+                </p>
+                <p style="margin:0 0 18px 0; text-align:justify;
+                          line-height:1.6;">
+                    This declaration is issued solely for documentation
+                    purposes within the hotel's records.
+                </p>
+
+                <!-- ============= Signatures ============= -->
+                <div style="page-break-inside: avoid; margin-top:32px;">
+                    <table style="width:100%;">
+                        <tr>
+                            <td style="width:45%; vertical-align:top;">
+                                <p style="margin:0;"><strong>External Physician</strong></p>
+                                <p style="margin:4px 0 28px 0; color:#475569;">
+                                    Name: <span t-out="o.physician_name or '________________________'"/>
+                                </p>
+                                <p style="margin:0; border-top:1px solid #1f2d3d;
+                                          padding-top:4px;">Signature</p>
+                            </td>
+                            <td style="width:10%;"></td>
+                            <td style="width:45%; vertical-align:top;">
+                                <p style="margin:0;"><strong>Guest / Companion</strong></p>
+                                <p style="margin:4px 0 28px 0; color:#475569;">
+                                    Name: <span t-out="o.guest_name or '________________________'"/>
+                                </p>
+                                <p style="margin:0; border-top:1px solid #1f2d3d;
+                                          padding-top:4px;">Signature</p>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

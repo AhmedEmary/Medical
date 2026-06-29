@@ -8,3 +8,4 @@ from . import medical_medication
 from . import medical_vitals
 from . import medical_encounter
 from . import medical_prescription_line
+from . import medical_external_visit

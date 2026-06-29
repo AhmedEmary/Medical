@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_external_visit_scan_wizard_form" model="ir.ui.view">
+        <field name="name">medical.external.visit.scan.wizard.form</field>
+        <field name="model">medical.external.visit.scan.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Scan Document">
+                <field name="state" invisible="1"/>
+                <field name="visit_id" invisible="1"/>
+
+                <!-- Step 1: upload -->
+                <group invisible="state != 'upload'">
+                    <div class="alert alert-info" role="alert" colspan="2">
+                        <strong>Scan a document.</strong>
+                        Upload a clear photo and the OCR will pre-fill the
+                        matching fields on the external visit. Nothing is
+                        saved until you Apply.
+                    </div>
+                    <group>
+                        <field name="scan_mode"/>
+                    </group>
+                    <group>
+                        <field name="image" widget="image"
+                               filename="image_filename"
+                               options="{'size': [400, 280]}"/>
+                        <field name="image_filename" invisible="1"/>
+                    </group>
+                </group>
+
+                <!-- Step 2: review -->
+                <group invisible="state != 'review'">
+                    <div class="alert alert-warning" role="alert" colspan="2">
+                        <strong>Review before applying.</strong>
+                        OCR can mis-read characters. Check each field and
+                        correct anything that looks wrong.
+                    </div>
+
+                    <group string="Extracted">
+                        <field name="full_name"/>
+                        <field name="document_number"
+                               invisible="scan_mode == 'syndicate_card'"/>
+                        <field name="nationality"
+                               invisible="scan_mode == 'syndicate_card'"/>
+                        <field name="syndicate_no"
+                               invisible="scan_mode != 'syndicate_card'"/>
+                        <field name="specialty"
+                               invisible="scan_mode != 'syndicate_card'"/>
+                        <field name="mobile"
+                               invisible="scan_mode != 'syndicate_card'"/>
+                        <field name="document_number"
+                               string="National ID"
+                               invisible="scan_mode != 'syndicate_card'"/>
+                    </group>
+                    <group string="Raw OCR" col="1">
+                        <field name="raw_text" nolabel="1"
+                               widget="text" readonly="1"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_scan" type="object"
+                            string="Scan" class="btn-primary"
+                            invisible="state != 'upload'"/>
+
+                    <button name="action_apply" type="object"
+                            string="Apply" class="btn-primary"
+                            invisible="state != 'review'"/>
+                    <button name="action_back_to_upload" type="object"
+                            string="Try Another Image" class="btn-secondary"
+                            invisible="state != 'review'"/>
+
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
