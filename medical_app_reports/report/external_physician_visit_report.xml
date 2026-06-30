@@ -142,31 +142,6 @@
                     purposes within the hotel's records.
                 </p>
 
-                <!-- ============= Signatures ============= -->
-                <div style="page-break-inside: avoid; margin-top:32px;">
-                    <table style="width:100%;">
-                        <tr>
-                            <td style="width:45%; vertical-align:top;">
-                                <p style="margin:0;"><strong>External Physician</strong></p>
-                                <p style="margin:4px 0 28px 0; color:#475569;">
-                                    Name: <span t-out="o.physician_name or '________________________'"/>
-                                </p>
-                                <p style="margin:0; border-top:1px solid #1f2d3d;
-                                          padding-top:4px;">Signature</p>
-                            </td>
-                            <td style="width:10%;"></td>
-                            <td style="width:45%; vertical-align:top;">
-                                <p style="margin:0;"><strong>Guest / Companion</strong></p>
-                                <p style="margin:4px 0 28px 0; color:#475569;">
-                                    Name: <span t-out="o.guest_name or '________________________'"/>
-                                </p>
-                                <p style="margin:0; border-top:1px solid #1f2d3d;
-                                          padding-top:4px;">Signature</p>
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
             </div>
         </t>
     </template>
