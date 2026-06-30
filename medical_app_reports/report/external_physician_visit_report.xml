@@ -67,12 +67,12 @@
                         <span t-out="o.guest_name or '………………………………………'"/>
                     </li>
                     <li>
-                        <strong>Room Number:</strong>
-                        <span t-out="o.room_number or '………………………………………'"/>
+                        <strong>Hotel Name:</strong>
+                        <span t-out="o.hotel_name or '………………………………………'"/>
                     </li>
                     <li>
-                        <strong>Reservation Number (if applicable):</strong>
-                        <span t-out="o.reservation_number or '………………………………'"/>
+                        <strong>Room Number:</strong>
+                        <span t-out="o.room_number or '………………………………………'"/>
                     </li>
                 </ul>
 

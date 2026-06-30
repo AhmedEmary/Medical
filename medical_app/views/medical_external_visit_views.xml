@@ -78,8 +78,8 @@
                                     <field name="guest_nationality"/>
                                 </group>
                                 <group string="Stay">
+                                    <field name="hotel_name"/>
                                     <field name="room_number"/>
-                                    <field name="reservation_number"/>
                                 </group>
                             </group>
                             <group string="Passport / National ID Scan" col="1">

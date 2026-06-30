@@ -35,7 +35,7 @@ class MedicalExternalVisit(models.Model):
     guest_national_id = fields.Char(string='Guest National ID / Passport')
     guest_nationality = fields.Char(string='Guest Nationality')
     room_number = fields.Char(string='Room Number', tracking=True)
-    reservation_number = fields.Char(string='Reservation Number')
+    hotel_name = fields.Char(string='Hotel Name')
     guest_passport_image = fields.Binary(
         string='Guest Passport Scan', attachment=True)
     guest_passport_filename = fields.Char()
