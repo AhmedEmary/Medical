@@ -7,6 +7,7 @@ from . import medical_ai_config
 from . import medical_encounter
 from . import medical_id_ocr
 from . import medical_syndicate_ocr
+from . import medical_ambulance_license_ocr
 from . import medical_encounter_ocr
 from . import medical_patient
 from . import medical_external_visit

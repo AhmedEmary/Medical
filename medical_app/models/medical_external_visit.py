@@ -58,6 +58,22 @@ class MedicalExternalVisit(models.Model):
     syndicate_card_filename = fields.Char()
 
     # ------------------------------------------------------------
+    # Ambulance / vehicle license
+    # ------------------------------------------------------------
+    ambulance_plate_number = fields.Char(string='Plate Number', tracking=True)
+    ambulance_brand = fields.Char(string='Vehicle Make / Brand')
+    ambulance_model = fields.Char(string='Model / Year')
+    ambulance_vehicle_type = fields.Char(string='Vehicle Type')
+    ambulance_chassis_number = fields.Char(string='Chassis Number')
+    ambulance_engine_number = fields.Char(string='Engine Number')
+    ambulance_color = fields.Char(string='Color')
+    ambulance_owner_name = fields.Char(string='License Owner Name')
+    ambulance_license_expiry = fields.Date(string='License Expiry Date')
+    ambulance_license_image = fields.Binary(
+        string='Vehicle License Scan', attachment=True)
+    ambulance_license_filename = fields.Char()
+
+    # ------------------------------------------------------------
     # Notes / extras
     # ------------------------------------------------------------
     notes = fields.Html(string='Notes')

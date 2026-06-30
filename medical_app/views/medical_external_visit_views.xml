@@ -116,6 +116,30 @@
                             </group>
                         </page>
 
+                        <page string="Ambulance" name="ambulance">
+                            <group>
+                                <group string="Vehicle">
+                                    <field name="ambulance_plate_number"/>
+                                    <field name="ambulance_brand"/>
+                                    <field name="ambulance_model"/>
+                                    <field name="ambulance_vehicle_type"/>
+                                    <field name="ambulance_color"/>
+                                </group>
+                                <group string="License">
+                                    <field name="ambulance_chassis_number"/>
+                                    <field name="ambulance_engine_number"/>
+                                    <field name="ambulance_owner_name"/>
+                                    <field name="ambulance_license_expiry"/>
+                                </group>
+                            </group>
+                            <group string="Vehicle License Scan" col="1">
+                                <field name="ambulance_license_filename" invisible="1"/>
+                                <field name="ambulance_license_image" widget="image"
+                                       filename="ambulance_license_filename"
+                                       options="{'size': [400, 280]}"/>
+                            </group>
+                        </page>
+
                         <page string="Notes" name="notes">
                             <field name="notes"/>
                         </page>

@@ -36,72 +36,114 @@
                     <strong>External Physician Visit Declaration</strong>
                 </h3>
 
-                <p style="margin:4px 0;">
-                    <strong>Date:</strong>
-                    <t t-if="o.visit_date">
+                <t t-if="o.visit_date">
+                    <p style="margin:4px 0;">
+                        <strong>Date:</strong>
                         <span t-field="o.visit_date"
                               t-options='{"format": "dd / MM / yyyy"}'/>
-                    </t>
-                    <t t-else="">
-                        ____ / ____ / ______
-                    </t>
-                </p>
-                <p style="margin:4px 0 16px 0;">
-                    <strong>Time:</strong>
-                    <t t-if="o.visit_date">
+                    </p>
+                    <p style="margin:4px 0 16px 0;">
+                        <strong>Time:</strong>
                         <span t-field="o.visit_date"
                               t-options='{"format": "HH:mm"}'/>
-                    </t>
-                    <t t-else="">
-                        __________
-                    </t>
-                </p>
+                    </p>
+                </t>
 
                 <!-- ============= Guest Information ============= -->
-                <h3 style="color:#1f5e8a; margin:12px 0 8px 0;">
-                    <strong>Guest Information</strong>
-                </h3>
-                <ul style="margin:0 0 16px 18px; padding:0; line-height:1.7;">
-                    <li>
-                        <strong>Guest Name:</strong>
-                        <span t-out="o.guest_name or '………………………………………'"/>
-                    </li>
-                    <li>
-                        <strong>Hotel Name:</strong>
-                        <span t-out="o.hotel_name or '………………………………………'"/>
-                    </li>
-                    <li>
-                        <strong>Room Number:</strong>
-                        <span t-out="o.room_number or '………………………………………'"/>
-                    </li>
-                </ul>
+                <t t-if="o.guest_name or o.hotel_name or o.room_number">
+                    <h3 style="color:#1f5e8a; margin:12px 0 8px 0;">
+                        <strong>Guest Information</strong>
+                    </h3>
+                    <ul style="margin:0 0 16px 18px; padding:0; line-height:1.7;">
+                        <li t-if="o.guest_name">
+                            <strong>Guest Name:</strong>
+                            <span t-out="o.guest_name"/>
+                        </li>
+                        <li t-if="o.hotel_name">
+                            <strong>Hotel Name:</strong>
+                            <span t-out="o.hotel_name"/>
+                        </li>
+                        <li t-if="o.room_number">
+                            <strong>Room Number:</strong>
+                            <span t-out="o.room_number"/>
+                        </li>
+                    </ul>
+                </t>
 
                 <!-- ============= External Physician Information ============= -->
-                <h3 style="color:#1f5e8a; margin:12px 0 8px 0;">
-                    <strong>External Physician Information</strong>
-                </h3>
-                <ul style="margin:0 0 16px 18px; padding:0; line-height:1.7;">
-                    <li>
-                        <strong>Physician Name:</strong>
-                        <span t-out="o.physician_name or '………………………………………'"/>
-                    </li>
-                    <li>
-                        <strong>National ID / Passport No.:</strong>
-                        <span t-out="o.physician_national_id or '………………………………'"/>
-                    </li>
-                    <li>
-                        <strong>Medical Syndicate Registration No.:</strong>
-                        <span t-out="o.syndicate_no or '……………………………………………'"/>
-                    </li>
-                    <li>
-                        <strong>Specialty:</strong>
-                        <span t-out="o.specialty or '………………………………………'"/>
-                    </li>
-                    <li>
-                        <strong>Mobile Number:</strong>
-                        <span t-out="o.physician_mobile or '………………………………………'"/>
-                    </li>
-                </ul>
+                <t t-if="o.physician_name or o.physician_national_id or o.syndicate_no or o.specialty or o.physician_mobile">
+                    <h3 style="color:#1f5e8a; margin:12px 0 8px 0;">
+                        <strong>External Physician Information</strong>
+                    </h3>
+                    <ul style="margin:0 0 16px 18px; padding:0; line-height:1.7;">
+                        <li t-if="o.physician_name">
+                            <strong>Physician Name:</strong>
+                            <span t-out="o.physician_name"/>
+                        </li>
+                        <li t-if="o.physician_national_id">
+                            <strong>National ID / Passport No.:</strong>
+                            <span t-out="o.physician_national_id"/>
+                        </li>
+                        <li t-if="o.syndicate_no">
+                            <strong>Medical Syndicate Registration No.:</strong>
+                            <span t-out="o.syndicate_no"/>
+                        </li>
+                        <li t-if="o.specialty">
+                            <strong>Specialty:</strong>
+                            <span t-out="o.specialty"/>
+                        </li>
+                        <li t-if="o.physician_mobile">
+                            <strong>Mobile Number:</strong>
+                            <span t-out="o.physician_mobile"/>
+                        </li>
+                    </ul>
+                </t>
+
+                <!-- ============= Ambulance Information ============= -->
+                <t t-if="o.ambulance_plate_number or o.ambulance_brand or o.ambulance_model or o.ambulance_vehicle_type or o.ambulance_color or o.ambulance_chassis_number or o.ambulance_engine_number or o.ambulance_owner_name or o.ambulance_license_expiry">
+                    <h3 style="color:#1f5e8a; margin:12px 0 8px 0;">
+                        <strong>Ambulance Information</strong>
+                    </h3>
+                    <ul style="margin:0 0 16px 18px; padding:0; line-height:1.7;">
+                        <li t-if="o.ambulance_plate_number">
+                            <strong>Plate Number:</strong>
+                            <span t-out="o.ambulance_plate_number"/>
+                        </li>
+                        <li t-if="o.ambulance_brand">
+                            <strong>Vehicle Make / Brand:</strong>
+                            <span t-out="o.ambulance_brand"/>
+                        </li>
+                        <li t-if="o.ambulance_model">
+                            <strong>Model / Year:</strong>
+                            <span t-out="o.ambulance_model"/>
+                        </li>
+                        <li t-if="o.ambulance_vehicle_type">
+                            <strong>Vehicle Type:</strong>
+                            <span t-out="o.ambulance_vehicle_type"/>
+                        </li>
+                        <li t-if="o.ambulance_color">
+                            <strong>Color:</strong>
+                            <span t-out="o.ambulance_color"/>
+                        </li>
+                        <li t-if="o.ambulance_chassis_number">
+                            <strong>Chassis Number:</strong>
+                            <span t-out="o.ambulance_chassis_number"/>
+                        </li>
+                        <li t-if="o.ambulance_engine_number">
+                            <strong>Engine Number:</strong>
+                            <span t-out="o.ambulance_engine_number"/>
+                        </li>
+                        <li t-if="o.ambulance_owner_name">
+                            <strong>License Owner Name:</strong>
+                            <span t-out="o.ambulance_owner_name"/>
+                        </li>
+                        <li t-if="o.ambulance_license_expiry">
+                            <strong>License Expiry Date:</strong>
+                            <span t-field="o.ambulance_license_expiry"
+                                  t-options='{"format": "dd / MM / yyyy"}'/>
+                        </li>
+                    </ul>
+                </t>
 
                 <!-- ============= Statement ============= -->
                 <h3 style="color:#1f5e8a; margin:18px 0 10px 0;">

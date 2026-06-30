@@ -36,7 +36,8 @@
                         correct anything that looks wrong.
                     </div>
 
-                    <group string="Extracted">
+                    <group string="Extracted"
+                           invisible="scan_mode == 'ambulance_license'">
                         <field name="full_name"/>
                         <field name="document_number"
                                invisible="scan_mode == 'syndicate_card'"/>
@@ -51,6 +52,18 @@
                         <field name="document_number"
                                string="National ID"
                                invisible="scan_mode != 'syndicate_card'"/>
+                    </group>
+                    <group string="Extracted"
+                           invisible="scan_mode != 'ambulance_license'">
+                        <field name="plate_number"/>
+                        <field name="vehicle_brand"/>
+                        <field name="vehicle_model"/>
+                        <field name="vehicle_type"/>
+                        <field name="vehicle_color"/>
+                        <field name="chassis_number"/>
+                        <field name="engine_number"/>
+                        <field name="owner_name"/>
+                        <field name="license_expiry"/>
                     </group>
                     <group string="Raw OCR" col="1">
                         <field name="raw_text" nolabel="1"

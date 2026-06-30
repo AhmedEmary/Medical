@@ -23,6 +23,7 @@ SCAN_MODES = [
     ('guest_passport', 'Guest Passport / National ID'),
     ('physician_passport', 'Physician Passport / National ID'),
     ('syndicate_card', 'Medical Syndicate Card'),
+    ('ambulance_license', 'Ambulance / Vehicle License'),
 ]
 
 
@@ -54,6 +55,17 @@ class MedicalExternalVisitScanWizard(models.TransientModel):
     specialty = fields.Char(string='Specialty')
     mobile = fields.Char(string='Mobile')
 
+    # Ambulance license fields
+    plate_number = fields.Char(string='Plate Number')
+    vehicle_brand = fields.Char(string='Vehicle Make / Brand')
+    vehicle_model = fields.Char(string='Model / Year')
+    vehicle_type = fields.Char(string='Vehicle Type')
+    chassis_number = fields.Char(string='Chassis Number')
+    engine_number = fields.Char(string='Engine Number')
+    vehicle_color = fields.Char(string='Color')
+    owner_name = fields.Char(string='License Owner Name')
+    license_expiry = fields.Date(string='License Expiry Date')
+
     # ============================================================
     # Actions
     # ============================================================
@@ -76,6 +88,21 @@ class MedicalExternalVisitScanWizard(models.TransientModel):
                 'specialty': result.get('specialty') or '',
                 'document_number': result.get('national_id') or '',
                 'mobile': result.get('mobile') or '',
+                'raw_text': result.get('raw_text') or '',
+            })
+        elif self.scan_mode == 'ambulance_license':
+            ocr = self.env['medical.ambulance.license.ocr.service']
+            result = ocr.extract(image_b64=image_b64, mime_type=mime_type)
+            vals.update({
+                'plate_number': result.get('plate_number') or '',
+                'vehicle_brand': result.get('brand') or '',
+                'vehicle_model': result.get('model') or '',
+                'vehicle_type': result.get('vehicle_type') or '',
+                'chassis_number': result.get('chassis_number') or '',
+                'engine_number': result.get('engine_number') or '',
+                'vehicle_color': result.get('color') or '',
+                'owner_name': result.get('owner_name') or '',
+                'license_expiry': _parse_date(result.get('license_expiry')),
                 'raw_text': result.get('raw_text') or '',
             })
         else:
@@ -120,7 +147,7 @@ class MedicalExternalVisitScanWizard(models.TransientModel):
             if self.image:
                 visit_vals['physician_passport_image'] = self.image
                 visit_vals['physician_passport_filename'] = self.image_filename
-        else:  # syndicate_card
+        elif self.scan_mode == 'syndicate_card':
             if self.full_name and not visit.physician_name:
                 visit_vals['physician_name'] = self.full_name
             if self.syndicate_no:
@@ -134,6 +161,28 @@ class MedicalExternalVisitScanWizard(models.TransientModel):
             if self.image:
                 visit_vals['syndicate_card_image'] = self.image
                 visit_vals['syndicate_card_filename'] = self.image_filename
+        else:  # ambulance_license
+            if self.plate_number:
+                visit_vals['ambulance_plate_number'] = self.plate_number
+            if self.vehicle_brand:
+                visit_vals['ambulance_brand'] = self.vehicle_brand
+            if self.vehicle_model:
+                visit_vals['ambulance_model'] = self.vehicle_model
+            if self.vehicle_type:
+                visit_vals['ambulance_vehicle_type'] = self.vehicle_type
+            if self.chassis_number:
+                visit_vals['ambulance_chassis_number'] = self.chassis_number
+            if self.engine_number:
+                visit_vals['ambulance_engine_number'] = self.engine_number
+            if self.vehicle_color:
+                visit_vals['ambulance_color'] = self.vehicle_color
+            if self.owner_name:
+                visit_vals['ambulance_owner_name'] = self.owner_name
+            if self.license_expiry:
+                visit_vals['ambulance_license_expiry'] = self.license_expiry
+            if self.image:
+                visit_vals['ambulance_license_image'] = self.image
+                visit_vals['ambulance_license_filename'] = self.image_filename
 
         if visit_vals:
             visit.write(visit_vals)
@@ -158,6 +207,25 @@ class MedicalExternalVisitScanWizard(models.TransientModel):
             'view_mode': 'form',
             'target': 'new',
         }
+
+
+def _parse_date(value):
+    """Best-effort parse of a date string returned by the OCR.
+
+    OCR may return ISO ``YYYY-MM-DD`` or the date exactly as printed on
+    the license (e.g. ``DD/MM/YYYY``). Returns ``False`` when nothing
+    parses so the wizard simply leaves the field empty.
+    """
+    if not value:
+        return False
+    from datetime import datetime
+    text = value.strip()
+    for fmt in ('%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y', '%Y/%m/%d'):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return False
 
 
 def _guess_mime(filename):

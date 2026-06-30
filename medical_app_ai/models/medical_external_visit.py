@@ -40,3 +40,6 @@ class MedicalExternalVisit(models.Model):
 
     def action_scan_syndicate_card(self):
         return self._open_scan_wizard('syndicate_card')
+
+    def action_scan_ambulance_license(self):
+        return self._open_scan_wizard('ambulance_license')

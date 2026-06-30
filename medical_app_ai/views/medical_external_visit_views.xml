@@ -22,6 +22,10 @@
                         string="Scan Syndicate Card" icon="fa-credit-card"
                         class="btn-secondary"
                         groups="medical_app.group_medical_receptionist"/>
+                <button name="action_scan_ambulance_license" type="object"
+                        string="Scan Ambulance License" icon="fa-ambulance"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_receptionist"/>
             </xpath>
         </field>
     </record>
