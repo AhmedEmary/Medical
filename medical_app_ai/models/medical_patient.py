@@ -21,6 +21,18 @@ class MedicalPatient(models.Model):
             },
         }
 
+    def action_scan_insurance_card(self):
+        """Open the Scan Insurance Card wizard for this patient."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Scan Insurance Card'),
+            'res_model': 'medical.insurance.card.scan.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_patient_id': self.id},
+        }
+
 
 class ResPartner(models.Model):
     _inherit = 'res.partner'

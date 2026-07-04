@@ -24,6 +24,9 @@ class MedicalAILog(models.Model):
         ('encounter_ocr', 'Encounter Document OCR'),
         ('syndicate_ocr', 'Medical Syndicate Card OCR'),
         ('ambulance_license_ocr', 'Ambulance License OCR'),
+        ('insurance_card_ocr', 'Insurance Card OCR'),
+        ('corporate_id_ocr', 'Corporate / Hotel Employee ID OCR'),
+        ('ocr_generic', 'Generic OCR'),
         # Kept so old log rows from before the SOAP feature was removed
         # still display a label instead of a blank cell.
         ('soap_draft', 'SOAP Note Draft (legacy)'),

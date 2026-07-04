@@ -133,17 +133,18 @@
         </xpath>
 
         <!--
-            Replace the entire Payment Communication paragraph with a
-            version that omits the trailing "on this account: <bank>"
-            snippet, since the bank details are now printed in a
-            dedicated block below. Replacing the whole <p> avoids the
-            inner <t> diverging between the base view and the
-            ``account.report_invoice_document_preview`` primary view
-            (which rewrites that <t> to use ``account_number``).
+            Replace the Payment Communication paragraph to drop the trailing
+            "on this account: <bank>" text (the bank details now live in a
+            dedicated block below). We MUST keep the empty inner
+            ``<t t-if="o.partner_bank_id"/>`` marker: the stock
+            ``account.report_invoice_document_preview`` view xpaths into it
+            to inject its own rendering, and if we omit it the preview view
+            fails to validate and the module refuses to install.
         -->
         <xpath expr="//p[@name='payment_communication']" position="replace">
             <p name="payment_communication">
                 Payment Communication: <span class="fw-bold" t-field="o.payment_reference">INV/2023/00001</span>
+                <t t-if="o.partner_bank_id"/>
             </p>
         </xpath>
 

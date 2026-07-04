@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <record id="tile_all" model="medical.dashboard.tile">
+        <field name="name">All Patients</field>
+        <field name="subtitle">Every patient in the system</field>
+        <field name="icon">users</field>
+        <field name="gradient_start">#0f2027</field>
+        <field name="gradient_end">#2c5364</field>
+        <field name="tile_type">all</field>
+        <field name="sequence">10</field>
+    </record>
+
+    <record id="tile_hotel" model="medical.dashboard.tile">
+        <field name="name">Hotel Patients</field>
+        <field name="subtitle">Guests staying at contracted hotels</field>
+        <field name="icon">bed</field>
+        <field name="gradient_start">#f7971e</field>
+        <field name="gradient_end">#ffd200</field>
+        <field name="tile_type">hotel</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="tile_corporate" model="medical.dashboard.tile">
+        <field name="name">Corporate Patients</field>
+        <field name="subtitle">Employees under corporate contracts</field>
+        <field name="icon">briefcase</field>
+        <field name="gradient_start">#1a2980</field>
+        <field name="gradient_end">#26d0ce</field>
+        <field name="tile_type">corporate</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="tile_external" model="medical.dashboard.tile">
+        <field name="name">External Patients</field>
+        <field name="subtitle">Walk-ins and non-contracted visitors</field>
+        <field name="icon">user-plus</field>
+        <field name="gradient_start">#7b4397</field>
+        <field name="gradient_end">#dc2430</field>
+        <field name="tile_type">external</field>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="tile_entities_hotel" model="medical.dashboard.tile">
+        <field name="name">Hotels</field>
+        <field name="subtitle">Contracted hotel partners</field>
+        <field name="icon">building</field>
+        <field name="gradient_start">#134e5e</field>
+        <field name="gradient_end">#71b280</field>
+        <field name="tile_type">entities_hotel</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="tile_entities_company" model="medical.dashboard.tile">
+        <field name="name">Corporate Companies</field>
+        <field name="subtitle">Enterprise employer partners</field>
+        <field name="icon">industry</field>
+        <field name="gradient_start">#232526</field>
+        <field name="gradient_end">#414345</field>
+        <field name="tile_type">entities_company</field>
+        <field name="sequence">60</field>
+    </record>
+
+    <record id="tile_encounters_today" model="medical.dashboard.tile">
+        <field name="name">Today's Encounters</field>
+        <field name="subtitle">Visits recorded today</field>
+        <field name="icon">stethoscope</field>
+        <field name="gradient_start">#005c97</field>
+        <field name="gradient_end">#363795</field>
+        <field name="tile_type">encounters_today</field>
+        <field name="sequence">70</field>
+    </record>
+
+    <record id="tile_insurance_expiring" model="medical.dashboard.tile">
+        <field name="name">Insurance Alerts</field>
+        <field name="subtitle">Expired or expiring within 30 days</field>
+        <field name="icon">exclamation-triangle</field>
+        <field name="gradient_start">#cb2d3e</field>
+        <field name="gradient_end">#ef473a</field>
+        <field name="tile_type">insurance_expiring</field>
+        <field name="sequence">80</field>
+    </record>
+
+</odoo>

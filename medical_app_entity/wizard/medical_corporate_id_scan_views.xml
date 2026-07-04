@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_medical_corporate_id_scan_wizard_form" model="ir.ui.view">
+        <field name="name">medical.corporate.id.scan.wizard.form</field>
+        <field name="model">medical.corporate.id.scan.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Scan Corporate / Hotel Employee ID">
+                <field name="state" invisible="1"/>
+                <field name="patient_id" invisible="1"/>
+
+                <!-- Step 1: upload -->
+                <group invisible="state != 'upload'">
+                    <div class="alert alert-info" role="alert" colspan="2">
+                        <strong>Scan an employee ID card.</strong>
+                        Upload a clear photo of the corporate or hotel ID
+                        badge. We extract the cardholder's name, employee
+                        code, department, position and employer, then match
+                        the employer to an existing entity (or create one).
+                        <span invisible="patient_id">
+                            A new patient will be created if you launch the
+                            wizard without picking one first.
+                        </span>
+                    </div>
+                    <group>
+                        <field name="image" widget="image"
+                               filename="image_filename"
+                               options="{'size': [400, 260]}"/>
+                        <field name="image_filename" invisible="1"/>
+                    </group>
+                </group>
+
+                <!-- Step 2: review -->
+                <group invisible="state != 'review'">
+                    <div class="alert alert-warning" role="alert" colspan="2">
+                        <strong>Review before applying.</strong>
+                        Correct anything the OCR mis-read. The matched
+                        entity below is what the patient will be linked to.
+                    </div>
+                    <group string="Employee">
+                        <field name="employee_name"/>
+                        <field name="employee_code"/>
+                        <field name="department"/>
+                        <field name="position"/>
+                    </group>
+                    <group string="Employer">
+                        <field name="employer_name"/>
+                        <field name="employer_type"/>
+                        <field name="location"/>
+                        <field name="entity_id"
+                               options="{'no_quick_create': True}"/>
+                        <field name="entity_will_be_created" invisible="1"/>
+                        <div colspan="2" class="alert alert-info"
+                             role="alert" invisible="not entity_will_be_created">
+                            No matching entity found — a new one will be
+                            created on Apply.
+                        </div>
+                    </group>
+                    <group string="Card Issuer" col="2">
+                        <field name="issuer_name"/>
+                        <field name="issuer_title"/>
+                        <field name="valid_from"/>
+                        <field name="valid_to"/>
+                    </group>
+                    <group string="Raw OCR" col="1">
+                        <field name="raw_text" nolabel="1"
+                               widget="text" readonly="1"/>
+                    </group>
+                </group>
+
+                <footer>
+                    <button name="action_scan" type="object"
+                            string="Scan" class="btn-primary"
+                            invisible="state != 'upload'"/>
+                    <button name="action_apply" type="object"
+                            string="Apply" class="btn-primary"
+                            invisible="state != 'review'"/>
+                    <button name="action_back_to_upload" type="object"
+                            string="Try Another Image" class="btn-secondary"
+                            invisible="state != 'review'"/>
+                    <button string="Cancel" class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_medical_corporate_id_scan_wizard"
+            model="ir.actions.act_window">
+        <field name="name">Scan Corporate ID</field>
+        <field name="res_model">medical.corporate.id.scan.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

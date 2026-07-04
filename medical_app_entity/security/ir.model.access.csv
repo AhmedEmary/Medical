@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_medical_entity_receptionist,medical.entity.receptionist,model_medical_entity,medical_app.group_medical_receptionist,1,0,0,0
+access_medical_entity_nurse,medical.entity.nurse,model_medical_entity,medical_app.group_medical_nurse,1,0,0,0
+access_medical_entity_doctor,medical.entity.doctor,model_medical_entity,medical_app.group_medical_doctor,1,0,0,0
+access_medical_entity_manager,medical.entity.manager,model_medical_entity,medical_app.group_medical_manager,1,1,1,1
+access_medical_corporate_id_scan_receptionist,medical.corporate.id.scan.wizard.receptionist,model_medical_corporate_id_scan_wizard,medical_app.group_medical_receptionist,1,1,1,1
+access_medical_corporate_id_scan_manager,medical.corporate.id.scan.wizard.manager,model_medical_corporate_id_scan_wizard,medical_app.group_medical_manager,1,1,1,1
+access_medical_dashboard_tile_receptionist,medical.dashboard.tile.receptionist,model_medical_dashboard_tile,medical_app.group_medical_receptionist,1,0,0,0
+access_medical_dashboard_tile_nurse,medical.dashboard.tile.nurse,model_medical_dashboard_tile,medical_app.group_medical_nurse,1,0,0,0
+access_medical_dashboard_tile_doctor,medical.dashboard.tile.doctor,model_medical_dashboard_tile,medical_app.group_medical_doctor,1,0,0,0
+access_medical_dashboard_tile_manager,medical.dashboard.tile.manager,model_medical_dashboard_tile,medical_app.group_medical_manager,1,1,1,1

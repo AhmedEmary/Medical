@@ -78,6 +78,17 @@ Rules:
 "driver_license", "other".
 - "given_names" is all given/middle names joined by a space.
 - "full_name" is given_names + " " + surname.
+
+Egyptian National ID specifics:
+- The card is bilingual (Arabic). The 14-digit number encodes: \
+digit 1 = century (2 = 1900s, 3 = 2000s), digits 2-3 = last two of year, \
+digits 4-5 = month, digits 6-7 = day. Digit 13 is odd for male, even for \
+female. If both the printed date and the number are visible, prefer the \
+printed date but the number is a valid cross-check.
+- Names on Egyptian IDs are Arabic. Transliterate the given name(s) and \
+family name into Latin letters for "given_names" / "surname", and keep the \
+original Arabic in "full_name" only if you cannot transliterate reliably.
+
 - Output ONLY the JSON object, no commentary, no markdown fences."""
 
 OCR_USER_PROMPT = """Extract the holder's identity data from this document image.
@@ -237,7 +248,7 @@ class MedicalIdOcrService(models.AbstractModel):
         )
         data = service._parse_json(text)
 
-        return {
+        result = {
             'document_type': _normalize_doc_type(data.get('document_type')),
             'document_number': (data.get('document_number') or '').strip(),
             'surname': (data.get('surname') or '').strip(),
@@ -255,6 +266,18 @@ class MedicalIdOcrService(models.AbstractModel):
             'raw_text': text,
             'face_bbox': _normalize_bbox(data.get('face_bbox')),
         }
+
+        # Egyptian National ID cross-check: the 14-digit number carries the
+        # DOB and sex. Fill either field if the vision model missed it.
+        eg_dob, eg_sex = _parse_egyptian_national_id(result['document_number'])
+        if eg_dob and not result['date_of_birth']:
+            result['date_of_birth'] = eg_dob
+        if eg_sex and not result['sex']:
+            result['sex'] = eg_sex
+        if eg_dob and not result['nationality']:
+            result['nationality'] = 'EGY'
+
+        return result
 
 
 # ============================================================
@@ -328,6 +351,33 @@ def _parse_iso(value):
         return datetime.strptime(value.strip()[:10], '%Y-%m-%d').date()
     except ValueError:
         return False
+
+
+def _parse_egyptian_national_id(number):
+    """Parse an Egyptian 14-digit National ID number.
+
+    Returns ``(dob, sex)`` where ``dob`` is a ``date`` and ``sex`` is
+    ``'male'`` / ``'female'``. Returns ``(False, '')`` when the input
+    doesn't look like an Egyptian NID (14 digits, first digit 2 or 3,
+    plausible date).
+    """
+    if not number:
+        return False, ''
+    digits = ''.join(ch for ch in number if ch.isdigit())
+    if len(digits) != 14 or digits[0] not in ('2', '3'):
+        return False, ''
+    century = 1900 if digits[0] == '2' else 2000
+    try:
+        year = century + int(digits[1:3])
+        month = int(digits[3:5])
+        day = int(digits[5:7])
+        dob = date(year, month, day)
+    except ValueError:
+        return False, ''
+    if dob > date.today():
+        return False, ''
+    sex = 'male' if int(digits[12]) % 2 else 'female'
+    return dob, sex
 
 
 def _parse_yymmdd(value, future=False):

@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- List -->
+    <record id="view_medical_entity_list" model="ir.ui.view">
+        <field name="name">medical.entity.list</field>
+        <field name="model">medical.entity</field>
+        <field name="arch" type="xml">
+            <list string="Entities"
+                  decoration-danger="contract_state == 'expired'"
+                  decoration-warning="contract_state == 'expiring'"
+                  sample="1">
+                <field name="name"/>
+                <field name="code" optional="show"/>
+                <field name="entity_type"/>
+                <field name="patient_count" string="Patients"/>
+                <field name="insured_patient_count" string="Insured" optional="show"/>
+                <field name="expiring_insurance_count"
+                       string="Expiring &lt;30d" optional="show"/>
+                <field name="contract_end" optional="show"/>
+                <field name="contract_state" widget="badge"
+                       decoration-success="contract_state == 'active'"
+                       decoration-warning="contract_state == 'expiring'"
+                       decoration-danger="contract_state == 'expired'"
+                       decoration-info="contract_state == 'not_set'"/>
+                <field name="phone" optional="hide"/>
+                <field name="email" optional="hide"/>
+                <field name="active" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="view_medical_entity_search" model="ir.ui.view">
+        <field name="name">medical.entity.search</field>
+        <field name="model">medical.entity</field>
+        <field name="arch" type="xml">
+            <search string="Entities">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="city"/>
+                <separator/>
+                <filter string="Hotels" name="hotels"
+                        domain="[('entity_type', '=', 'hotel')]"/>
+                <filter string="Corporate Companies" name="companies"
+                        domain="[('entity_type', '=', 'company')]"/>
+                <separator/>
+                <filter string="Active Contract" name="active_contract"
+                        domain="[('contract_state', '=', 'active')]"/>
+                <filter string="Expiring Contract" name="expiring_contract"
+                        domain="[('contract_state', '=', 'expiring')]"/>
+                <filter string="Expired Contract" name="expired_contract"
+                        domain="[('contract_state', '=', 'expired')]"/>
+                <filter string="Archived" name="inactive"
+                        domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Type" name="g_type"
+                            context="{'group_by': 'entity_type'}"/>
+                    <filter string="Contract Status" name="g_contract"
+                            context="{'group_by': 'contract_state'}"/>
+                    <filter string="City" name="g_city"
+                            context="{'group_by': 'city'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_medical_entity_form" model="ir.ui.view">
+        <field name="name">medical.entity.form</field>
+        <field name="model">medical.entity</field>
+        <field name="arch" type="xml">
+            <form string="Entity">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_patients" type="object"
+                                class="oe_stat_button" icon="fa-users">
+                            <field name="patient_count" widget="statinfo"
+                                   string="Patients"/>
+                        </button>
+                        <button name="action_view_expiring_insurance"
+                                type="object" class="oe_stat_button"
+                                icon="fa-exclamation-triangle"
+                                invisible="not expiring_insurance_count">
+                            <field name="expiring_insurance_count"
+                                   widget="statinfo"
+                                   string="Insurance Expiring"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" text="Archived"
+                            bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Entity name…"/>
+                        </h1>
+                        <h3>
+                            <field name="code" placeholder="Short code"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="entity_type"/>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Contract">
+                            <field name="contract_start"/>
+                            <field name="contract_end"/>
+                            <field name="contract_state" widget="badge"
+                                   decoration-success="contract_state == 'active'"
+                                   decoration-warning="contract_state == 'expiring'"
+                                   decoration-danger="contract_state == 'expired'"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Contact">
+                            <field name="phone" widget="phone"/>
+                            <field name="email" widget="email"/>
+                            <field name="website" widget="url"/>
+                        </group>
+                        <group string="Address">
+                            <field name="street"/>
+                            <field name="city"/>
+                            <field name="country_id"/>
+                        </group>
+                    </group>
+                    <group string="Billing defaults">
+                        <group>
+                            <field name="default_insurance_provider_id"/>
+                        </group>
+                        <group>
+                            <field name="default_discount_pct"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Patients" name="patients">
+                            <field name="patient_ids">
+                                <list>
+                                    <field name="mrn"/>
+                                    <field name="name"/>
+                                    <field name="patient_category"/>
+                                    <field name="employee_code" optional="show"/>
+                                    <field name="department" optional="show"/>
+                                    <field name="phone" optional="hide"/>
+                                    <field name="insurance_valid_until"
+                                           optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"
+                                   placeholder="Contract terms, billing rules, contacts…"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Kanban -->
+    <record id="view_medical_entity_kanban" model="ir.ui.view">
+        <field name="name">medical.entity.kanban</field>
+        <field name="model">medical.entity</field>
+        <field name="arch" type="xml">
+            <kanban sample="1">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="entity_type"/>
+                <field name="patient_count"/>
+                <field name="expiring_insurance_count"/>
+                <field name="contract_state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_card oe_kanban_global_click">
+                            <div class="o_kanban_record_top">
+                                <div class="o_kanban_record_headings">
+                                    <strong class="o_kanban_record_title">
+                                        <field name="name"/>
+                                    </strong>
+                                    <span class="text-muted">
+                                        <field name="entity_type"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="o_kanban_record_body">
+                                <div>
+                                    <i class="fa fa-users"/>
+                                    <field name="patient_count"/> patients
+                                </div>
+                                <div t-if="record.expiring_insurance_count.raw_value"
+                                     class="text-warning">
+                                    <i class="fa fa-exclamation-triangle"/>
+                                    <field name="expiring_insurance_count"/> insurance expiring soon
+                                </div>
+                                <field name="contract_state" widget="badge"
+                                       decoration-success="contract_state == 'active'"
+                                       decoration-warning="contract_state == 'expiring'"
+                                       decoration-danger="contract_state == 'expired'"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_medical_entity" model="ir.actions.act_window">
+        <field name="name">Entities</field>
+        <field name="res_model">medical.entity</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_medical_entity_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register a hotel or corporate company</p>
+            <p>Entities group patients together — a hotel of guests, or a
+               company whose employees you serve. Contracts and default
+               insurance providers live here.</p>
+        </field>
+    </record>
+
+    <record id="action_medical_entity_hotel" model="ir.actions.act_window">
+        <field name="name">Hotels</field>
+        <field name="res_model">medical.entity</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_medical_entity_search"/>
+        <field name="domain">[('entity_type', '=', 'hotel')]</field>
+        <field name="context">{'default_entity_type': 'hotel'}</field>
+    </record>
+
+    <record id="action_medical_entity_company" model="ir.actions.act_window">
+        <field name="name">Corporate Companies</field>
+        <field name="res_model">medical.entity</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="view_medical_entity_search"/>
+        <field name="domain">[('entity_type', '=', 'company')]</field>
+        <field name="context">{'default_entity_type': 'company'}</field>
+    </record>
+
+    <!-- Patient sub-actions filtered by patient_category -->
+    <record id="action_medical_patient_corporate" model="ir.actions.act_window">
+        <field name="name">Corporate Patients</field>
+        <field name="res_model">medical.patient</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="medical_app.view_medical_patient_search"/>
+        <field name="domain">[('patient_category', '=', 'employee')]</field>
+        <field name="context">{'default_patient_category': 'employee'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No corporate patients yet</p>
+            <p>Employees of corporate companies you have a contract with.
+               Create the company under Configuration ▸ Corporate Companies
+               first, then register employees against it.</p>
+        </field>
+    </record>
+
+    <record id="action_medical_patient_hotel" model="ir.actions.act_window">
+        <field name="name">Hotel Patients</field>
+        <field name="res_model">medical.patient</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="medical_app.view_medical_patient_search"/>
+        <field name="domain">[('patient_category', '=', 'hotel_guest')]</field>
+        <field name="context">{'default_patient_category': 'hotel_guest'}</field>
+    </record>
+
+    <record id="action_medical_patient_external" model="ir.actions.act_window">
+        <field name="name">External Patients</field>
+        <field name="res_model">medical.patient</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="medical_app.view_medical_patient_search"/>
+        <field name="domain">[('patient_category', '=', 'external')]</field>
+        <field name="context">{'default_patient_category': 'external'}</field>
+    </record>
+
+</odoo>

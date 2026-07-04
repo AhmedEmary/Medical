@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Dashboard is the app landing page (sequence 1 = lower than any
+        other Medical sub-menu, so it opens first when the app icon is
+        clicked).
+    -->
+    <menuitem id="menu_medical_dashboard"
+              name="Dashboard"
+              parent="medical_app.menu_medical_root"
+              action="action_medical_dashboard"
+              sequence="1"/>
+
+    <!--
+        Convert the top-level Patients menu from an action-triggering menu
+        into a pure parent, then hang the four category-based sub-menus off
+        it. Clicking "Patients" now just expands.
+    -->
+    <record id="medical_app.menu_medical_patient" model="ir.ui.menu">
+        <field name="action" eval="False"/>
+    </record>
+
+    <menuitem id="menu_medical_patient_all"
+              name="All Patients"
+              parent="medical_app.menu_medical_patient"
+              action="medical_app.action_medical_patient"
+              sequence="10"/>
+
+    <menuitem id="menu_medical_patient_hotel"
+              name="Hotel Patients"
+              parent="medical_app.menu_medical_patient"
+              action="action_medical_patient_hotel"
+              sequence="20"/>
+
+    <menuitem id="menu_medical_patient_corporate"
+              name="Corporate Patients"
+              parent="medical_app.menu_medical_patient"
+              action="action_medical_patient_corporate"
+              sequence="30"/>
+
+    <menuitem id="menu_medical_patient_external"
+              name="External Patients"
+              parent="medical_app.menu_medical_patient"
+              action="action_medical_patient_external"
+              sequence="40"/>
+
+    <!-- Config: entity records + type-specific shortcuts -->
+    <menuitem id="menu_medical_entity"
+              name="Entities"
+              parent="medical_app.menu_medical_config"
+              action="action_medical_entity"
+              sequence="30"/>
+
+    <menuitem id="menu_medical_entity_hotel"
+              name="Hotels"
+              parent="medical_app.menu_medical_config"
+              action="action_medical_entity_hotel"
+              sequence="31"/>
+
+    <menuitem id="menu_medical_entity_company"
+              name="Corporate Companies"
+              parent="medical_app.menu_medical_config"
+              action="action_medical_entity_company"
+              sequence="32"/>
+
+    <menuitem id="menu_medical_corporate_id_scan"
+              name="Scan Corporate ID"
+              parent="medical_app.menu_medical_config"
+              action="action_medical_corporate_id_scan_wizard"
+              groups="medical_app.group_medical_receptionist"
+              sequence="60"/>
+
+</odoo>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Fancy landing kanban.
+        Each tile is a full-height card with a gradient background, a big
+        icon top-left, the live count top-right, and title + subtitle in
+        the footer. Card click fires the tile's ``action_open`` server
+        method to route to the right list.
+    -->
+    <record id="view_medical_dashboard_kanban" model="ir.ui.view">
+        <field name="name">medical.dashboard.tile.kanban</field>
+        <field name="model">medical.dashboard.tile</field>
+        <field name="arch" type="xml">
+            <kanban class="o_medical_dashboard"
+                    default_order="sequence, id"
+                    create="false" edit="false" delete="false"
+                    records_draggable="false"
+                    group_create="false" group_edit="false"
+                    group_delete="false"
+                    sample="0">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="subtitle"/>
+                <field name="icon"/>
+                <field name="gradient_start"/>
+                <field name="gradient_end"/>
+                <field name="tile_count"/>
+                <field name="tile_type"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_medical_tile_wrap">
+                            <div class="o_medical_tile position-relative"
+                                 t-attf-style="background: linear-gradient(135deg, {{record.gradient_start.raw_value}} 0%, {{record.gradient_end.raw_value}} 100%);">
+                                <button name="action_open" type="object"
+                                        class="btn stretched-link o_medical_tile_button"/>
+                                <div class="o_medical_tile_top">
+                                    <div class="o_medical_tile_icon">
+                                        <i t-attf-class="fa fa-#{record.icon.raw_value}"/>
+                                    </div>
+                                    <div class="o_medical_tile_count">
+                                        <field name="tile_count"/>
+                                    </div>
+                                </div>
+                                <div class="o_medical_tile_body">
+                                    <div class="o_medical_tile_title">
+                                        <field name="name"/>
+                                    </div>
+                                    <div class="o_medical_tile_subtitle">
+                                        <field name="subtitle"/>
+                                    </div>
+                                </div>
+                                <div class="o_medical_tile_footer">
+                                    <span class="o_medical_tile_open">
+                                        Open <i class="fa fa-arrow-right"/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_medical_dashboard" model="ir.actions.act_window">
+        <field name="name">Medical Dashboard</field>
+        <field name="res_model">medical.dashboard.tile</field>
+        <field name="view_mode">kanban</field>
+        <field name="view_id" ref="view_medical_dashboard_kanban"/>
+        <field name="target">current</field>
+        <field name="context">{'medical_dashboard': True}</field>
+    </record>
+
+</odoo>

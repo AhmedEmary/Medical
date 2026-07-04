@@ -22,4 +22,11 @@
               groups="medical_app.group_medical_receptionist"
               sequence="50"/>
 
+    <menuitem id="menu_medical_insurance_card_scan"
+              name="Scan Insurance Card"
+              parent="medical_app.menu_medical_config"
+              action="action_medical_insurance_card_scan_wizard"
+              groups="medical_app.group_medical_receptionist"
+              sequence="55"/>
+
 </odoo>

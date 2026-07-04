@@ -56,6 +56,7 @@ provider, which always works as long as one of the SDKs above is set up.
         'wizard/medical_id_scan_views.xml',
         'wizard/medical_encounter_scan_views.xml',
         'wizard/medical_external_visit_scan_views.xml',
+        'wizard/medical_insurance_card_scan_views.xml',
         'views/medical_ai_config_views.xml',
         'views/medical_ai_log_views.xml',
         'views/medical_encounter_views.xml',

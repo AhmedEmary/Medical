@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Patient FORM:
+        - Replace the "Category" group so we can inject entity_id with a
+          dynamic label ("Hotel" for guests, "Employer" for employees),
+          keep patient_category on top and hide the legacy hotel_name
+          field entirely (still stored for report/invoice back-compat but
+          auto-populated from entity_id).
+    -->
+    <record id="view_medical_patient_form_entity" model="ir.ui.view">
+        <field name="name">medical.patient.form.entity</field>
+        <field name="model">medical.patient</field>
+        <field name="inherit_id" ref="medical_app.view_medical_patient_form"/>
+        <field name="arch" type="xml">
+            <!-- Header: Scan Corporate ID button. Photo editing/cropping
+                 is handled by Odoo's native image widget on the image
+                 field itself (click the avatar → upload/crop dialog). -->
+            <xpath expr="//header/button[@name='action_new_encounter']"
+                   position="after">
+                <button name="action_scan_corporate_id" type="object"
+                        string="Scan Corporate ID" icon="fa-address-card"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_receptionist"
+                        help="Scan a corporate or hotel employee ID card and
+                              fill the patient's name, employee code, department,
+                              position and employer link automatically."/>
+            </xpath>
+
+            <!--
+                Insurance banners: red when expired, amber when expiring
+                within 30 days. Placed just above the existing critical-
+                allergy banner so it's the first thing a clinician sees.
+            -->
+            <xpath expr="//div[hasclass('alert-danger')]" position="before">
+                <field name="insurance_expired" invisible="1"/>
+                <field name="insurance_days_left" invisible="1"/>
+                <field name="insurance_status" invisible="1"/>
+                <div class="alert alert-danger" role="alert"
+                     invisible="not insurance_expired">
+                    <strong>⚠ Insurance expired</strong> on
+                    <field name="insurance_valid_until" nolabel="1" readonly="1" class="oe_inline"/>.
+                    Confirm coverage before authorising billable services.
+                </div>
+                <div class="alert alert-warning" role="alert"
+                     invisible="insurance_status != 'expiring'">
+                    <strong>⚠ Insurance expiring soon</strong> —
+                    <field name="insurance_days_left" nolabel="1" readonly="1" class="oe_inline"/> days remaining
+                    (valid until
+                    <field name="insurance_valid_until" nolabel="1" readonly="1" class="oe_inline"/>).
+                </div>
+            </xpath>
+
+            <!-- Emergency Contact: hide entire group for employees. Odoo 19
+                 disallows `string` selectors in xpath, so we anchor on a
+                 child field's name and navigate up to its group. -->
+            <xpath expr="//field[@name='emergency_contact_name']/.." position="attributes">
+                <attribute name="invisible">patient_category in ('employee', 'non_hotel_employee')</attribute>
+            </xpath>
+
+            <!--
+                Insurance page overhaul: prominent full-width validity
+                row (from / until), TPA field, and a status badge.
+            -->
+            <xpath expr="//page[@name='insurance']/group" position="replace">
+                <group>
+                    <group string="Coverage">
+                        <field name="insurance_provider_id"/>
+                        <field name="insurance_tpa_id"/>
+                        <field name="insurance_policy_number"/>
+                        <field name="reference_number"/>
+                        <field name="insurance_assistance_company_id"/>
+                        <field name="insurance_franchise"/>
+                    </group>
+                    <group string="Validity">
+                        <field name="insurance_valid_from" widget="date"/>
+                        <field name="insurance_valid_until" widget="date"/>
+                        <field name="insurance_days_left" readonly="1"
+                               invisible="not insurance_valid_until"/>
+                        <field name="insurance_status" widget="badge"
+                               decoration-success="insurance_status == 'active'"
+                               decoration-warning="insurance_status == 'expiring'"
+                               decoration-danger="insurance_status == 'expired'"
+                               decoration-info="insurance_status == 'none'"/>
+                    </group>
+                </group>
+            </xpath>
+
+            <!-- Replace the Category group entirely. Anchor via a child
+                 field's name because Odoo 19 disallows `string` selectors. -->
+            <xpath expr="//field[@name='hotel_name']/.." position="replace">
+                <group string="Category">
+                    <field name="patient_category"/>
+                    <field name="entity_type" invisible="1"/>
+
+                    <!-- Hotel Guest: entity_id labelled "Hotel" -->
+                    <label for="entity_id" string="Hotel"
+                           invisible="patient_category != 'hotel_guest'"/>
+                    <field name="entity_id" nolabel="1"
+                           options="{'no_quick_create': True}"
+                           domain="[('active', '=', True), ('entity_type', '=', 'hotel')]"
+                           context="{'default_entity_type': 'hotel'}"
+                           invisible="patient_category != 'hotel_guest'"/>
+                    <field name="room_number"
+                           invisible="patient_category != 'hotel_guest'"/>
+
+                    <!-- Employee: entity_id labelled "Employer" -->
+                    <label for="entity_id" string="Employer"
+                           invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
+                    <field name="entity_id" nolabel="1"
+                           options="{'no_quick_create': True}"
+                           domain="[('active', '=', True), ('entity_type', '=', 'company')]"
+                           context="{'default_entity_type': 'company'}"
+                           invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
+                    <field name="employee_code"
+                           invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
+                    <field name="department"
+                           invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
+                    <field name="job_title"
+                           invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!--
+        Patient LIST: add entity_id, employee_code, department columns.
+        Legacy hotel_name is left off deliberately.
+    -->
+    <record id="view_medical_patient_list_entity" model="ir.ui.view">
+        <field name="name">medical.patient.list.entity</field>
+        <field name="model">medical.patient</field>
+        <field name="inherit_id" ref="medical_app.view_medical_patient_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='patient_category']" position="after">
+                <field name="entity_id" optional="show"/>
+                <field name="employee_code" optional="hide"/>
+                <field name="department" optional="hide"/>
+                <field name="insurance_status" widget="badge"
+                       decoration-success="insurance_status == 'active'"
+                       decoration-warning="insurance_status == 'expiring'"
+                       decoration-danger="insurance_status == 'expired'"
+                       decoration-info="insurance_status == 'none'"
+                       optional="show"/>
+                <field name="insurance_valid_until" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!--
+        Patient SEARCH: room_number is being deprecated too on the guest
+        side; keep it searchable but add entity_id / employee_code /
+        department, plus group-by entity.
+    -->
+    <record id="view_medical_patient_search_entity" model="ir.ui.view">
+        <field name="name">medical.patient.search.entity</field>
+        <field name="model">medical.patient</field>
+        <field name="inherit_id" ref="medical_app.view_medical_patient_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='room_number']" position="after">
+                <field name="entity_id"/>
+                <field name="employee_code"/>
+                <field name="department"/>
+            </xpath>
+            <xpath expr="//filter[@name='g_category']" position="after">
+                <filter string="Entity" name="g_entity"
+                        context="{'group_by': 'entity_id'}"/>
+                <filter string="Entity Type" name="g_entity_type"
+                        context="{'group_by': 'entity_type'}"/>
+                <filter string="Insurance Status" name="g_ins_status"
+                        context="{'group_by': 'insurance_status'}"/>
+            </xpath>
+            <xpath expr="//filter[@name='critical_allergy']" position="after">
+                <separator/>
+                <filter string="Insurance Expired" name="ins_expired"
+                        domain="[('insurance_status', '=', 'expired')]"/>
+                <filter string="Insurance Expiring Soon" name="ins_expiring"
+                        domain="[('insurance_status', '=', 'expiring')]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!--
+        Kanban template already reads ``record.hotel_name`` for hotel guests.
+        Since hotel_name is auto-synced from ``entity_id.name`` on write, the
+        card keeps showing the hotel name without touching the template.
+    -->
+
+</odoo>

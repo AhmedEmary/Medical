@@ -15,6 +15,12 @@
                         groups="medical_app.group_medical_receptionist"
                         help="Read a passport or national ID image and fill
                               the patient's identity fields automatically."/>
+                <button name="action_scan_insurance_card" type="object"
+                        string="Scan Insurance Card" icon="fa-credit-card"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_receptionist"
+                        help="Read a private insurance card and fill the
+                              patient's insurance fields automatically."/>
             </xpath>
         </field>
     </record>
