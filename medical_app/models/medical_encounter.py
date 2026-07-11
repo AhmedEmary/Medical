@@ -114,6 +114,9 @@ class MedicalEncounter(models.Model):
     patient_has_critical_allergy = fields.Boolean(
         related='patient_id.has_critical_allergy', readonly=True,
     )
+    patient_image_128 = fields.Image(
+        related='patient_id.image_128', readonly=True,
+    )
 
     # ------------------------------------------------------------
     # Workflow state
