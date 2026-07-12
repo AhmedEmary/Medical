@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- List -->
+    <record id="view_medical_case_list" model="ir.ui.view">
+        <field name="name">medical.case.list</field>
+        <field name="model">medical.case</field>
+        <field name="arch" type="xml">
+            <list string="Medical Cases" sample="1"
+                  decoration-muted="state == 'closed'">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="onset_date"/>
+                <field name="doctor_id" optional="show"/>
+                <field name="encounter_count" string="Visits"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'open'"
+                       decoration-muted="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Search -->
+    <record id="view_medical_case_search" model="ir.ui.view">
+        <field name="name">medical.case.search</field>
+        <field name="model">medical.case</field>
+        <field name="arch" type="xml">
+            <search string="Medical Cases">
+                <field name="reference"/>
+                <field name="name"/>
+                <field name="patient_id"/>
+                <separator/>
+                <filter string="Open" name="open" domain="[('state', '=', 'open')]"/>
+                <filter string="Closed" name="closed"
+                        domain="[('state', '=', 'closed')]"/>
+                <filter string="Archived" name="inactive"
+                        domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter string="Patient" name="g_patient"
+                            context="{'group_by': 'patient_id'}"/>
+                    <filter string="Consultant" name="g_doctor"
+                            context="{'group_by': 'doctor_id'}"/>
+                    <filter string="State" name="g_state"
+                            context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Form -->
+    <record id="view_medical_case_form" model="ir.ui.view">
+        <field name="name">medical.case.form</field>
+        <field name="model">medical.case</field>
+        <field name="arch" type="xml">
+            <form string="Medical Case">
+                <header>
+                    <button name="action_close" type="object"
+                            string="Close Case" class="oe_highlight"
+                            invisible="state != 'open'"/>
+                    <button name="action_reopen" type="object"
+                            string="Reopen"
+                            invisible="state != 'closed'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="open,closed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Closed" bg_color="bg-secondary"
+                            invisible="state != 'closed'"/>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_encounters" type="object"
+                                class="oe_stat_button" icon="fa-stethoscope">
+                            <field name="encounter_count" widget="statinfo"
+                                   string="Encounters"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" placeholder="Case title, e.g. Bus accident — multiple injuries"/></h1>
+                        <h3 class="text-muted">
+                            <field name="reference" readonly="1"/>
+                        </h3>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="patient_id"/>
+                            <field name="onset_date"/>
+                        </group>
+                        <group>
+                            <field name="doctor_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Case Summary" name="summary">
+                            <separator string="Cause of Injury / Illness"/>
+                            <field name="cause"
+                                   placeholder="How the problem started..."/>
+                            <separator string="Initial Medical Diagnosis"/>
+                            <field name="initial_diagnosis"
+                                   placeholder="Working diagnosis at the start of the case..."/>
+                            <separator string="Current Medical Complaint"/>
+                            <field name="current_complaint"
+                                   placeholder="The patient's current status..."/>
+                            <separator string="Sick Leave"/>
+                            <field name="sick_leave_note"
+                                   placeholder="Sick-leave status..."/>
+                        </page>
+
+                        <page string="Encounters" name="encounters">
+                            <field name="encounter_ids"
+                                   context="{'default_patient_id': patient_id,
+                                             'default_case_id': id}">
+                                <list>
+                                    <field name="encounter_date"/>
+                                    <field name="reference"/>
+                                    <field name="encounter_type"/>
+                                    <field name="chief_complaint"/>
+                                    <field name="case_timeline_note"
+                                           string="Timeline Note" optional="show"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'completed'"
+                                           decoration-info="state == 'in_progress'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_medical_case" model="ir.actions.act_window">
+        <field name="name">Medical Cases</field>
+        <field name="res_model">medical.case</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_medical_case_search"/>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Open the first medical case</p>
+            <p>A medical case groups several encounters for one ongoing problem
+               (e.g. an injury followed by imaging and follow-ups) so the whole
+               history can be printed as a single Medical Condition Report.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -28,6 +28,13 @@
               sequence="20"
               groups="group_medical_nurse"/>
 
+    <menuitem id="menu_medical_case"
+              name="Medical Cases"
+              parent="menu_medical_root"
+              action="action_medical_case"
+              sequence="25"
+              groups="group_medical_nurse"/>
+
     <menuitem id="menu_medical_vitals"
               name="Vitals"
               parent="menu_medical_root"

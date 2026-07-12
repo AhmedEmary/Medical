@@ -7,6 +7,10 @@ access_medical_encounter_receptionist,medical.encounter.receptionist,model_medic
 access_medical_encounter_nurse,medical.encounter.nurse,model_medical_encounter,group_medical_nurse,1,1,1,0
 access_medical_encounter_doctor,medical.encounter.doctor,model_medical_encounter,group_medical_doctor,1,1,1,0
 access_medical_encounter_manager,medical.encounter.manager,model_medical_encounter,group_medical_manager,1,1,1,1
+access_medical_case_receptionist,medical.case.receptionist,model_medical_case,group_medical_receptionist,1,0,0,0
+access_medical_case_nurse,medical.case.nurse,model_medical_case,group_medical_nurse,1,1,1,0
+access_medical_case_doctor,medical.case.doctor,model_medical_case,group_medical_doctor,1,1,1,0
+access_medical_case_manager,medical.case.manager,model_medical_case,group_medical_manager,1,1,1,1
 access_medical_history_nurse,medical.history.nurse,model_medical_history,group_medical_nurse,1,0,0,0
 access_medical_history_doctor,medical.history.doctor,model_medical_history,group_medical_doctor,1,1,1,1
 access_medical_history_manager,medical.history.manager,model_medical_history,group_medical_manager,1,1,1,1

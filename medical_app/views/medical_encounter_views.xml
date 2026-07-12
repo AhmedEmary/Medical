@@ -202,6 +202,8 @@
                             <field name="doctor_employee_id"/>
                             <field name="encounter_date"/>
                             <field name="encounter_type"/>
+                            <field name="case_id"
+                                   options="{'no_create_edit': False}"/>
                             <field name="patient_has_critical_allergy" invisible="1"/>
                             <field name="prescription_warning_severity" invisible="1"/>
                             <field name="prescription_warning_count" invisible="1"/>

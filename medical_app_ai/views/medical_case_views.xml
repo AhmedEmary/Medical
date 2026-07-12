@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Add an AI "Draft Case Report" button to the medical case form -->
+    <record id="view_medical_case_form_ai" model="ir.ui.view">
+        <field name="name">medical.case.form.ai</field>
+        <field name="model">medical.case</field>
+        <field name="inherit_id" ref="medical_app.view_medical_case_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_ai_draft_case" type="object"
+                        string="AI: Draft Case Report" icon="fa-magic"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_doctor"
+                        invisible="not encounter_ids"
+                        help="Summarize every linked encounter into the
+                              Medical Condition Report sections. You review
+                              and edit the draft before it is applied."/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

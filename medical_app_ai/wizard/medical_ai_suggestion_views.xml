@@ -8,6 +8,7 @@
             <form>
                 <field name="mode" invisible="1"/>
                 <field name="encounter_id" invisible="1"/>
+                <field name="case_id" invisible="1"/>
                 <field name="log_id" invisible="1"/>
 
                 <div class="alert alert-info" role="alert">
@@ -58,6 +59,31 @@
                            nolabel="1"/>
                 </div>
 
+                <!-- Case report summary: the case-level narrative sections
+                     plus one editable timeline note per linked encounter. -->
+                <div invisible="mode != 'case'">
+                    <separator string="Cause of Injury / Illness"/>
+                    <field name="case_cause" nolabel="1"/>
+
+                    <separator string="Initial Medical Diagnosis"/>
+                    <field name="case_initial_diagnosis" nolabel="1"/>
+
+                    <separator string="Current Medical Complaint"/>
+                    <field name="case_current_complaint" nolabel="1"/>
+
+                    <separator string="Sick Leave"/>
+                    <field name="case_sick_leave" nolabel="1"/>
+
+                    <separator string="Encounter Timeline (one row per visit)"/>
+                    <field name="timeline_line_ids" nolabel="1">
+                        <list editable="bottom">
+                            <field name="encounter_date" readonly="1"/>
+                            <field name="encounter_type" readonly="1"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                </div>
+
                 <!-- Diagnosis suggestions -->
                 <group invisible="mode != 'diagnosis'">
                     <field name="suggested_diagnosis_ids"
@@ -65,7 +91,7 @@
                 </group>
 
                 <!-- Free-text output: rationale / summary / safety findings -->
-                <group invisible="mode == 'report'">
+                <group invisible="mode in ('report', 'case')">
                     <field name="result_text" nolabel="1" readonly="1"/>
                 </group>
 
@@ -73,6 +99,9 @@
                     <button name="action_apply_report" type="object"
                             string="Apply to Encounter" class="btn-primary"
                             invisible="mode != 'report'"/>
+                    <button name="action_apply_case" type="object"
+                            string="Apply to Case" class="btn-primary"
+                            invisible="mode != 'case'"/>
                     <button name="action_apply_diagnoses" type="object"
                             string="Add Diagnoses to Encounter"
                             class="btn-primary"

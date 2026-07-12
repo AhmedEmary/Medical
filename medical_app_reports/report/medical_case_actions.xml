@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Report action -->
+    <record id="action_report_medical_case" model="ir.actions.report">
+        <field name="name">Medical Condition Report</field>
+        <field name="model">medical.case</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medical_app_reports.report_medical_case</field>
+        <field name="report_file">medical_app_reports.report_medical_case</field>
+        <field name="print_report_name">
+            "Medical Condition Report - %s" % (object.reference or object.id)
+        </field>
+        <field name="binding_model_id" ref="medical_app.model_medical_case"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Print button on the case form header -->
+    <record id="view_medical_case_form_report" model="ir.ui.view">
+        <field name="name">medical.case.form.report</field>
+        <field name="model">medical.case</field>
+        <field name="inherit_id" ref="medical_app.view_medical_case_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_print_case_report" type="object"
+                        string="Print Condition Report"
+                        class="btn-primary" icon="fa-print"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

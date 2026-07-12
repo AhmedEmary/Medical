@@ -17,6 +17,7 @@ class MedicalAILog(models.Model):
 
     feature = fields.Selection([
         ('report_draft', 'Report Draft'),
+        ('case_summary', 'Case Report Summary'),
         ('diagnosis_suggest', 'Diagnosis Suggestion'),
         ('history_summary', 'Patient Summary'),
         ('safety_check', 'Safety Check'),

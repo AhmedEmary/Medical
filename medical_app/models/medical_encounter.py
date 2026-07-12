@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class MedicalEncounter(models.Model):
@@ -46,6 +46,18 @@ class MedicalEncounter(models.Model):
     encounter_date = fields.Datetime(
         string='Date & Time', required=True,
         default=fields.Datetime.now, tracking=True,
+    )
+    case_id = fields.Many2one(
+        'medical.case', string='Medical Case',
+        ondelete='set null', index=True, tracking=True,
+        domain="[('patient_id', '=', patient_id)]",
+        help="Groups this visit with other encounters for the same ongoing "
+             "problem, so they can be printed as one Medical Condition Report.",
+    )
+    case_timeline_note = fields.Html(
+        string='Case Timeline Note',
+        help="Short summary of what happened during this visit, printed as "
+             "one row on the case's Medical Condition Report.",
     )
 
     # ------------------------------------------------------------
@@ -216,6 +228,14 @@ class MedicalEncounter(models.Model):
                 vals['reference'] = self.env['ir.sequence'].next_by_code(
                     'medical.encounter') or _('New')
         return super().create(vals_list)
+
+    @api.constrains('case_id', 'patient_id')
+    def _check_case_patient(self):
+        for rec in self:
+            if rec.case_id and rec.case_id.patient_id != rec.patient_id:
+                raise ValidationError(_(
+                    "The linked medical case belongs to a different patient. "
+                    "An encounter can only join a case for the same patient."))
 
     # ============================================================
     # State transitions

@@ -21,7 +21,7 @@ that depend on this one.
     'author': 'Axio Parts',
     'website': 'https://axiob2b.com',
     'license': 'LGPL-3',
-    'version': '1.3.0',
+    'version': '1.4.0',
     'depends': [
         'base',
         'mail',
@@ -43,6 +43,7 @@ that depend on this one.
         'views/medical_medication_views.xml',
         'views/medical_prescription_line_views.xml',
         'views/medical_encounter_views.xml',
+        'views/medical_case_views.xml',
         'views/medical_vitals_views.xml',
         'views/medical_diagnosis_views.xml',
         'views/medical_external_visit_views.xml',

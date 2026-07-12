@@ -14,12 +14,15 @@ class MedicalAISuggestion(models.TransientModel):
 
     mode = fields.Selection([
         ('report', 'Report Draft'),
+        ('case', 'Case Report Summary'),
         ('diagnosis', 'Diagnosis Suggestion'),
         ('summary', 'Patient Summary'),
         ('safety', 'Safety Check'),
     ], required=True, readonly=True)
     encounter_id = fields.Many2one(
-        'medical.encounter', string='Encounter', required=True, readonly=True)
+        'medical.encounter', string='Encounter', readonly=True)
+    case_id = fields.Many2one(
+        'medical.case', string='Medical Case', readonly=True)
     log_id = fields.Many2one('medical.ai.log', string='AI Log', readonly=True)
 
     # Report draft — the nine free-text sections that the PDF report prints.
@@ -45,6 +48,20 @@ class MedicalAISuggestion(models.TransientModel):
     report_discharge_conclusion = fields.Html(
         string='Conclusion', sanitize=True)
 
+    # Case report summary — the four case-level narrative sections plus
+    # one editable timeline note per linked encounter.
+    case_cause = fields.Html(
+        string='Cause of Injury / Illness', sanitize=True)
+    case_initial_diagnosis = fields.Html(
+        string='Initial Medical Diagnosis', sanitize=True)
+    case_current_complaint = fields.Html(
+        string='Current Medical Complaint', sanitize=True)
+    case_sick_leave = fields.Html(
+        string='Sick Leave', sanitize=True)
+    timeline_line_ids = fields.One2many(
+        'medical.ai.suggestion.timeline', 'suggestion_id',
+        string='Encounter Timeline Notes')
+
     # Diagnosis suggestion.
     suggested_diagnosis_ids = fields.Many2many(
         'medical.diagnosis', string='Suggested Diagnoses')
@@ -56,6 +73,7 @@ class MedicalAISuggestion(models.TransientModel):
         self.ensure_one()
         titles = {
             'report': _('AI Report Draft'),
+            'case': _('AI Case Report Summary'),
             'diagnosis': _('AI Diagnosis Suggestions'),
             'summary': _('AI Patient Summary'),
             'safety': _('AI Safety Check'),
@@ -93,6 +111,20 @@ class MedicalAISuggestion(models.TransientModel):
             'discharge_condition': self.report_discharge_condition or False,
             'discharge_conclusion': self.report_discharge_conclusion or False,
         })
+        self._mark_applied()
+        return {'type': 'ir.actions.act_window_close'}
+
+    def action_apply_case(self):
+        """Write the reviewed case summary onto the case and its encounters."""
+        self.ensure_one()
+        self.case_id.write({
+            'cause': self.case_cause or False,
+            'initial_diagnosis': self.case_initial_diagnosis or False,
+            'current_complaint': self.case_current_complaint or False,
+            'sick_leave_note': self.case_sick_leave or False,
+        })
+        for line in self.timeline_line_ids:
+            line.encounter_id.case_timeline_note = line.note or False
         self._mark_applied()
         return {'type': 'ir.actions.act_window_close'}
 

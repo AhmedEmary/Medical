@@ -60,6 +60,7 @@ provider, which always works as long as one of the SDKs above is set up.
         'views/medical_ai_config_views.xml',
         'views/medical_ai_log_views.xml',
         'views/medical_encounter_views.xml',
+        'views/medical_case_views.xml',
         'views/medical_id_scan_buttons.xml',
         'views/medical_external_visit_views.xml',
         'views/medical_ai_menu.xml',

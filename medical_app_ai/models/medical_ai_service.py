@@ -1210,6 +1210,151 @@ If something cannot be assessed because data is missing, say so."""
         return self._call('safety_check', system, user, encounter=encounter)
 
     # ============================================================
+    # Case report summary
+    # ------------------------------------------------------------
+    # A medical case groups several encounters for one ongoing problem.
+    # ``summarize_case`` drafts the free-text sections of the Medical
+    # Condition Report — the case-level narrative plus one timeline note
+    # per linked encounter — from every encounter in the case.
+    # ============================================================
+    @api.model
+    def _encounter_brief(self, encounter):
+        """Compact single-encounter dump for the case timeline context."""
+        date = encounter.encounter_date and encounter.encounter_date.date() or '?'
+        lines = ["ENCOUNTER %s (%s) — %s" % (
+            encounter.reference or '',
+            self._selection_label(encounter, 'encounter_type'),
+            date,
+        )]
+        if encounter.chief_complaint:
+            lines.append("  Chief complaint: %s" % encounter.chief_complaint)
+        for label, field in [
+            ('History of present illness', 'history_present_illness'),
+            ('Physical examination', 'physical_exam'),
+            ('Assessment', 'assessment'),
+            ('Investigations performed', 'investigations_performed'),
+            ('Plan', 'plan'),
+        ]:
+            # investigations_performed lives in medical_app_reports; guard it.
+            if field not in encounter._fields:
+                continue
+            value = html2plaintext(encounter[field] or '').strip()
+            if value:
+                lines.append("  %s: %s" % (label, value))
+        if encounter.diagnosis_ids:
+            lines.append("  Diagnoses: %s" % ", ".join(
+                "%s %s" % (d.code, d.name) for d in encounter.diagnosis_ids))
+        vitals = encounter.vitals_ids[:1]
+        if vitals and vitals.bp_display:
+            lines.append("  Vitals: BP %s, HR %s" % (
+                vitals.bp_display, vitals.heart_rate or '?'))
+        return "\n".join(lines)
+
+    @api.model
+    def _case_context(self, case):
+        """Full text context for a case: patient + every linked encounter."""
+        lines = self._patient_lines(case.patient_id)
+        emp = case._report_employee_data()
+        emp_bits = [
+            "Employee no: %s" % (emp.get('employee_no') or 'n/a'),
+            "Department: %s" % (emp.get('department') or 'n/a'),
+            "Job title: %s" % (emp.get('job_title') or 'n/a'),
+        ]
+        lines += ["", "EMPLOYEE", "- " + " | ".join(emp_bits)]
+        lines += [
+            "",
+            "CASE",
+            "- Title: %s" % (case.name or 'n/a'),
+            "- Complaint start date: %s" % (case.onset_date or 'not documented'),
+        ]
+        encounters = case._report_encounters()
+        lines += ["", "ENCOUNTERS (chronological — one timeline note per encounter)"]
+        for enc in encounters:
+            lines.append(self._encounter_brief(enc))
+        return "\n".join(lines)
+
+    @api.model
+    def _summarize_case_system(self):
+        return SYSTEM_BASE + """
+
+TASK: Draft the free-text sections of a formal "Medical Condition Report"
+that consolidates an entire medical case (several encounters for one ongoing
+problem) into a single document for HR / an insurer / the employer.
+
+Work strictly from the encounters provided. NEVER invent symptoms, findings,
+diagnoses, investigations, dates or measurements. If something is not
+documented, omit it rather than guessing.
+
+STYLE:
+- English, third person, formal clinical register. Past tense for what was
+  done, present tense for the ongoing status.
+- Use HTML and ONLY these tags: <p>, <ul>, <li>, <strong>, <br/>.
+- Bold key clinical terms with <strong>.
+- Do NOT include section headings, the patient's or doctor's name, or dates
+  as headings — those are rendered by the template.
+
+Produce, in this order:
+1. "cause": 1-2 short paragraphs on how the problem / injury started
+   (from the earliest encounter and the complaint-start date).
+2. "initial_diagnosis": the working diagnosis at the start of the case,
+   as a short paragraph or a <ul> of diagnoses in <strong>bold</strong>.
+3. "current_complaint": 1-2 short paragraphs on the patient's CURRENT
+   status and remaining complaint, from the most recent encounter(s).
+4. "sick_leave_note": one short paragraph on sick-leave / fitness-for-work
+   status if the data supports it, otherwise "".
+5. "timeline": a JSON array with ONE object per encounter, IN THE SAME
+   ORDER as the encounters were given, each:
+   {"encounter_ref": "<the ENCOUNTER reference exactly as given>",
+    "note": "<one concise HTML paragraph summarising what was done and
+             found at that visit>"}.
+
+Respond with ONLY a JSON object (no markdown fences, no other text):
+{
+  "cause": "...",
+  "initial_diagnosis": "...",
+  "current_complaint": "...",
+  "sick_leave_note": "...",
+  "timeline": [{"encounter_ref": "...", "note": "..."}]
+}"""
+
+    @api.model
+    def _summarize_case_user(self, case):
+        return ("Draft the Medical Condition Report sections for this case.\n\n"
+                + self._case_context(case))
+
+    @api.model
+    def summarize_case(self, case, system=None, user=None):
+        """Return ``(dict, log)`` — drafted case sections + per-encounter notes.
+
+        The returned dict has the four case-level HTML strings plus
+        ``timeline``: a list of ``{encounter_ref, note}`` dicts, one per
+        linked encounter, in chronological order.
+        """
+        if system is None:
+            system = self._summarize_case_system()
+        if user is None:
+            user = self._summarize_case_user(case)
+        text, log = self._call(
+            'case_summary', system, user, patient=case.patient_id)
+        data = self._parse_json(text)
+        timeline = data.get('timeline')
+        if not isinstance(timeline, list):
+            timeline = []
+        return {
+            'cause': data.get('cause') or '',
+            'initial_diagnosis': data.get('initial_diagnosis') or '',
+            'current_complaint': data.get('current_complaint') or '',
+            'sick_leave_note': data.get('sick_leave_note') or '',
+            'timeline': [
+                {
+                    'encounter_ref': (t or {}).get('encounter_ref') or '',
+                    'note': (t or {}).get('note') or '',
+                }
+                for t in timeline if isinstance(t, dict)
+            ],
+        }, log
+
+    # ============================================================
     # Prompt preview helpers
     # ============================================================
     @api.model

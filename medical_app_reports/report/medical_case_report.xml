@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Medical Condition Report — consolidates a whole medical case
+        (several encounters for one ongoing problem) into a single
+        document for HR / the employer / an insurer. Employee identity,
+        cause and initial diagnosis, then one timeline row per linked
+        encounter, plus the current complaint and sick-leave status.
+        Sections without data are omitted.
+    -->
+
+    <template id="report_medical_case">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="medical_app_reports.report_medical_case_document"
+                   t-lang="user.lang or 'en_US'"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_medical_case_document">
+        <t t-call="web.external_layout">
+            <t t-set="patient" t-value="o.patient_id"/>
+            <t t-set="emp" t-value="o._report_employee_data()"/>
+            <t t-set="doctor_name" t-value="o.doctor_id.name"/>
+
+            <div class="page" style="font-size:11pt; color:#1f2d3d;">
+
+                <!-- ============= Title ============= -->
+                <div style="text-align:center; margin-bottom:18px;">
+                    <h2 style="color:#1f5e8a; margin:0; letter-spacing:0.5px;">
+                        <strong>Medical Condition Report</strong>
+                    </h2>
+                    <p style="margin:6px 0 0 0; font-size:10pt; color:#475569;">
+                        Case Ref: <span t-out="o.reference"/>
+                        <t t-if="o.report_date">
+                            &#160;·&#160;
+                            <span t-field="o.report_date"
+                                  t-options='{"format": "d/M/yyyy"}'/>
+                        </t>
+                    </p>
+                </div>
+
+                <!-- ============= Patient / Employee Information ============= -->
+                <div style="page-break-inside: avoid;
+                            border:1px solid #cfd8e3;
+                            border-radius:4px;
+                            padding:10px 14px;
+                            background:#fbfdff;
+                            margin-bottom:18px;">
+                    <h3 style="color:#1f5e8a; text-decoration:underline;
+                               margin:0 0 8px 0;">
+                        <strong>Patient / Employee Information</strong>
+                    </h3>
+                    <table style="width:100%; font-size:10pt; line-height:1.6;">
+                        <tr>
+                            <td style="width:50%;" t-if="patient.name">
+                                <strong>Name:</strong>
+                                <span t-out="patient.name"/>
+                            </td>
+                            <td style="width:50%;" t-if="emp.get('employee_no')">
+                                <strong>Employee No:</strong>
+                                <span t-out="emp['employee_no']"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td t-if="emp.get('department')">
+                                <strong>Department:</strong>
+                                <span t-out="emp['department']"/>
+                            </td>
+                            <td t-if="emp.get('job_title')">
+                                <strong>Job Title:</strong>
+                                <span t-out="emp['job_title']"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td t-if="emp.get('contact')">
+                                <strong>Contact:</strong>
+                                <span t-out="emp['contact']"/>
+                            </td>
+                            <td t-if="o.onset_date">
+                                <strong>Complaint Start Date:</strong>
+                                <span t-field="o.onset_date"
+                                      t-options='{"format": "d/M/yyyy"}'/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div t-if="not is_html_empty(o.cause)"
+                         style="margin-top:8px;">
+                        <strong>Cause of Injury / Illness:</strong>
+                        <div t-out="o.cause"/>
+                    </div>
+                    <div t-if="not is_html_empty(o.initial_diagnosis)"
+                         style="margin-top:8px;">
+                        <strong>Initial Medical Diagnosis:</strong>
+                        <div t-out="o.initial_diagnosis"/>
+                    </div>
+                </div>
+
+                <!-- ============= Medical Procedures timeline ============= -->
+                <t t-set="encounters" t-value="o._report_encounters()"/>
+                <div style="page-break-inside: avoid; margin-bottom:16px;">
+                    <h3 style="color:#1f5e8a; text-decoration:underline;
+                               margin:0 0 8px 0;">
+                        <strong>Medical Procedures</strong>
+                    </h3>
+                    <table style="width:100%; border-collapse:collapse;
+                                  font-size:10pt;">
+                        <thead>
+                            <tr style="background:#eef4f9;">
+                                <th style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           text-align:left; width:22%;">
+                                    Date / Visit
+                                </th>
+                                <th style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           text-align:left;">
+                                    Details
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="encounters" t-as="enc"
+                                style="page-break-inside: avoid;">
+                                <td style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           vertical-align:top;">
+                                    <span t-if="enc.encounter_date"
+                                          t-field="enc.encounter_date"
+                                          t-options='{"format": "d/M/yyyy"}'/>
+                                    <br/>
+                                    <span style="color:#475569;"
+                                          t-out="dict(enc._fields['encounter_type'].selection).get(enc.encounter_type, '')"/>
+                                </td>
+                                <td style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           vertical-align:top;">
+                                    <t t-if="not is_html_empty(enc.case_timeline_note)">
+                                        <span t-out="enc.case_timeline_note"/>
+                                    </t>
+                                    <t t-elif="enc.chief_complaint">
+                                        <span t-out="enc.chief_complaint"/>
+                                    </t>
+                                    <t t-elif="not is_html_empty(enc.assessment)">
+                                        <span t-out="enc.assessment"/>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="color:#94a3b8;">—</span>
+                                    </t>
+                                </td>
+                            </tr>
+                            <tr t-if="not is_html_empty(o.current_complaint)"
+                                style="page-break-inside: avoid;">
+                                <td style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           vertical-align:top; background:#fbfdff;">
+                                    <strong>Current Medical Complaint</strong>
+                                </td>
+                                <td style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           vertical-align:top;">
+                                    <span t-out="o.current_complaint"/>
+                                </td>
+                            </tr>
+                            <tr t-if="not is_html_empty(o.sick_leave_note)"
+                                style="page-break-inside: avoid;">
+                                <td style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           vertical-align:top; background:#fbfdff;">
+                                    <strong>Sick Leave</strong>
+                                </td>
+                                <td style="border:1px solid #cfd8e3; padding:6px 8px;
+                                           vertical-align:top;">
+                                    <span t-out="o.sick_leave_note"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ============= Signature ============= -->
+                <div style="page-break-inside: avoid; margin-top:28px;
+                            text-align:right;">
+                    <p style="margin:0; color:#1f5e8a; font-size:11pt;">
+                        <strong>AMC Medical Consultant</strong>
+                    </p>
+                    <p t-if="doctor_name"
+                       style="margin:2px 0 0 0; color:#475569; font-size:10pt;">
+                        Dr. <span t-out="doctor_name"/>
+                    </p>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+</odoo>

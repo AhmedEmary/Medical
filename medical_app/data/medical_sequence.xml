@@ -18,6 +18,14 @@
             <field name="company_id" eval="False"/>
         </record>
 
+        <record id="seq_medical_case" model="ir.sequence">
+            <field name="name">Medical Case</field>
+            <field name="code">medical.case</field>
+            <field name="prefix">CASE/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
         <record id="seq_medical_external_visit" model="ir.sequence">
             <field name="name">External Physician Visit</field>
             <field name="code">medical.external.visit</field>
