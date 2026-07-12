@@ -16,6 +16,15 @@
                         help="Summarize every linked encounter into the
                               Medical Condition Report sections. You review
                               and edit the draft before it is applied."/>
+                <button name="action_ai_translate_case_arabic" type="object"
+                        string="AI: Translate to Arabic" icon="fa-language"
+                        class="btn-secondary"
+                        groups="medical_app.group_medical_doctor"
+                        help="Translate the case narrative and each
+                              encounter's timeline note into Arabic using
+                              standard medical terminology. Populates the
+                              Arabic Report tab for you to review and edit
+                              before printing the Arabic PDF."/>
             </xpath>
         </field>
     </record>

@@ -15,7 +15,21 @@
         <field name="binding_type">report</field>
     </record>
 
-    <!-- Print button on the case form header -->
+    <!-- Arabic report action -->
+    <record id="action_report_medical_case_ar" model="ir.actions.report">
+        <field name="name">Medical Condition Report (Arabic)</field>
+        <field name="model">medical.case</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medical_app_reports.report_medical_case_ar</field>
+        <field name="report_file">medical_app_reports.report_medical_case_ar</field>
+        <field name="print_report_name">
+            "Medical Condition Report AR - %s" % (object.reference or object.id)
+        </field>
+        <field name="binding_model_id" ref="medical_app.model_medical_case"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Print buttons on the case form header -->
     <record id="view_medical_case_form_report" model="ir.ui.view">
         <field name="name">medical.case.form.report</field>
         <field name="model">medical.case</field>
@@ -25,6 +39,9 @@
                 <button name="action_print_case_report" type="object"
                         string="Print Condition Report"
                         class="btn-primary" icon="fa-print"/>
+                <button name="action_print_case_report_ar" type="object"
+                        string="Print (Arabic)"
+                        class="btn-secondary" icon="fa-print"/>
             </xpath>
         </field>
     </record>

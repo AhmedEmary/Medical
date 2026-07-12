@@ -58,7 +58,7 @@
     </record>
 
     <!-- Form view -->
-    <record id="view_medical_patient_form" model="ir.ui.view">
+    <record id="viefow_medical_patient_form" model="ir.ui.view">
         <field name="name">medical.patient.form</field>
         <field name="model">medical.patient</field>
         <field name="arch" type="xml">
@@ -67,6 +67,11 @@
                     <button name="action_new_encounter" type="object"
                             string="New Encounter" class="oe_highlight"
                             groups="medical_app.group_medical_nurse"/>
+                    <button name="action_new_case" type="object"
+                            string="New Medical Case"
+                            groups="medical_app.group_medical_nurse"
+                            invisible="not is_corporate"/>
+                    <field name="is_corporate" invisible="1"/>
                 </header>
                 <sheet>
                     <!-- Critical allergy alert banner -->
@@ -82,6 +87,12 @@
                                 class="oe_stat_button" icon="fa-stethoscope">
                             <field name="encounter_count" widget="statinfo"
                                    string="Encounters"/>
+                        </button>
+                        <button name="action_view_cases" type="object"
+                                class="oe_stat_button" icon="fa-folder-open"
+                                invisible="not is_corporate">
+                            <field name="case_count" widget="statinfo"
+                                   string="Cases"/>
                         </button>
                     </div>
 
@@ -119,9 +130,15 @@
                         <group string="Category">
                             <field name="patient_category"/>
                             <field name="hotel_name"
-                                   invisible="patient_category != 'hotel_guest'"/>
+                                   invisible="patient_category not in ('hotel_guest', 'employee', 'non_hotel_employee')"/>
                             <field name="room_number"
                                    invisible="patient_category != 'hotel_guest'"/>
+                            <field name="hotel_id_number"
+                                   invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
+                            <field name="department"
+                                   invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
+                            <field name="hire_date"
+                                   invisible="patient_category not in ('employee', 'non_hotel_employee')"/>
                         </group>
                         <group string="Emergency Contact">
                             <field name="emergency_contact_name"/>

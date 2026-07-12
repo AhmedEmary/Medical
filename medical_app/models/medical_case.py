@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
+from odoo.exceptions import ValidationError
+
+# Patient categories treated as "corporate" — medical cases are only for
+# company employees, not hotel guests or one-off external patients.
+CORPORATE_CATEGORIES = ('employee', 'non_hotel_employee')
 
 
 class MedicalCase(models.Model):
@@ -33,6 +38,9 @@ class MedicalCase(models.Model):
     patient_id = fields.Many2one(
         'medical.patient', required=True, ondelete='restrict',
         index=True, tracking=True,
+        domain="[('patient_category', 'in', "
+               "['employee', 'non_hotel_employee'])]",
+        help="Medical cases are only for corporate/company employees.",
     )
     doctor_id = fields.Many2one(
         'res.users', string='Medical Consultant',
@@ -76,6 +84,11 @@ class MedicalCase(models.Model):
         'medical.encounter', 'case_id', string='Encounters',
     )
     encounter_count = fields.Integer(compute='_compute_encounter_count')
+    encounter_to_link_id = fields.Many2one(
+        'medical.encounter', string='Link Existing Encounter',
+        help="Pick one of this patient's encounters that is not yet on a "
+             "case, then click Link to attach it.",
+    )
 
     # ------------------------------------------------------------
     # Workflow state
@@ -104,6 +117,15 @@ class MedicalCase(models.Model):
                     'medical.case') or _('New')
         return super().create(vals_list)
 
+    @api.constrains('patient_id')
+    def _check_patient_corporate(self):
+        for rec in self:
+            if (rec.patient_id and
+                    rec.patient_id.patient_category not in CORPORATE_CATEGORIES):
+                raise ValidationError(_(
+                    "Medical cases are only for corporate/company employees. "
+                    "'%s' is not an employee patient.", rec.patient_id.name))
+
     # ============================================================
     # Actions
     # ============================================================
@@ -122,6 +144,18 @@ class MedicalCase(models.Model):
             },
         }
 
+    def action_link_encounter(self):
+        """Attach the picked existing encounter to this case."""
+        self.ensure_one()
+        enc = self.encounter_to_link_id
+        if not enc:
+            return
+        if enc.patient_id != self.patient_id:
+            raise ValidationError(_(
+                "That encounter belongs to a different patient."))
+        enc.case_id = self.id
+        self.encounter_to_link_id = False
+
     def action_close(self):
         self.write({'state': 'closed'})
 
@@ -132,19 +166,23 @@ class MedicalCase(models.Model):
     # Report helpers
     # ============================================================
     def _report_employee_data(self):
-        """Corporate/employee identity for the report.
+        """Corporate/employee identity printed on the Medical Condition Report.
 
-        The employee fields (``employee_code`` / ``department`` /
-        ``job_title``) are defined by the optional ``medical_app_entity``
-        module. Read them defensively via ``getattr`` so the report renders
-        whether or not that module is installed.
+        ``job_title`` is defined by the optional ``medical_app_entity`` module,
+        so it's read defensively via ``getattr``. The Hotel ID also falls back
+        to that module's ``employee_code`` when present, so either data source
+        works.
         """
         self.ensure_one()
         patient = self.patient_id
         return {
-            'employee_no': getattr(patient, 'employee_code', False),
-            'department': getattr(patient, 'department', False),
+            'hotel_id_number': (patient.hotel_id_number
+                                or getattr(patient, 'employee_code', False)),
+            'age': patient.age,
+            'department': patient.department,
             'job_title': getattr(patient, 'job_title', False),
+            'hire_date': patient.hire_date,
+            'hotel_name': patient.hotel_name,
             'contact': patient.mobile or patient.phone,
         }
 

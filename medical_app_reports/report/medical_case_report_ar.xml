@@ -2,38 +2,45 @@
 <odoo>
 
     <!--
-        Medical Condition Report — consolidates a whole medical case
-        (several encounters for one ongoing problem) into a single
-        document for HR / the employer / an insurer. Employee identity,
-        cause and initial diagnosis, then one timeline row per linked
-        encounter, plus the current complaint and sick-leave status.
-        Sections without data are omitted.
+        Arabic Medical Condition Report — mirrors the English template
+        but reads from the Arabic mirror fields on the case + encounter,
+        with RTL layout and Arabic section headings.
+
+        The Arabic narrative fields are populated either by hand or by
+        the AI medical-translator action in medical_app_ai. If a field
+        is empty the corresponding row/section is omitted.
     -->
 
-    <template id="report_medical_case">
+    <template id="report_medical_case_ar">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
-                <t t-call="medical_app_reports.report_medical_case_document"
-                   t-lang="user.lang or 'en_US'"/>
+                <t t-call="medical_app_reports.report_medical_case_ar_document"
+                   t-lang="'ar_001'"/>
             </t>
         </t>
     </template>
 
-    <template id="report_medical_case_document">
+    <template id="report_medical_case_ar_document">
         <t t-call="web.external_layout">
             <t t-set="patient" t-value="o.patient_id"/>
             <t t-set="emp" t-value="o._report_employee_data()"/>
             <t t-set="doctor_name" t-value="o.doctor_id.name"/>
+            <t t-set="case_title" t-value="o.name_ar or o.name"/>
 
-            <div class="page" style="font-size:11pt; color:#1f2d3d;">
+            <div class="page" dir="rtl"
+                 style="font-size:11pt; color:#1f2d3d; direction:rtl; text-align:right;">
 
                 <!-- ============= Title ============= -->
                 <div style="text-align:center; margin-bottom:18px;">
                     <h2 style="color:#1f5e8a; margin:0; letter-spacing:0.5px;">
-                        <strong>Medical Condition Report</strong>
+                        <strong>التقرير الطبي للحالة</strong>
                     </h2>
+                    <p t-if="case_title"
+                       style="margin:4px 0 0 0; font-size:11pt; color:#1f2d3d;">
+                        <strong t-out="case_title"/>
+                    </p>
                     <p style="margin:6px 0 0 0; font-size:10pt; color:#475569;">
-                        Case Ref: <span t-out="o.reference"/>
+                        رقم الحالة: <span t-out="o.reference"/>
                         <t t-if="o.report_date">
                             &#160;·&#160;
                             <span t-field="o.report_date"
@@ -51,53 +58,53 @@
                             margin-bottom:18px;">
                     <h3 style="color:#1f5e8a; text-decoration:underline;
                                margin:0 0 8px 0;">
-                        <strong>Patient / Employee Information</strong>
+                        <strong>بيانات المريض / الموظف</strong>
                     </h3>
                     <table style="width:100%; font-size:10pt; line-height:1.6;">
                         <tr>
                             <td style="width:50%;" t-if="patient.name">
-                                <strong>Name:</strong>
+                                <strong>الاسم:</strong>
                                 <span t-out="patient.name"/>
                             </td>
                             <td style="width:50%;" t-if="emp.get('hotel_id_number')">
-                                <strong>Hotel ID Number:</strong>
+                                <strong>رقم الهوية الفندقية:</strong>
                                 <span t-out="emp['hotel_id_number']"/>
                             </td>
                         </tr>
                         <tr>
                             <td t-if="emp.get('age')">
-                                <strong>Age:</strong>
-                                <span t-out="emp['age']"/> years
+                                <strong>العمر:</strong>
+                                <span t-out="emp['age']"/> سنة
                             </td>
                             <td t-if="emp.get('department')">
-                                <strong>Department:</strong>
+                                <strong>القسم:</strong>
                                 <span t-out="emp['department']"/>
                             </td>
                         </tr>
                         <tr>
                             <td t-if="emp.get('job_title')">
-                                <strong>Job Title:</strong>
+                                <strong>المسمى الوظيفي:</strong>
                                 <span t-out="emp['job_title']"/>
                             </td>
                             <td t-if="emp.get('hire_date')">
-                                <strong>Hiring Date:</strong>
+                                <strong>تاريخ التعيين:</strong>
                                 <span t-out="emp['hire_date']"
                                       t-options='{"widget": "date"}'/>
                             </td>
                         </tr>
                         <tr>
                             <td t-if="emp.get('hotel_name')">
-                                <strong>Hotel Name:</strong>
+                                <strong>اسم الفندق:</strong>
                                 <span t-out="emp['hotel_name']"/>
                             </td>
                             <td t-if="emp.get('contact')">
-                                <strong>Contact:</strong>
+                                <strong>التواصل:</strong>
                                 <span t-out="emp['contact']"/>
                             </td>
                         </tr>
                         <tr>
                             <td t-if="o.onset_date">
-                                <strong>Complaint Start Date:</strong>
+                                <strong>تاريخ بداية الشكوى:</strong>
                                 <span t-field="o.onset_date"
                                       t-options='{"format": "d/M/yyyy"}'/>
                             </td>
@@ -105,15 +112,15 @@
                         </tr>
                     </table>
 
-                    <div t-if="not is_html_empty(o.cause)"
+                    <div t-if="not is_html_empty(o.cause_ar)"
                          style="margin-top:8px;">
-                        <strong>Cause of Injury / Illness:</strong>
-                        <div t-out="o.cause"/>
+                        <strong>سبب الإصابة / المرض:</strong>
+                        <div t-out="o.cause_ar"/>
                     </div>
-                    <div t-if="not is_html_empty(o.initial_diagnosis)"
+                    <div t-if="not is_html_empty(o.initial_diagnosis_ar)"
                          style="margin-top:8px;">
-                        <strong>Initial Medical Diagnosis:</strong>
-                        <div t-out="o.initial_diagnosis"/>
+                        <strong>التشخيص الطبي الأولي:</strong>
+                        <div t-out="o.initial_diagnosis_ar"/>
                     </div>
                 </div>
 
@@ -122,19 +129,19 @@
                 <div style="page-break-inside: avoid; margin-bottom:16px;">
                     <h3 style="color:#1f5e8a; text-decoration:underline;
                                margin:0 0 8px 0;">
-                        <strong>Medical Procedures</strong>
+                        <strong>الإجراءات الطبية</strong>
                     </h3>
                     <table style="width:100%; border-collapse:collapse;
                                   font-size:10pt;">
                         <thead>
                             <tr style="background:#eef4f9;">
                                 <th style="border:1px solid #cfd8e3; padding:6px 8px;
-                                           text-align:left; width:22%;">
-                                    Date / Visit
+                                           text-align:right; width:22%;">
+                                    التاريخ / الزيارة
                                 </th>
                                 <th style="border:1px solid #cfd8e3; padding:6px 8px;
-                                           text-align:left;">
-                                    Details
+                                           text-align:right;">
+                                    التفاصيل
                                 </th>
                             </tr>
                         </thead>
@@ -152,7 +159,10 @@
                                 </td>
                                 <td style="border:1px solid #cfd8e3; padding:6px 8px;
                                            vertical-align:top;">
-                                    <t t-if="not is_html_empty(enc.case_timeline_note)">
+                                    <t t-if="not is_html_empty(enc.case_timeline_note_ar)">
+                                        <span t-out="enc.case_timeline_note_ar"/>
+                                    </t>
+                                    <t t-elif="not is_html_empty(enc.case_timeline_note)">
                                         <span t-out="enc.case_timeline_note"/>
                                     </t>
                                     <t t-elif="enc.chief_complaint">
@@ -166,26 +176,26 @@
                                     </t>
                                 </td>
                             </tr>
-                            <tr t-if="not is_html_empty(o.current_complaint)"
+                            <tr t-if="not is_html_empty(o.current_complaint_ar)"
                                 style="page-break-inside: avoid;">
                                 <td style="border:1px solid #cfd8e3; padding:6px 8px;
                                            vertical-align:top; background:#fbfdff;">
-                                    <strong>Current Medical Complaint</strong>
+                                    <strong>الشكوى الطبية الحالية</strong>
                                 </td>
                                 <td style="border:1px solid #cfd8e3; padding:6px 8px;
                                            vertical-align:top;">
-                                    <span t-out="o.current_complaint"/>
+                                    <span t-out="o.current_complaint_ar"/>
                                 </td>
                             </tr>
-                            <tr t-if="not is_html_empty(o.sick_leave_note)"
+                            <tr t-if="not is_html_empty(o.sick_leave_note_ar)"
                                 style="page-break-inside: avoid;">
                                 <td style="border:1px solid #cfd8e3; padding:6px 8px;
                                            vertical-align:top; background:#fbfdff;">
-                                    <strong>Sick Leave</strong>
+                                    <strong>الإجازة المرضية</strong>
                                 </td>
                                 <td style="border:1px solid #cfd8e3; padding:6px 8px;
                                            vertical-align:top;">
-                                    <span t-out="o.sick_leave_note"/>
+                                    <span t-out="o.sick_leave_note_ar"/>
                                 </td>
                             </tr>
                         </tbody>
@@ -194,13 +204,13 @@
 
                 <!-- ============= Signature ============= -->
                 <div style="page-break-inside: avoid; margin-top:28px;
-                            text-align:right;">
+                            text-align:left;">
                     <p style="margin:0; color:#1f5e8a; font-size:11pt;">
-                        <strong>AMC Medical Consultant</strong>
+                        <strong>الاستشاري الطبي — AMC</strong>
                     </p>
                     <p t-if="doctor_name"
                        style="margin:2px 0 0 0; color:#475569; font-size:10pt;">
-                        Dr. <span t-out="doctor_name"/>
+                        د. <span t-out="doctor_name"/>
                     </p>
                 </div>
 

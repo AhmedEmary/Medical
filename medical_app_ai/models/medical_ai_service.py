@@ -1256,9 +1256,10 @@ If something cannot be assessed because data is missing, say so."""
         lines = self._patient_lines(case.patient_id)
         emp = case._report_employee_data()
         emp_bits = [
-            "Employee no: %s" % (emp.get('employee_no') or 'n/a'),
+            "Hotel ID: %s" % (emp.get('hotel_id_number') or 'n/a'),
             "Department: %s" % (emp.get('department') or 'n/a'),
             "Job title: %s" % (emp.get('job_title') or 'n/a'),
+            "Hire date: %s" % (emp.get('hire_date') or 'n/a'),
         ]
         lines += ["", "EMPLOYEE", "- " + " | ".join(emp_bits)]
         lines += [
@@ -1341,6 +1342,122 @@ Respond with ONLY a JSON object (no markdown fences, no other text):
         if not isinstance(timeline, list):
             timeline = []
         return {
+            'cause': data.get('cause') or '',
+            'initial_diagnosis': data.get('initial_diagnosis') or '',
+            'current_complaint': data.get('current_complaint') or '',
+            'sick_leave_note': data.get('sick_leave_note') or '',
+            'timeline': [
+                {
+                    'encounter_ref': (t or {}).get('encounter_ref') or '',
+                    'note': (t or {}).get('note') or '',
+                }
+                for t in timeline if isinstance(t, dict)
+            ],
+        }, log
+
+    # ============================================================
+    # Arabic medical translation of a case report
+    # ------------------------------------------------------------
+    # ``translate_case_to_arabic`` translates the case-level narrative
+    # sections and each encounter's timeline note into Arabic, using
+    # standard Arabic medical terminology. Returns a dict with the
+    # translated case fields plus a ``timeline`` list of
+    # {encounter_ref, note_ar} — one per linked encounter.
+    # ============================================================
+    @api.model
+    def _translate_case_ar_system(self):
+        return SYSTEM_BASE + """
+
+TASK: Translate the free-text sections of a formal "Medical Condition Report"
+from English into modern standard Arabic, for a document that will be handed
+to HR / an insurer / the employer.
+
+TRANSLATION RULES:
+- Use standard Arabic MEDICAL terminology (المصطلحات الطبية العربية القياسية).
+  Prefer the Arabic term used in clinical practice; keep the English or Latin
+  equivalent in parentheses ONLY when the Arabic term is uncommon or would be
+  ambiguous — e.g. "الرنين المغناطيسي (MRI)", "الأشعة المقطعية (CT)".
+- Preserve drug names, ICD codes, lab values, units, dates and numbers exactly
+  as written. Do not translate proper nouns (people, hospitals, drug brands).
+- Preserve meaning EXACTLY. Never add, remove, soften or infer clinical facts.
+  If an English sentence is ambiguous, translate it literally rather than
+  guessing.
+- Preserve tense: past tense for what was done, present for the ongoing status.
+- Use a formal clinical register (fus'ha), third person.
+
+FORMATTING:
+- Preserve the HTML structure of the source. Keep only these tags: <p>, <ul>,
+  <li>, <strong>, <br/>. Translate the text inside them.
+- If a source field is empty or missing, return "" for it.
+- Do NOT wrap the Arabic in RTL marks or add "translated by" notes.
+
+INPUT: a JSON object with English HTML for the case narrative sections plus
+one entry per encounter (identified by its reference).
+
+OUTPUT: respond with ONLY a JSON object (no markdown fences, no other text)
+with the same shape, translated into Arabic:
+{
+  "name": "<Arabic case title>",
+  "cause": "<Arabic HTML>",
+  "initial_diagnosis": "<Arabic HTML>",
+  "current_complaint": "<Arabic HTML>",
+  "sick_leave_note": "<Arabic HTML>",
+  "timeline": [
+    {"encounter_ref": "<reference exactly as given>",
+     "note": "<Arabic HTML translation of the timeline note>"}
+  ]
+}"""
+
+    @api.model
+    def _translate_case_ar_payload(self, case):
+        """Build the English source payload the translator will translate."""
+        encounters = case._report_encounters()
+        return {
+            'name': case.name or '',
+            'cause': case.cause or '',
+            'initial_diagnosis': case.initial_diagnosis or '',
+            'current_complaint': case.current_complaint or '',
+            'sick_leave_note': case.sick_leave_note or '',
+            'timeline': [
+                {
+                    'encounter_ref': enc.reference or '',
+                    'note': (enc.case_timeline_note
+                             or enc.chief_complaint
+                             or ''),
+                }
+                for enc in encounters
+            ],
+        }
+
+    @api.model
+    def _translate_case_ar_user(self, case):
+        payload = self._translate_case_ar_payload(case)
+        return ("Translate the following English Medical Condition Report "
+                "sections into Arabic, following the rules above.\n\n"
+                "SOURCE (JSON):\n"
+                + json.dumps(payload, ensure_ascii=False, indent=2))
+
+    @api.model
+    def translate_case_to_arabic(self, case, system=None, user=None):
+        """Return ``(dict, log)`` — Arabic-translated case sections and
+        per-encounter timeline notes.
+
+        The returned dict mirrors :meth:`_translate_case_ar_payload`: the
+        case-level Arabic HTML strings plus ``timeline`` = list of
+        ``{encounter_ref, note}``, in the same order as the encounters.
+        """
+        if system is None:
+            system = self._translate_case_ar_system()
+        if user is None:
+            user = self._translate_case_ar_user(case)
+        text, log = self._call(
+            'case_translation_ar', system, user, patient=case.patient_id)
+        data = self._parse_json(text)
+        timeline = data.get('timeline')
+        if not isinstance(timeline, list):
+            timeline = []
+        return {
+            'name': data.get('name') or '',
             'cause': data.get('cause') or '',
             'initial_diagnosis': data.get('initial_diagnosis') or '',
             'current_complaint': data.get('current_complaint') or '',

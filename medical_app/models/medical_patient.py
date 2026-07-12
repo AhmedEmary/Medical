@@ -77,10 +77,19 @@ class MedicalPatient(models.Model):
         ('external', 'External Patient'),
     ], string='Patient Category', required=True, default='external', tracking=True)
     hotel_name = fields.Char(string='Hotel',
-        help="Name of the hotel the guest is staying at. Printed on the "
-             "medical report when the patient category is Hotel Guest.")
+        help="Name of the hotel the guest/employee is linked to. Printed on "
+             "the medical reports.")
     room_number = fields.Char(string='Room Number',
         help="Hotel room number if applicable.")
+
+    # ------------------------------------------------------------
+    # Employment (for corporate/hotel-employee patients & reports)
+    # ------------------------------------------------------------
+    hotel_id_number = fields.Char(
+        string='Hotel ID Number', tracking=True,
+        help="Employee / staff ID number. Printed on the medical reports.")
+    department = fields.Char(string='Department', tracking=True)
+    hire_date = fields.Date(string='Hiring Date', tracking=True)
 
     # ------------------------------------------------------------
     # Insurance
@@ -129,6 +138,12 @@ class MedicalPatient(models.Model):
         'medical.encounter', 'patient_id', string='Encounters',
     )
     encounter_count = fields.Integer(compute='_compute_encounter_count')
+
+    case_ids = fields.One2many(
+        'medical.case', 'patient_id', string='Medical Cases',
+    )
+    case_count = fields.Integer(compute='_compute_case_count')
+    is_corporate = fields.Boolean(compute='_compute_is_corporate')
     last_encounter_date = fields.Date(compute='_compute_last_encounter_date', store=True)
 
     # ------------------------------------------------------------
@@ -179,6 +194,17 @@ class MedicalPatient(models.Model):
     def _compute_encounter_count(self):
         for rec in self:
             rec.encounter_count = len(rec.encounter_ids)
+
+    @api.depends('case_ids')
+    def _compute_case_count(self):
+        for rec in self:
+            rec.case_count = len(rec.case_ids)
+
+    @api.depends('patient_category')
+    def _compute_is_corporate(self):
+        for rec in self:
+            rec.is_corporate = rec.patient_category in (
+                'employee', 'non_hotel_employee')
 
     @api.depends('encounter_ids', 'encounter_ids.encounter_date')
     def _compute_last_encounter_date(self):
@@ -260,6 +286,31 @@ class MedicalPatient(models.Model):
             'type': 'ir.actions.act_window',
             'name': _('New Encounter'),
             'res_model': 'medical.encounter',
+            'view_mode': 'form',
+            'context': {'default_patient_id': self.id},
+        }
+
+    def action_view_cases(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Medical Cases'),
+            'res_model': 'medical.case',
+            'view_mode': 'list,form',
+            'domain': [('patient_id', '=', self.id)],
+            'context': {'default_patient_id': self.id},
+        }
+
+    def action_new_case(self):
+        """Open a new medical case pre-filled with this patient."""
+        self.ensure_one()
+        if not self.is_corporate:
+            raise ValidationError(_(
+                "Medical cases are only for corporate/company employees."))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('New Medical Case'),
+            'res_model': 'medical.case',
             'view_mode': 'form',
             'context': {'default_patient_id': self.id},
         }

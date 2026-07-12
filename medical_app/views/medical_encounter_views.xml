@@ -210,6 +210,12 @@
                         </group>
                     </group>
 
+                    <div invisible="not case_id">
+                        <separator string="Case Timeline Note (prints as this visit's row on the Medical Condition Report)"/>
+                        <field name="case_timeline_note"
+                               placeholder="Short summary of what was done / found at this visit..."/>
+                    </div>
+
                     <notebook>
                         <page string="Consultation" name="consultation">
                             <group>

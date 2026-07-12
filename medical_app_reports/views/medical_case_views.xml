@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!--
+        Case form additions from the reports module:
+        * A "Report Date" field next to the consultant.
+        * An "Arabic" notebook page mirroring the four narrative
+          sections, so the doctor can review / edit the translated
+          text before printing the Arabic Medical Condition Report.
+        * A Timeline Note (Arabic) column on the encounters list.
+    -->
+    <record id="view_medical_case_form_reports" model="ir.ui.view">
+        <field name="name">medical.case.form.reports</field>
+        <field name="model">medical.case</field>
+        <field name="inherit_id" ref="medical_app.view_medical_case_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='doctor_id']" position="after">
+                <field name="report_date"/>
+            </xpath>
+
+            <xpath expr="//notebook/page[@name='encounters']" position="after">
+                <page string="Arabic Report" name="arabic_report">
+                    <p class="text-muted">
+                        Arabic mirror of the narrative sections. Fill in
+                        manually, or click <strong>AI: Translate to Arabic</strong>
+                        (in the header) to have the AI draft a medical
+                        translation from the English fields — you can still
+                        edit before printing.
+                    </p>
+                    <group>
+                        <field name="name_ar"
+                               placeholder="عنوان الحالة..."/>
+                    </group>
+                    <separator string="سبب الإصابة / المرض"/>
+                    <field name="cause_ar"
+                           placeholder="كيف بدأت المشكلة..."/>
+                    <separator string="التشخيص الطبي الأولي"/>
+                    <field name="initial_diagnosis_ar"
+                           placeholder="التشخيص العامل عند بداية الحالة..."/>
+                    <separator string="الشكوى الطبية الحالية"/>
+                    <field name="current_complaint_ar"
+                           placeholder="الحالة الراهنة للمريض..."/>
+                    <separator string="الإجازة المرضية"/>
+                    <field name="sick_leave_note_ar"
+                           placeholder="حالة الإجازة المرضية..."/>
+                </page>
+            </xpath>
+
+            <xpath expr="//page[@name='encounters']//field[@name='case_timeline_note']"
+                   position="after">
+                <field name="case_timeline_note_ar"
+                       string="Timeline Note (AR)" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

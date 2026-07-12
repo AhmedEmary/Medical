@@ -70,6 +70,11 @@ class MedicalEncounter(models.Model):
         string='Report Date', default=fields.Date.context_today,
         help="The date printed on the report. Defaults to today.")
 
+    case_timeline_note_ar = fields.Html(
+        string='Case Timeline Note (Arabic)',
+        help="Arabic translation of the case-timeline note, printed on the "
+             "Arabic Medical Condition Report.")
+
     # ============================================================
     # Helpers used by the QWeb template
     # ============================================================

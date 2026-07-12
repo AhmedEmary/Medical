@@ -42,6 +42,7 @@ Sections
     'data': [
         # Views (only field additions, no security needed)
         'views/medical_encounter_views.xml',
+        'views/medical_case_views.xml',
         # Report templates first, then the action that references them,
         # then the mail template that references the action.
         'report/external_layout_inherit.xml',
@@ -52,6 +53,7 @@ Sections
         'report/patient_registration_report.xml',
         'report/external_physician_visit_report.xml',
         'report/medical_case_report.xml',
+        'report/medical_case_report_ar.xml',
         'report/medical_report_actions.xml',
         'report/prescription_report_actions.xml',
         'report/clinic_visit_actions.xml',

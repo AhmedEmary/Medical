@@ -95,23 +95,45 @@
                         </group>
                     </group>
 
-                    <notebook>
-                        <page string="Case Summary" name="summary">
-                            <separator string="Cause of Injury / Illness"/>
-                            <field name="cause"
-                                   placeholder="How the problem started..."/>
-                            <separator string="Initial Medical Diagnosis"/>
-                            <field name="initial_diagnosis"
-                                   placeholder="Working diagnosis at the start of the case..."/>
-                            <separator string="Current Medical Complaint"/>
-                            <field name="current_complaint"
-                                   placeholder="The patient's current status..."/>
-                            <separator string="Sick Leave"/>
-                            <field name="sick_leave_note"
-                                   placeholder="Sick-leave status..."/>
-                        </page>
+                    <div class="alert alert-info" role="alert">
+                        Fill the sections below by hand, or click
+                        <strong>AI: Draft Case Report</strong> to draft them
+                        from the linked encounters — you can still edit
+                        afterwards.
+                    </div>
 
+                    <separator string="Cause of Injury / Illness"/>
+                    <field name="cause"
+                           placeholder="How the problem started..."/>
+                    <separator string="Initial Medical Diagnosis"/>
+                    <field name="initial_diagnosis"
+                           placeholder="Working diagnosis at the start of the case..."/>
+                    <separator string="Current Medical Complaint"/>
+                    <field name="current_complaint"
+                           placeholder="The patient's current status..."/>
+                    <separator string="Sick Leave"/>
+                    <field name="sick_leave_note"
+                           placeholder="Sick-leave status..."/>
+
+                    <notebook>
                         <page string="Encounters" name="encounters">
+                            <p class="text-muted">
+                                Link an existing encounter of this patient, or
+                                use <strong>Add a line</strong> to create a new
+                                one for this case.
+                            </p>
+                            <div class="o_row mb-2">
+                                <field name="encounter_to_link_id"
+                                       class="oe_inline"
+                                       domain="[('patient_id', '=', patient_id),
+                                                ('case_id', '=', False)]"
+                                       options="{'no_create': True}"
+                                       placeholder="Select an existing encounter..."/>
+                                <button name="action_link_encounter" type="object"
+                                        string="Link" icon="fa-link"
+                                        class="btn-secondary"
+                                        invisible="not encounter_to_link_id"/>
+                            </div>
                             <field name="encounter_ids"
                                    context="{'default_patient_id': patient_id,
                                              'default_case_id': id}">
