@@ -58,7 +58,7 @@
     </record>
 
     <!-- Form view -->
-    <record id="viefow_medical_patient_form" model="ir.ui.view">
+    <record id="view_medical_patient_form" model="ir.ui.view">
         <field name="name">medical.patient.form</field>
         <field name="model">medical.patient</field>
         <field name="arch" type="xml">
